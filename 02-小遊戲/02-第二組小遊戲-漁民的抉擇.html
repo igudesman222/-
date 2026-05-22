@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>漁民的抉擇</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; touch-action: none; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        canvas { display: block; }
+        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        .pointer-auto { pointer-events: auto; }
+        
+        /* 動畫 */
+        .modal-enter { animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes popIn { from { opacity: 0; transform: scale(0.9) translate(-50%, -50%); } to { opacity: 1; transform: scale(1) translate(-50%, -50%); } }
+        
+        .toast-enter { animation: slideIn 0.3s ease-out forwards; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
+
+        .fade-in { animation: fadeIn 1s ease-in forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .fade-out { animation: fadeOut 0.5s ease-out forwards; }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+    </style>
+</head>
+<body>
+
+    <!-- 遊戲開始前的介紹畫面 -->
+    <div id="intro-screen" class="absolute top-0 left-0 w-full h-full bg-black/80 pointer-auto z-[200] flex flex-col items-center justify-center p-6 text-white backdrop-blur-sm">
+        <div class="max-w-3xl bg-gray-900/90 border-2 border-cyan-500 rounded-2xl p-8 md:p-10 shadow-2xl flex flex-col gap-6">
+            <h1 class="text-3xl md:text-4xl font-bold text-cyan-400 text-center tracking-widest border-b border-gray-600 pb-4">《漁民的抉擇》</h1>
+            
+            <div class="space-y-4 text-gray-200 leading-relaxed text-sm md:text-base">
+                <p><strong class="text-yellow-400 text-lg">📖 故事背景：</strong><br>
+                你好，年輕的管理者阿海！歡迎來到台南七股。這裡是你阿公留下來的傳統魚塭，現在為了綠能發展，加入了「漁電共生」的太陽能板。科技雖然帶來了乾淨的能源，但也給生態環境帶來了全新的挑戰。</p>
+                
+                <p><strong class="text-green-400 text-lg">🎯 遊玩目標：</strong><br>
+                你的任務是沿著步道巡視這片廣大的魚塭，尋找發光的<span class="text-cyan-400 font-bold">「事件點」</span>。面對各種突發的自然與營運狀況，你必須做出艱難的抉擇。<br>
+                請努力在<span class="font-bold text-white">「營運資金」、「魚群健康」、「發電達成率」</span>和<span class="font-bold text-white">「生態評估」</span>之間取得平衡。一旦資金歸零，遊戲就會提早結束！</p>
+
+                <p><strong class="text-blue-400 text-lg">🎮 操作方式：</strong><br>
+                • <kbd class="bg-gray-800 border border-gray-600 px-2 py-1 rounded">W</kbd> <kbd class="bg-gray-800 border border-gray-600 px-2 py-1 rounded">A</kbd> <kbd class="bg-gray-800 border border-gray-600 px-2 py-1 rounded">S</kbd> <kbd class="bg-gray-800 border border-gray-600 px-2 py-1 rounded">D</kbd> 控制角色移動<br>
+                • <strong class="text-white">滑鼠左鍵拖曳</strong> 旋轉視角<br>
+                • 靠近光圈按 <kbd class="bg-gray-800 border border-gray-600 px-2 py-1 rounded">E</kbd> 進行互動與抉擇</p>
+            </div>
+
+            <button onclick="startGame()" class="mt-4 px-8 py-3 bg-cyan-700 border border-cyan-400 hover:bg-cyan-600 hover:scale-105 rounded-xl font-bold text-lg transition-all shadow-[0_0_15px_rgba(34,211,238,0.5)]">
+                接受任務，開始巡視
+            </button>
+        </div>
+    </div>
+
+    <!-- 遊戲 UI 疊層 -->
+    <div id="ui-layer" class="flex flex-col justify-between p-4 md:p-6 text-white select-none">
+        
+        <!-- 上方區域：屬性與音樂控制 -->
+        <div class="flex justify-between items-start">
+            <div class="flex flex-col gap-2">
+                <div class="flex items-center gap-3 pointer-auto bg-black/70 p-3 rounded-xl backdrop-blur-md border border-gray-600 shadow-lg w-72">
+                    <div class="w-12 h-12 rounded-full bg-blue-600 border-2 border-white flex items-center justify-center text-white font-bold text-xl overflow-hidden shadow-inner">
+                        海
+                    </div>
+                    <div class="flex-1">
+                        <div class="font-bold text-sm tracking-wide flex justify-between">
+                            <span>阿海 (漁電管理者)</span>
+                            <span id="text-day" class="text-yellow-300">第 1 天</span>
+                        </div>
+                        <div class="flex justify-between text-xs mt-1 font-bold text-green-400">
+                            <span>💰 營運資金:</span>
+                            <span id="stat-money">$ 3,000</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pointer-auto bg-black/70 p-4 rounded-xl backdrop-blur-md border border-gray-600 shadow-lg w-72 flex flex-col gap-3">
+                    <!-- 魚群健康度 -->
+                    <div>
+                        <div class="flex justify-between text-xs mb-1"><span class="text-red-400">🐟 魚群健康度</span> <span id="text-health">60%</span></div>
+                        <div class="w-full bg-gray-700 rounded-full h-2"><div id="bar-health" class="bg-red-400 h-2 rounded-full transition-all duration-500" style="width: 60%"></div></div>
+                    </div>
+                    <!-- 太陽能發電 -->
+                    <div>
+                        <div class="flex justify-between text-xs mb-1"><span class="text-yellow-400">⚡ 發電達成率</span> <span id="text-power">80%</span></div>
+                        <div class="w-full bg-gray-700 rounded-full h-2"><div id="bar-power" class="bg-yellow-400 h-2 rounded-full transition-all duration-500" style="width: 80%"></div></div>
+                    </div>
+                    <!-- 生態評估 -->
+                    <div>
+                        <div class="flex justify-between text-xs mb-1"><span class="text-green-400">🌿 生態評估</span> <span id="text-ecology">60%</span></div>
+                        <div class="w-full bg-gray-700 rounded-full h-2"><div id="bar-ecology" class="bg-green-400 h-2 rounded-full transition-all duration-500" style="width: 60%"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 音樂切換按鈕 -->
+            <button id="music-toggle" onclick="toggleMusic()" class="pointer-auto p-3 bg-black/60 border border-gray-600 rounded-full hover:bg-gray-800 transition-colors">
+                <svg id="music-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+            </button>
+        </div>
+
+        <!-- 畫面中央：操作提示 -->
+        <div id="tutorial" class="absolute top-1/4 left-1/2 transform -translate-x-1/2 text-center pointer-events-none drop-shadow-md bg-black/60 p-4 rounded-xl backdrop-blur-sm border border-white/20">
+            <p class="text-lg font-bold text-white tracking-widest mb-1">《漁民的抉擇》</p>
+            <p class="text-sm text-gray-300">沿著土堤步道巡視這片宏大的漁電共生區</p>
+            <p class="text-sm text-gray-300 mt-1">W A S D - 移動 | 滑鼠拖曳 - 旋轉視角</p>
+            <p class="text-sm text-yellow-300 mt-2 font-bold">尋找步道上的發光區域，做出你的抉擇</p>
+        </div>
+
+        <!-- 互動提示 -->
+        <div id="interaction-prompt" class="hidden absolute bottom-[20%] left-1/2 transform -translate-x-1/2 bg-white text-black font-bold px-6 py-3 rounded-full shadow-xl text-lg animate-bounce">
+            按 [ E ] 進行抉擇
+        </div>
+
+        <!-- 選擇任務視窗 (Modal) -->
+        <div id="choice-modal" class="hidden absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gray-900/95 border-2 border-cyan-500 p-6 rounded-2xl shadow-2xl w-11/12 max-w-lg pointer-auto z-50 modal-enter text-white">
+            <h2 id="modal-title" class="text-2xl font-bold mb-2 text-cyan-400 border-b border-gray-600 pb-2">事件標題</h2>
+            <p id="modal-desc" class="text-gray-300 mb-6 text-sm leading-relaxed whitespace-pre-wrap">事件描述</p>
+            <div id="modal-options" class="flex flex-col gap-3"></div>
+            <div class="mt-4 text-xs text-gray-500 text-center">你的每一個決定，都會改變這片魚塭的未來。</div>
+        </div>
+
+        <!-- 日常結算視窗 -->
+        <div id="day-summary-modal" class="hidden absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gray-900/95 border-2 border-green-500 p-6 rounded-2xl shadow-2xl w-11/12 max-w-sm pointer-auto z-50 modal-enter text-white text-center">
+            <h2 id="summary-title" class="text-2xl font-bold mb-4 text-green-400 border-b border-gray-600 pb-2">第 1 天 結束</h2>
+            <div class="text-gray-200 mb-6 space-y-2 text-lg">
+                <p>完成任務：<span class="text-cyan-400 font-bold" id="summary-tasks">2 / 2</span></p>
+                <p>日常營運支出：<span class="text-red-400 font-bold" id="summary-expense">-$400</span></p>
+                <p class="text-sm text-gray-400 mt-2">(魚塭與設備的基本維護費用)</p>
+            </div>
+            <button onclick="startNextDay()" class="w-full px-4 py-3 bg-green-700 border border-green-400 hover:bg-green-600 hover:scale-105 rounded-lg font-bold text-lg transition-all shadow-[0_0_10px_rgba(74,222,128,0.3)]">
+                進入下一天
+            </button>
+        </div>
+
+        <!-- 結局視窗 (Game Over) -->
+        <div id="ending-modal" class="hidden absolute top-0 left-0 w-full h-full bg-black/90 pointer-auto z-[100] flex flex-col items-center justify-center p-6 fade-in text-white">
+            <div class="max-w-2xl text-center">
+                <h1 id="ending-title" class="text-4xl md:text-5xl font-bold text-yellow-400 mb-6 tracking-widest">結局標題</h1>
+                <div class="w-full h-px bg-gray-600 mb-6"></div>
+                <p id="ending-desc" class="text-lg md:text-xl text-gray-200 leading-loose text-left mb-10 whitespace-pre-wrap">結局描述</p>
+                <button onclick="location.reload()" class="px-8 py-3 bg-gray-800 border-2 border-gray-500 hover:bg-gray-700 hover:border-white rounded-lg font-bold text-lg transition-all">
+                    重新開始旅程
+                </button>
+            </div>
+        </div>
+
+        <!-- 通知系統 -->
+        <div id="notification-area" class="absolute bottom-6 right-6 flex flex-col gap-2 items-end pointer-events-none"></div>
+    </div>
+
+    <!-- 遊戲邏輯 -->
+    <script>
+        // === 背景音樂合成器 (Web Audio API) ===
+        const AudioManager = {
+            ctx: null,
+            gainNode: null,
+            isPlaying: false,
+            // 輕柔的五聲音階旋律音符 (Hz)
+            notes: [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25], 
+            sequenceTimer: null,
+
+            init() {
+                if (this.ctx) return;
+                try {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    this.gainNode = this.ctx.createGain();
+                    this.gainNode.gain.setValueAtTime(0.06, this.ctx.currentTime); // 設置合適的背景音量
+                    this.gainNode.connect(this.ctx.destination);
+                } catch(e) {
+                    console.error("此瀏覽器不支援 Web Audio API");
+                }
+            },
+
+            playNote(freq, startTime, duration) {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const noteGain = this.ctx.createGain();
+
+                osc.type = 'triangle'; // 三角波，音色較為溫暖柔和
+                osc.frequency.setValueAtTime(freq, startTime);
+
+                // 音量包絡線 (ADSR 簡化版)
+                noteGain.gain.setValueAtTime(0, startTime);
+                noteGain.gain.linearRampToValueAtTime(0.12, startTime + 0.1); // 輕微淡入
+                noteGain.gain.exponentialRampToValueAtTime(0.001, startTime + duration); // 淡出
+
+                osc.connect(noteGain);
+                noteGain.connect(this.gainNode);
+
+                osc.start(startTime);
+                osc.stop(startTime + duration);
+            },
+
+            playSequence() {
+                if (!this.isPlaying || !this.ctx) return;
+
+                const now = this.ctx.currentTime;
+                // 隨機選取五聲音階中的音符，營造禪意氣氛
+                const randomNote = this.notes[Math.floor(Math.random() * this.notes.length)];
+                
+                // 隨機播放高低八度
+                const octaves = [0.5, 1, 1, 2];
+                const freq = randomNote * octaves[Math.floor(Math.random() * octaves.length)];
+
+                this.playNote(freq, now, 3.0 + Math.random() * 2);
+
+                // 設定下一個音符的時間間隔
+                const delay = 1500 + Math.random() * 2500;
+                this.sequenceTimer = setTimeout(() => this.playSequence(), delay);
+            },
+
+            start() {
+                this.init();
+                if (!this.ctx) return;
+
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+
+                if (!this.isPlaying) {
+                    this.isPlaying = true;
+                    this.playSequence();
+                    document.getElementById('music-icon').style.opacity = '1';
+                }
+            },
+
+            stop() {
+                this.isPlaying = false;
+                if (this.sequenceTimer) clearTimeout(this.sequenceTimer);
+                document.getElementById('music-icon').style.opacity = '0.4';
+            }
+        };
+
+        function toggleMusic() {
+            if (AudioManager.isPlaying) {
+                AudioManager.stop();
+                showNotification("背景音樂已暫停", "info");
+            } else {
+                AudioManager.start();
+                showNotification("背景音樂播放中...", "success");
+            }
+        }
+
+        // === 狀態與劇本 ===
+        let stats = { money: 3000, health: 60, power: 80, ecology: 60 };
+        let currentDay = 1;
+        const maxDays = 5; 
+        let tasksToday = 0;
+        const tasksPerDay = 2; 
+        const dailyExpense = 400; 
+        let isGameOver = false;
+        let gameStarted = false;
+
+        const eventPool = [
+            {
+                id: 'summer', emoji: '☀️', color: 0xef4444,
+                title: '☀️ 異常的高溫',
+                desc: '連日高溫，太陽能板雖然發電量滿載，但也遮蔽了陽光，導致水中藻類死亡，溶氧量急遽下降。\n\n看著水面上翻著白肚的魚苗，你必須立刻做決定。',
+                options: [
+                    { text: '[全開水車] 耗電救魚 (資金 -$1000, 發電 -30%, 健康 +40%)', effect: { money: -1000, health: 40, power: -30, ecology: 10 }, msg: '水車全開！魚群得救了，但面臨發電違約罰款。' },
+                    { text: '[維持現狀] 保守合約 (資金 +$1000, 健康 -50%, 生態 -20%)', effect: { money: 1000, health: -50, power: 10, ecology: -20 }, msg: '合約達標獲得獎金，但死去的魚群讓你心裡沉甸甸的。' }
+                ]
+            },
+            {
+                id: 'winter', emoji: '🐦', color: 0x0ea5e9,
+                title: '🐦 候鳥的迷航',
+                desc: '東北季風吹起，一群黑面琵鷺來到了七股。但原本寬闊的淺灘被連綿的太陽能板覆蓋，鳥群找不到地方降落覓食，疲憊地在空中盤旋。',
+                options: [
+                    { text: '[放乾部分魚塭] 留淺灘給鳥 (資金 -$800, 發電 -20%, 生態 +50%)', effect: { money: -800, health: -10, power: -20, ecology: 50 }, msg: '黑面琵鷺安全降落，為牠們留下一片淨土。' },
+                    { text: '[驅離鳥群] 啟動雷射保魚塭 (資金 +$400, 發電 +10%, 生態 -60%)', effect: { money: 400, health: 10, power: 10, ecology: -60 }, msg: '受驚嚇的國寶鳥飛離，你知道牠們明年可能不會再回來了。' }
+                ]
+            },
+            {
+                id: 'clean', emoji: '🧽', color: 0xfacc15,
+                title: '🧽 面板積灰事件',
+                desc: '太陽能板積滿了鹽害與鳥糞，發電效率大打折扣。合約的期限快到了。',
+                options: [
+                    { text: '[化學藥劑速洗] 便宜快速 (資金 -$300, 發電 +40%, 健康 -40%)', effect: { money: -300, health: -40, power: 40, ecology: -30 }, msg: '發電量瞬間恢復，但化學污水流進魚塭影響了生態。' },
+                    { text: '[清水人工慢洗] 昂貴且費時 (資金 -$1200, 發電 +20%, 生態 +10%)', effect: { money: -1200, health: 0, power: 20, ecology: 10 }, msg: '雖然昂貴，但保護了水質與脆弱的生命。' }
+                ]
+            },
+            {
+                id: 'typhoon', emoji: '🌀', color: 0xa855f7,
+                title: '🌀 颱風警報發布',
+                desc: '強烈颱風逼近，強風可能吹壞太陽能板的支架，但也為魚塭帶來了豐沛的雨水。',
+                options: [
+                    { text: '[全面加固] 優先保護發電板 (資金 -$1000, 發電 +20%, 健康 -20%)', effect: { money: -1000, health: -20, power: 20, ecology: 0 }, msg: '光電板安全挺過颱風，但疏於照顧的魚塭受損。' },
+                    { text: '[優先護魚] 確保魚塭水位穩定 (資金 -$400, 發電 -30%, 健康 +30%)', effect: { money: -400, health: 30, power: -30, ecology: 10 }, msg: '魚群安然度過颱風，但部分光電板受損需要維修。' }
+                ]
+            },
+            {
+                id: 'disease', emoji: '🦠', color: 0x22c55e,
+                title: '🦠 魚群爆發疾病',
+                desc: '由於水溫變化劇烈，加上太陽能板遮蔽，部分魚群出現了白點病的徵兆。',
+                options: [
+                    { text: '[投餵抗生素] 快速見效 (資金 -$400, 健康 +30%, 生態 -30%)', effect: { money: -400, health: 30, power: 0, ecology: -30 }, msg: '魚群很快就恢復了，但抗生素殘留影響了水質。' },
+                    { text: '[生態益生菌] 昂貴但環保 (資金 -$1000, 健康 +40%, 生態 +20%)', effect: { money: -1000, health: 40, power: 0, ecology: 20 }, msg: '魚群不僅恢復健康，魚塭的生態系統也變得更強韌！' }
+                ]
+            }
+        ];
+
+        const validPositions = [
+            { x: 20, z: 0 }, { x: -20, z: 0 }, { x: 0, z: 20 }, { x: 0, z: -20 },
+            { x: 40, z: 0 }, { x: -40, z: 0 }, { x: 0, z: 40 }, { x: 0, z: -40 }
+        ];
+
+        let interactionZones = [];
+        let currentActiveZone = null;
+        let isModalOpen = false;
+        
+        let scene, camera, renderer, player;
+        const zoneMeshes = []; 
+        const keys = { w: false, a: false, s: false, d: false, e: false };
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+        let camRadius = 12, camTheta = Math.PI / 4, camPhi = Math.PI / 3.5;
+
+        // --- 擬真紋理生成 ---
+        function createSolarPanelTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1024; canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#0a1122'; ctx.fillRect(0, 0, 1024, 256);
+            ctx.strokeStyle = '#475569'; ctx.lineWidth = 1.5;
+            for(let i=0; i<=1024; i+=16) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, 256); ctx.stroke(); }
+            for(let j=0; j<=256; j+=32) { ctx.beginPath(); ctx.moveTo(0, j); ctx.lineTo(1024, j); ctx.stroke(); }
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping;
+            return tex;
+        }
+
+        function createDirtTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512; canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#7a6e5d'; ctx.fillRect(0, 0, 512, 512);
+            for(let i=0; i<30000; i++) {
+                let val = Math.random();
+                ctx.fillStyle = val > 0.8 ? '#5c5243' : (val > 0.4 ? '#8a7d6a' : '#6b6051');
+                ctx.globalAlpha = Math.random() * 0.4;
+                ctx.fillRect(Math.random()*512, Math.random()*512, Math.random()*3+1, Math.random()*3+1);
+            }
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(15, 15);
+            return tex;
+        }
+
+        function createFaceTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512; canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#ffccaa'; ctx.fillRect(0, 0, 512, 512);
+            ctx.fillStyle = '#111827';
+            ctx.beginPath(); ctx.arc(190, 240, 24, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(322, 240, 24, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = '#111827'; ctx.lineWidth = 8; ctx.lineCap = 'round';
+            ctx.beginPath(); ctx.arc(256, 270, 35, 0.2, Math.PI - 0.2, false); ctx.stroke();
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.wrapS = THREE.RepeatWrapping; tex.repeat.x = -1; 
+            return tex;
+        }
+
+        function createIconSprite(emoji, colorHex) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256; canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+            ctx.beginPath(); ctx.arc(128, 128, 100, 0, Math.PI*2); ctx.fill();
+            ctx.strokeStyle = '#' + colorHex.toString(16).padStart(6, '0');
+            ctx.lineWidth = 12; ctx.stroke();
+            ctx.font = '100px Arial';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(emoji, 128, 138); 
+            const tex = new THREE.CanvasTexture(canvas);
+            const mat = new THREE.SpriteMaterial({ map: tex, transparent: true }); 
+            const sprite = new THREE.Sprite(mat);
+            sprite.scale.set(4, 4, 1);
+            return sprite;
+        }
+
+        let solarTex, dirtTex, faceTex;
+
+        window.onload = function() {
+            initGame();
+            updateUI();
+            animate();
+        };
+
+        function startGame() {
+            document.getElementById('intro-screen').classList.add('fade-out');
+            setTimeout(() => {
+                document.getElementById('intro-screen').style.display = 'none';
+                gameStarted = true;
+                
+                // 啟動背景音樂
+                AudioManager.start(); 
+
+                setTimeout(() => { 
+                    const tutorial = document.getElementById('tutorial');
+                    if (tutorial) {
+                        tutorial.style.opacity = 0; 
+                        tutorial.style.transition = 'opacity 1s'; 
+                    }
+                }, 7000);
+            }, 500);
+        }
+
+        function initGame() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xa3c5d8);
+            scene.fog = new THREE.FogExp2(0xa3c5d8, 0.006);
+
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
+            renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.1;
+            document.body.appendChild(renderer.domElement);
+
+            scene.add(new THREE.AmbientLight(0xffffff, 0.5)); 
+            const hemiLight = new THREE.HemisphereLight(0xddeeff, 0x443322, 0.4); 
+            hemiLight.position.set(0, 50, 0); scene.add(hemiLight);
+            
+            const dirLight = new THREE.DirectionalLight(0xfff8eb, 1.8); 
+            dirLight.position.set(100, 150, 50); dirLight.castShadow = true;
+            dirLight.shadow.mapSize.width = 2048; dirLight.shadow.mapSize.height = 2048;
+            dirLight.shadow.camera.top = 100; dirLight.shadow.camera.bottom = -100;
+            dirLight.shadow.camera.left = -100; dirLight.shadow.camera.right = 100;
+            dirLight.shadow.bias = -0.0005; scene.add(dirLight);
+
+            solarTex = createSolarPanelTexture();
+            dirtTex = createDirtTexture();
+            faceTex = createFaceTexture(); 
+
+            createEnvironment();
+            createPlayer();
+            spawnDailyTasks(); 
+            setupEventListeners();
+            updateCameraPosition();
+        }
+
+        function spawnDailyTasks() {
+            zoneMeshes.forEach(z => { if (z.group) scene.remove(z.group); });
+            zoneMeshes.length = 0;
+            interactionZones.length = 0;
+
+            let shuffledEvents = [...eventPool].sort(() => 0.5 - Math.random()).slice(0, tasksPerDay);
+            let shuffledPos = [...validPositions].sort(() => 0.5 - Math.random()).slice(0, tasksPerDay);
+
+            shuffledEvents.forEach((ev, idx) => {
+                let zoneData = { ...ev, id: ev.id + '_' + currentDay, pos: shuffledPos[idx] };
+                interactionZones.push(zoneData);
+                
+                const zoneGroup = new THREE.Group();
+                zoneGroup.position.set(zoneData.pos.x, 1.2, zoneData.pos.z);
+
+                const ringGeo = new THREE.TorusGeometry(2, 0.2, 8, 32);
+                const ringMat = new THREE.MeshBasicMaterial({ color: zoneData.color, transparent: true, opacity: 0.8 });
+                const ring = new THREE.Mesh(ringGeo, ringMat);
+                ring.rotation.x = Math.PI / 2; zoneGroup.add(ring);
+                
+                const beamGeo = new THREE.CylinderGeometry(2, 2, 15, 16, 1, true);
+                const beamMat = new THREE.MeshBasicMaterial({ color: zoneData.color, transparent: true, opacity: 0.25, side: THREE.DoubleSide });
+                const beam = new THREE.Mesh(beamGeo, beamMat); 
+                beam.position.y = 7.5; zoneGroup.add(beam);
+
+                const iconSprite = createIconSprite(zoneData.emoji, zoneData.color);
+                iconSprite.position.y = 16; zoneGroup.add(iconSprite);
+
+                scene.add(zoneGroup); 
+                zoneMeshes.push({ group: zoneGroup, ring: ring, sprite: iconSprite, data: zoneData });
+            });
+        }
+
+        function createEnvironment() {
+            const mapSize = 240; const pondSize = 40; const halfMap = mapSize / 2;
+            const waterGeo = new THREE.PlaneGeometry(mapSize * 1.5, mapSize * 1.5);
+            const waterMat = new THREE.MeshPhysicalMaterial({ 
+                color: 0x0ea5e9, transparent: true, opacity: 0.75, roughness: 0.1, metalness: 0.4, transmission: 0.6, ior: 1.33 
+            }); 
+            const water = new THREE.Mesh(waterGeo, waterMat); water.rotation.x = -Math.PI / 2; scene.add(water);
+
+            const bedGeo = new THREE.PlaneGeometry(mapSize * 1.5, mapSize * 1.5);
+            const bedMat = new THREE.MeshStandardMaterial({ color: 0x1e3a8a, map: dirtTex });
+            const bed = new THREE.Mesh(bedGeo, bedMat); bed.rotation.x = -Math.PI / 2; bed.position.y = -2; scene.add(bed);
+
+            const dirtMat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: dirtTex, roughness: 1.0 });
+            for (let x = -halfMap; x <= halfMap; x += pondSize) {
+                const path = new THREE.Mesh(new THREE.BoxGeometry(4, 1.5, mapSize), dirtMat);
+                path.position.set(x, 0.25, 0); path.receiveShadow = true; path.castShadow = true; scene.add(path);
+            }
+            for (let z = -halfMap; z <= halfMap; z += pondSize) {
+                const path = new THREE.Mesh(new THREE.BoxGeometry(mapSize + 4, 1.5, 4), dirtMat);
+                path.position.set(0, 0.25, z); path.receiveShadow = true; path.castShadow = true; scene.add(path);
+            }
+
+            const panelMat = new THREE.MeshPhysicalMaterial({ color: 0xffffff, map: solarTex, metalness: 0.7, roughness: 0.1, clearcoat: 1.0, clearcoatRoughness: 0.02 });
+            const frameMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.8, roughness: 0.4 });
+
+            for (let cx = -halfMap + pondSize/2; cx < halfMap; cx += pondSize) {
+                for (let cz = -halfMap + pondSize/2; cz < halfMap; cz += pondSize) {
+                    if (Math.abs(cx) < 10 && Math.abs(cz) < 10) continue;
+                    if (Math.random() > 0.6) {
+                        const aeratorGroup = new THREE.Group(); aeratorGroup.position.set(cx, 0, cz);
+                        const motor = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.6, 1.2), new THREE.MeshStandardMaterial({ color: 0xdddddd, roughness: 0.8 }));
+                        motor.position.y = 0.3; motor.castShadow = true; aeratorGroup.add(motor);
+                        const splash = new THREE.Mesh(new THREE.PlaneGeometry(4, 4), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.3 }));
+                        splash.rotation.x = -Math.PI / 2; splash.position.y = 0.05; aeratorGroup.add(splash);
+                        scene.add(aeratorGroup); continue; 
+                    }
+                    const pondGroup = new THREE.Group(); pondGroup.position.set(cx, 0, cz);
+                    const rowSpacing = 6; const panelWidth = pondSize - 6;
+                    for (let r = -pondSize/2 + 6; r <= pondSize/2 - 6; r += rowSpacing) {
+                        const p1 = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 3), frameMat); p1.position.set(-panelWidth/3, 1.5, r); p1.castShadow = true; pondGroup.add(p1);
+                        const p2 = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 3), frameMat); p2.position.set(panelWidth/3, 1.5, r); p2.castShadow = true; pondGroup.add(p2);
+                        const panel = new THREE.Mesh(new THREE.BoxGeometry(panelWidth, 0.1, 4.5), panelMat); panel.position.set(0, 3, r + 0.5); panel.rotation.x = Math.PI / 12; panel.castShadow = true; pondGroup.add(panel);
+                    }
+                    scene.add(pondGroup);
+                }
+            }
+        }
+
+        function createPlayer() {
+            player = new THREE.Group();
+            const shirtMat = new THREE.MeshStandardMaterial({ color: 0x1d4ed8, roughness: 0.8 }); 
+            const pantsMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.9 }); 
+            const skinMat = new THREE.MeshStandardMaterial({ color: 0xffccaa, roughness: 0.5 }); 
+            const faceMat = new THREE.MeshStandardMaterial({ map: faceTex, roughness: 0.5 });    
+            const body = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.8, 0.4), shirtMat);
+            body.position.y = 1.3; body.castShadow = true; player.add(body);
+            const head = new THREE.Mesh(new THREE.SphereGeometry(0.35, 32, 32), faceMat);
+            head.position.y = 1.95; head.rotation.y = -Math.PI / 2; head.castShadow = true; player.add(head);
+            const hatGeo = new THREE.ConeGeometry(0.8, 0.25, 32);
+            const hatMat = new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.9, map: dirtTex }); 
+            const hat = new THREE.Mesh(hatGeo, hatMat); hat.position.y = 2.2; hat.castShadow = true; player.add(hat);
+            function createLimb(radius, length, material, hasShoe = false) {
+                const pivot = new THREE.Group();
+                const mesh = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius * 0.8, length, 16), material);
+                mesh.position.y = -length / 2; mesh.castShadow = true; pivot.add(mesh);
+                if (hasShoe) {
+                    const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.2, 0.35), new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.8 }));
+                    shoe.position.set(0, -length - 0.1, 0.05); shoe.castShadow = true; pivot.add(shoe);
+                }
+                return pivot;
+            }
+            const leftArm = createLimb(0.1, 0.7, skinMat); leftArm.position.set(-0.4, 1.6, 0); player.add(leftArm);
+            const rightArm = createLimb(0.1, 0.7, skinMat); rightArm.position.set(0.4, 1.6, 0); player.add(rightArm);
+            const leftLeg = createLimb(0.12, 0.9, pantsMat, true); leftLeg.position.set(-0.18, 0.9, 0); player.add(leftLeg);
+            const rightLeg = createLimb(0.12, 0.9, pantsMat, true); rightLeg.position.set(0.18, 0.9, 0); player.add(rightLeg);
+            player.userData = { leftArm, rightArm, leftLeg, rightLeg, walkCycle: 0, baseHeight: 1.3 };
+            player.position.set(0, 1.3, 0); scene.add(player);
+        }
+
+        function updateUI() {
+            stats.health = Math.max(0, Math.min(100, stats.health));
+            stats.power = Math.max(0, Math.min(100, stats.power));
+            stats.ecology = Math.max(0, Math.min(100, stats.ecology));
+            document.getElementById('text-day').innerText = `第 ${currentDay} 天`;
+            document.getElementById('stat-money').innerText = `$ ${stats.money.toLocaleString()}`;
+            document.getElementById('text-health').innerText = `${Math.floor(stats.health)}%`;
+            document.getElementById('bar-health').style.width = `${stats.health}%`;
+            document.getElementById('text-power').innerText = `${Math.floor(stats.power)}%`;
+            document.getElementById('bar-power').style.width = `${stats.power}%`;
+            document.getElementById('text-ecology').innerText = `${Math.floor(stats.ecology)}%`;
+            document.getElementById('bar-ecology').style.width = `${stats.ecology}%`;
+        }
+
+        function showNotification(message, type = 'info') {
+            const area = document.getElementById('notification-area');
+            const toast = document.createElement('div');
+            let colorClass = type === 'success' ? 'bg-green-900/90 border-green-500' : (type === 'warning' ? 'bg-red-900/90 border-red-500' : 'bg-gray-800 border-gray-600');
+            toast.className = `toast-enter ${colorClass} border text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 pointer-events-auto`;
+            toast.innerHTML = `<div class="font-bold text-sm">${message}</div>`;
+            area.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(100%)'; toast.style.transition = 'all 0.3s ease'; setTimeout(() => toast.remove(), 300); }, 3000);
+        }
+
+        function openChoiceModal(zoneData) {
+            isModalOpen = true;
+            document.getElementById('choice-modal').classList.remove('hidden');
+            document.getElementById('modal-title').innerText = zoneData.title;
+            document.getElementById('modal-desc').innerText = zoneData.desc;
+            const optionsContainer = document.getElementById('modal-options');
+            optionsContainer.innerHTML = '';
+            zoneData.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = `w-full text-left px-4 py-3 rounded-lg font-bold transition-all bg-gray-800 hover:bg-cyan-700 border border-gray-600 hover:border-cyan-400 text-white`;
+                btn.innerHTML = `<span class="text-cyan-400 mr-2">[${index + 1}]</span> ${opt.text}`;
+                btn.onclick = () => makeChoice(opt, zoneData.id);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function closeChoiceModal() { isModalOpen = false; document.getElementById('choice-modal').classList.add('hidden'); }
+
+        function makeChoice(option, zoneId) {
+            stats.money += option.effect.money || 0;
+            stats.health += option.effect.health || 0;
+            stats.power += option.effect.power || 0;
+            stats.ecology += option.effect.ecology || 0;
+            updateUI(); showNotification(option.msg, "info"); closeChoiceModal();
+            const zoneMesh = zoneMeshes.find(z => z.data.id === zoneId);
+            if (zoneMesh) { scene.remove(zoneMesh.group); zoneMesh.group.position.y = -100; }
+            document.getElementById('interaction-prompt').classList.add('hidden');
+            currentActiveZone = null; tasksToday++;
+            if (stats.money < 0) { checkEnding(); return; }
+            if (tasksToday >= tasksPerDay) setTimeout(showDaySummary, 600);
+        }
+
+        function showDaySummary() {
+            isModalOpen = true; stats.money -= dailyExpense;
+            document.getElementById('day-summary-modal').classList.remove('hidden');
+            document.getElementById('summary-title').innerText = `第 ${currentDay} 天 結束`;
+            document.getElementById('summary-tasks').innerText = `${tasksToday} / ${tasksPerDay}`;
+            document.getElementById('summary-expense').innerText = `-$${dailyExpense}`;
+            updateUI();
+        }
+
+        function startNextDay() {
+            document.getElementById('day-summary-modal').classList.add('hidden');
+            if (stats.money < 0) { checkEnding(); return; }
+            currentDay++;
+            if (currentDay > maxDays) { checkEnding(); return; }
+            tasksToday = 0; spawnDailyTasks(); updateUI(); isModalOpen = false;
+        }
+
+        function checkEnding() {
+            if (stats.money < 0) { triggerGameOver("結局 C：理想的代價", "資源耗盡。老魚塭被大財團收購，他們隔天就填平了水池。理想在現實面前，有時顯得脆弱。"); return; }
+            if (currentDay > maxDays) {
+                if (stats.health >= 60 && stats.power >= 60 && stats.ecology >= 60) triggerGameOver("結局 A：真正的共生", "你找到了完美的平衡。科技與自然在這裡和諧共存。");
+                else if (stats.health <= 30) triggerGameOver("結局 B：冰冷的發電廠", "發電指標達標了，但魚兒不再游動。這真的是你想要的未來嗎？");
+                else triggerGameOver("結局 D：未完的挑戰", "勉強維持了平衡。未來的路還很長，管理者的職責仍將繼續。");
+            }
+        }
+
+        function triggerGameOver(title, desc) { isGameOver = true; document.getElementById('ending-modal').classList.remove('hidden'); document.getElementById('ending-title').innerText = title; document.getElementById('ending-desc').innerText = desc; }
+
+        function setupEventListeners() {
+            window.addEventListener('keydown', (e) => {
+                if(isGameOver || !gameStarted) return;
+                const key = e.key.toLowerCase(); if (keys.hasOwnProperty(key)) keys[key] = true;
+                if (key === 'e' && currentActiveZone && !isModalOpen) openChoiceModal(currentActiveZone);
+                if (isModalOpen && ['1', '2', '3'].includes(key) && currentActiveZone) {
+                    const opt = currentActiveZone.options[parseInt(key)-1];
+                    if (opt) makeChoice(opt, currentActiveZone.id);
+                }
+            });
+            window.addEventListener('keyup', (e) => { const key = e.key.toLowerCase(); if (keys.hasOwnProperty(key)) keys[key] = false; });
+            window.addEventListener('mousedown', (e) => { if(e.target.tagName !== 'DIV' && e.target.tagName !== 'BUTTON' && !isGameOver && gameStarted) { isDragging = true; previousMousePosition = { x: e.offsetX, y: e.offsetY }; } });
+            window.addEventListener('mousemove', (e) => { if (isDragging) { camTheta -= (e.offsetX - previousMousePosition.x) * 0.01; camPhi = Math.max(0.1, Math.min(Math.PI / 2 - 0.1, camPhi - (e.offsetY - previousMousePosition.y) * 0.01)); previousMousePosition = { x: e.offsetX, y: e.offsetY }; } });
+            window.addEventListener('mouseup', () => isDragging = false);
+            window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
+        }
+
+        function isOnPath(x, z) {
+            const mapHalf = 120; const pathRadius = 1.2; 
+            if (Math.abs(x) > mapHalf || Math.abs(z) > mapHalf) return false;
+            const nearestX = Math.round(x / 40) * 40; const nearestZ = Math.round(z / 40) * 40;
+            return Math.abs(x - nearestX) <= pathRadius || Math.abs(z - nearestZ) <= pathRadius;
+        }
+
+        function updateCameraPosition() {
+            const offsetX = camRadius * Math.sin(camPhi) * Math.sin(camTheta);
+            const offsetY = camRadius * Math.cos(camPhi);
+            const offsetZ = camRadius * Math.sin(camPhi) * Math.cos(camTheta);
+            camera.position.lerp(new THREE.Vector3(player.position.x + offsetX, player.position.y + offsetY, player.position.z + offsetZ), 0.1);
+            camera.lookAt(player.position.x, player.position.y + 1, player.position.z);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if (gameStarted && !isModalOpen && !isGameOver) {
+                let moveSpeed = 0.25; let moveZ = (keys.w ? -1 : 0) + (keys.s ? 1 : 0); let moveX = (keys.a ? -1 : 0) + (keys.d ? 1 : 0);
+                if (moveX !== 0 || moveZ !== 0) {
+                    const inputDir = new THREE.Vector3(moveX, 0, moveZ).normalize().applyAxisAngle(new THREE.Vector3(0, 1, 0), camTheta);
+                    const nextPos = player.position.clone().add(inputDir.clone().multiplyScalar(moveSpeed));
+                    if (isOnPath(nextPos.x, nextPos.z)) player.position.copy(nextPos);
+                    else { if (isOnPath(nextPos.x, player.position.z)) player.position.x = nextPos.x; else if (isOnPath(player.position.x, nextPos.z)) player.position.z = nextPos.z; }
+                    player.rotation.y += (Math.atan2(inputDir.x, inputDir.z) - player.rotation.y) * 0.15;
+                    player.userData.walkCycle += 0.18;
+                    const bounce = Math.abs(Math.sin(player.userData.walkCycle * 2)) * 0.08;
+                    player.position.y = player.userData.baseHeight + bounce;
+                    player.userData.leftArm.rotation.x = Math.sin(player.userData.walkCycle) * 0.8;
+                    player.userData.rightArm.rotation.x = -Math.sin(player.userData.walkCycle) * 0.8;
+                    player.userData.leftLeg.rotation.x = -Math.sin(player.userData.walkCycle) * 0.8;
+                    player.userData.rightLeg.rotation.x = Math.sin(player.userData.walkCycle) * 0.8;
+                } else { player.userData.walkCycle = 0; player.position.y = player.userData.baseHeight; player.userData.leftArm.rotation.x = 0; player.userData.rightArm.rotation.x = 0; player.userData.leftLeg.rotation.x = 0; player.userData.rightLeg.rotation.x = 0; }
+                let foundNearZone = false;
+                zoneMeshes.forEach(zData => {
+                    if (zData.group.position.y > 0) {
+                        zData.ring.rotation.z += 0.02;
+                        zData.sprite.position.y = 16 + Math.sin(Date.now() * 0.003) * 1.5;
+                        if (player.position.distanceTo(zData.group.position) < 5) { foundNearZone = true; currentActiveZone = zData.data; }
+                    }
+                });
+                const prompt = document.getElementById('interaction-prompt');
+                if (foundNearZone) prompt.classList.remove('hidden'); else { prompt.classList.add('hidden'); currentActiveZone = null; }
+            }
+            updateCameraPosition();
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>
