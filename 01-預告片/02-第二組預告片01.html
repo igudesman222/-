@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>七股餘光 - 3D實機對白預告片</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+            font-family: 'Noto Sans TC', sans-serif;
+            color: #fff;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        #game-container {
+            position: absolute;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+        }
+
+        /* 電影黑邊 */
+        .letterbox {
+            position: absolute; left: 0; width: 100%; height: 12%;
+            background-color: #000; z-index: 10;
+        }
+        #letterbox-top { top: 0; }
+        #letterbox-bottom { bottom: 0; }
+
+        /* ======== 實機遊玩影片 UI ======== */
+        #gameplay-video {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover; z-index: 5; opacity: 0; pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        /* ======== 情境特效 Overlays ======== */
+        /* 1. 新聞轉播 UI */
+        #news-overlay {
+            position: absolute; top: 12%; left: 0; width: 100%; height: 76%;
+            pointer-events: none; z-index: 15; opacity: 0; transition: opacity 0.3s;
+        }
+        .news-banner {
+            position: absolute; bottom: 5%; left: 5%; width: 90%;
+            background: linear-gradient(90deg, #aa0000 0%, #dd0000 50%, transparent 100%);
+            padding: 10px 20px; border-left: 10px solid #fff;
+        }
+        .news-live {
+            position: absolute; top: 5%; right: 5%; background: #dd0000;
+            padding: 5px 15px; font-weight: bold; font-size: 1.2rem; letter-spacing: 2px;
+            animation: blink 1s infinite;
+        }
+        
+        /* 2. 手機/攝影機 UI */
+        #cam-overlay {
+            position: absolute; top: 12%; left: 0; width: 100%; height: 76%;
+            pointer-events: none; z-index: 15; opacity: 0; transition: opacity 0.3s;
+            box-sizing: border-box; border: 2px solid rgba(255,255,255,0.2);
+        }
+        .cam-corners {
+            position: absolute; width: 100%; height: 100%;
+            background: 
+                linear-gradient(to right, #fff 4px, transparent 4px) 5% 5%,
+                linear-gradient(to bottom, #fff 4px, transparent 4px) 5% 5%,
+                linear-gradient(to left, #fff 4px, transparent 4px) 95% 5%,
+                linear-gradient(to bottom, #fff 4px, transparent 4px) 95% 5%,
+                linear-gradient(to right, #fff 4px, transparent 4px) 5% 95%,
+                linear-gradient(to top, #fff 4px, transparent 4px) 5% 95%,
+                linear-gradient(to left, #fff 4px, transparent 4px) 95% 95%,
+                linear-gradient(to top, #fff 4px, transparent 4px) 95% 95%;
+            background-repeat: no-repeat; background-size: 40px 40px;
+        }
+        .cam-rec {
+            position: absolute; top: 8%; left: 8%; color: #ff3333; font-weight: bold; font-size: 1.5rem;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .rec-dot { width: 15px; height: 15px; background: #ff3333; border-radius: 50%; animation: blink 1s infinite; }
+
+        /* 3. 內部機密文件 UI */
+        #doc-overlay {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 60%; height: 60%; background: rgba(240, 240, 240, 0.95);
+            pointer-events: none; z-index: 16; opacity: 0; transition: opacity 0.5s;
+            color: #000; padding: 40px; box-shadow: 0 0 50px rgba(255,255,255,0.5);
+            font-family: 'Courier New', Courier, monospace; overflow: hidden;
+        }
+        .doc-redacted { background: #000; color: #000; user-select: none; }
+        .doc-stamp {
+            position: absolute; top: 20%; right: 10%; color: red; border: 5px solid red;
+            padding: 10px; font-size: 2rem; font-weight: 900; transform: rotate(-15deg);
+            opacity: 0.7; letter-spacing: 5px;
+        }
+
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
+        /* =========================================== */
+
+        /* 字幕 UI (確保在特效上方，放大字體並置中顯示對白) */
+        #subtitle-container {
+            position: absolute; bottom: 12%; left: 50%; transform: translateX(-50%);
+            width: 90%; text-align: center; z-index: 60; pointer-events: none;
+            display: flex; justify-content: center;
+        }
+        #subtitle-text {
+            font-size: 2rem; line-height: 1.6;
+            text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 0px 4px 12px rgba(0,0,0,0.9);
+            opacity: 0; transition: opacity 0.2s ease; white-space: pre-wrap;
+            background: rgba(0, 0, 0, 0.7); display: inline-block;
+            padding: 12px 30px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
+            letter-spacing: 0.05em;
+            max-width: 900px;
+        }
+        .speaker-name {
+            display: block; font-size: 1.4rem; margin-bottom: 5px; opacity: 0.9;
+        }
+
+        #fade-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #000; z-index: 80; opacity: 1; transition: opacity 2s ease; pointer-events: none;
+        }
+
+        #title-card {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            text-align: center; z-index: 90; opacity: 0; transition: opacity 3s ease; pointer-events: none;
+        }
+        #title-card h1 { font-size: 5rem; letter-spacing: 15px; margin: 0; color: #fcd34d; text-shadow: 0 0 25px rgba(252, 211, 77, 0.5); }
+        #title-card p { font-size: 1.8rem; letter-spacing: 8px; color: #fff; margin-top: 15px; }
+
+        #start-menu {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.9); display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 100;
+        }
+        button {
+            background: transparent; color: #0ff; border: 2px solid #0ff; padding: 15px 40px;
+            font-size: 1.5rem; cursor: pointer; letter-spacing: 2px; transition: all 0.3s;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3); border-radius: 5px; font-family: 'Noto Sans TC';
+        }
+        button:hover { background: #0ff; color: #000; box-shadow: 0 0 30px #0ff; }
+        
+        #timer-display {
+            position: absolute; top: 15px; left: 15px; color: rgba(255,255,255,0.5);
+            font-family: monospace; z-index: 50; font-size: 1.5rem; pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container"></div>
+<video id="gameplay-video" src="02-小遊戲遊玩.mp4" muted playsinline loop></video>
+
+<!-- 情境特效 Overlays -->
+<div id="news-overlay">
+    <div class="news-live">LIVE</div>
+    <div class="news-banner">
+        <h2 style="margin:0; font-size: 1.8rem; text-shadow: 1px 1px 2px #000;">BREAKING NEWS | 全台最大『漁電共生』示範區正式啟用</h2>
+    </div>
+</div>
+<div id="cam-overlay">
+    <div class="cam-corners"></div>
+    <div class="cam-rec"><div class="rec-dot"></div> REC 00:00:00</div>
+</div>
+<div id="doc-overlay">
+    <div class="doc-stamp">CONFIDENTIAL / 機密</div>
+    <h2 style="border-bottom: 2px solid #000; padding-bottom: 10px;">內部環境影響評估報告 - 修正版</h2>
+    <p>日期：202X年 04月 12日<br>專案：七股區水上光電擴建案</p>
+    <p>現場採樣數據指出，B區水域的重金屬含量已超過標準值 <span class="doc-redacted">████</span> 倍，導致養殖生物大量死亡。</p>
+    <p>為確保工程順利並填平潟湖，對外新聞稿請統一宣稱為：「滯洪池常態水質變化」。</p>
+</div>
+
+<div id="fade-overlay"></div>
+<div id="letterbox-top" class="letterbox"></div>
+<div id="letterbox-bottom" class="letterbox"></div>
+<div id="timer-display">00:00 / 02:30</div>
+
+<div id="subtitle-container"><div id="subtitle-text"></div></div>
+
+<div id="title-card">
+    <h1>七股餘光</h1>
+    <p>了解真相，是改變的開始。</p>
+</div>
+
+<div id="start-menu">
+    <h1 style="color:#0ff; text-shadow:0 0 20px #0ff; font-size:3.5rem; margin-bottom:10px;">七股餘光</h1>
+    <p style="color:#aaa; max-width:700px; text-align:center; line-height:1.6; margin-bottom: 40px; font-size: 1.2rem;">
+        3D 實機場景 結合 150 秒完整對白<br>
+        點擊下方按鈕開始預覽
+    </p>
+
+    <button id="start-btn">播放 2分30秒 預告片</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<script>
+    // --- Three.js 初始化 ---
+    const container = document.getElementById('game-container');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xa0b4c8);
+    scene.fog = new THREE.FogExp2(0xa0b4c8, 0.012);
+
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.shadowMap.enabled = true; 
+    container.appendChild(renderer.domElement);
+
+    // --- 材質與光影 ---
+    function createMudTexture() {
+        const cvs = document.createElement('canvas');
+        cvs.width = 512; cvs.height = 512; const ctx = cvs.getContext('2d');
+        ctx.fillStyle = '#4a4033'; ctx.fillRect(0,0,512,512); 
+        for(let i=0; i<20000; i++) {
+            ctx.fillStyle = Math.random()>0.5 ? '#3a3023' : '#222222';
+            ctx.fillRect(Math.random()*512, Math.random()*512, 3, 3);
+        }
+        const tex = new THREE.CanvasTexture(cvs);
+        tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(10, 10);
+        return tex;
+    }
+    const mudMat = new THREE.MeshStandardMaterial({ map: createMudTexture(), roughness: 0.9, metalness: 0.1 });
+    const panelMat = new THREE.MeshStandardMaterial({ color: 0x445577, roughness: 0.2, metalness: 0.8 });
+    const waterMat = new THREE.MeshStandardMaterial({ color: 0x4a6a8a, transparent: true, opacity: 0.85, roughness: 0.05, metalness: 0.9 });
+    const concreteMat = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, roughness: 0.9 });
+
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7); scene.add(ambientLight);
+    const hemiLight = new THREE.HemisphereLight(0xa0b4c8, 0x444444, 0.6); scene.add(hemiLight);
+    const dirLight = new THREE.DirectionalLight(0xffeedd, 0.9); 
+    dirLight.position.set(-50, 60, -50); dirLight.castShadow = true;
+    dirLight.shadow.camera.top = 100; dirLight.shadow.camera.bottom = -100;
+    dirLight.shadow.camera.left = -100; dirLight.shadow.camera.right = 100;
+    scene.add(dirLight);
+
+    // --- 地形與物件 ---
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(300, 300, 50, 50), mudMat);
+    ground.rotation.x = -Math.PI / 2; ground.position.y = -0.5; ground.receiveShadow = true; scene.add(ground);
+    
+    const waterGeo = new THREE.PlaneGeometry(300, 300, 60, 60);
+    const waterInitialZ = new Float32Array(waterGeo.attributes.position.count);
+    for(let i = 0; i < waterGeo.attributes.position.count; i++) waterInitialZ[i] = waterGeo.attributes.position.getZ(i);
+    const water = new THREE.Mesh(waterGeo, waterMat);
+    water.rotation.x = -Math.PI / 2; water.position.y = 0; scene.add(water);
+
+    const templeGroup = new THREE.Group();
+    const tBase = new THREE.Mesh(new THREE.BoxGeometry(16, 8, 12), new THREE.MeshStandardMaterial({color: 0xddccaa})); tBase.position.y = 4; tBase.castShadow = true;
+    const roof = new THREE.Mesh(new THREE.ConeGeometry(12, 6, 4), new THREE.MeshStandardMaterial({color: 0xaa3322, roughness: 0.7})); roof.rotation.y = Math.PI/4; roof.position.y = 11; roof.castShadow = true;
+    templeGroup.add(tBase, roof); templeGroup.position.set(-65, 0, -65); scene.add(templeGroup);
+
+    const core = new THREE.Mesh(new THREE.SphereGeometry(1.2, 16, 16), new THREE.MeshBasicMaterial({ color: 0x00ffaa })); core.position.set(0, 2, 0); scene.add(core);
+    const light = new THREE.PointLight(0x00ffaa, 2, 40); light.position.set(0, 2, 0); scene.add(light);
+
+    function createSolarArray(cx, cz, w, d) {
+        const group = new THREE.Group(); group.position.set(cx, 0, cz);
+        const cols = Math.floor(w / 7.5); const rows = Math.floor(d / 6.5);
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                if(Math.random() > 0.85) continue;
+                const px = (c - cols/2) * 7.5; const pz = (r - rows/2) * 6.5;
+                const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 2), concreteMat); pole.position.set(px, 0.5, pz); pole.castShadow = true; group.add(pole);
+                const panel = new THREE.Mesh(new THREE.BoxGeometry(4, 0.1, 2.5), panelMat); panel.position.set(px, 1.5, pz); panel.rotation.x = Math.PI/8; panel.castShadow = true; group.add(panel);
+            }
+        }
+        scene.add(group);
+    }
+    createSolarArray(-20, -20, 80, 80); createSolarArray(40, -20, 60, 80); createSolarArray(-40, 40, 80, 60);
+
+    const animatedObjects = [];
+    function createFisherman(x, z, rotY) {
+        const group = new THREE.Group();
+        const skinMat = new THREE.MeshStandardMaterial({color: 0xd2b48c}); const shirtMat = new THREE.MeshStandardMaterial({color: 0x88aacc});
+        const waderMat = new THREE.MeshStandardMaterial({color: 0x2f4f4f}); const hatMat = new THREE.MeshStandardMaterial({color: 0xddcc99, side: THREE.DoubleSide});
+        const head = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.25, 0.22), skinMat); head.position.y = 1.45;
+        const hat = new THREE.Mesh(new THREE.ConeGeometry(0.4, 0.15, 16), hatMat); hat.position.y = 1.6;
+        const body = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.35, 0.22), shirtMat); body.position.y = 1.15;
+        const waderBody = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.3, 0.25), waderMat); waderBody.position.y = 0.85;
+        const legL = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.7, 0.16), waderMat); legL.position.set(-0.11, 0.35, 0);
+        const legR = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.7, 0.16), waderMat); legR.position.set(0.11, 0.35, 0);
+        group.add(head, hat, body, waderBody, legL, legR); group.position.set(x, 0.5, z); group.rotation.y = rotY; scene.add(group);
+        animatedObjects.push({ obj: group, type: 'fisherman', baseY: 0.5 });
+    }
+    createFisherman(-15, 10, Math.PI); 
+
+    const flyingBirds = [];
+    function createFlyingBird(y) {
+        const group = new THREE.Group();
+        const bodyMat = new THREE.MeshBasicMaterial({color: 0xffffff}); 
+        const body = new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.7, 8), bodyMat); body.rotation.x = Math.PI/2;
+        const wingGeo = new THREE.PlaneGeometry(0.6, 0.25); wingGeo.translate(0.3, 0, 0); 
+        const wingL = new THREE.Mesh(wingGeo, bodyMat); wingL.rotation.x = Math.PI/2; wingL.position.set(0, 0.05, -0.1);
+        const wingR = new THREE.Mesh(wingGeo, bodyMat); wingR.rotation.x = Math.PI/2; wingR.rotation.y = Math.PI; wingR.position.set(0, 0.05, -0.1);
+        group.add(body, wingL, wingR); scene.add(group);
+        flyingBirds.push({ group, wingL, wingR, phase: Math.random()*Math.PI*2, radius: 20 + Math.random()*20, centerY: y });
+    }
+    for(let i=0; i<20; i++) createFlyingBird(10 + Math.random()*5);
+
+    // ==========================================
+    // 結合後的腳本資料 (150秒) 與 重新分配的運鏡
+    // ==========================================
+    const subtitles = [
+        { start: 0, end: 6, speaker: "旁白", text: "在這片曾被夕陽染成金色的潟湖，一場名為『轉型』的風暴，正席捲而來。" },
+        { start: 6, end: 15, speaker: "女主播", text: "台南七股頂山子段、下山子寮段及口寮段迎來全台最大『漁電共生』示範區，預計為國家帶來龐大的綠能效益。" },
+        { start: 15, end: 25, speaker: "阿明", text: "以前，七股養殖區的水是清澈的，裡面滿滿的文蛤和虱目魚……現在發展漁電共生後，不僅租金翻了快十倍，讓我們這些漁民連租都租不起。" },
+        { start: 25, end: 35, speaker: "阿明", text: "還有養殖區裡的生物，因為一些化學污染造成水質不佳而導致死亡，我們漁民因此收入銳減。" },
+        
+        // --- 新增：實機遊玩對白 (35s ~ 80s) 結合教學與議題 ---
+        { start: 35, end: 42, speaker: "阿海", text: "(看著派令) 漁電管理者…這就是我現在的工作嗎？使用 WASD 鍵，巡視這片被鋼鐵覆蓋的七股。" },
+        { start: 42, end: 50, speaker: "系統提示", text: "【教學】請時刻注意左側指標：魚群健康、發電達成、生態評估。你必須在「綠能收益」與「生態存續」間維持危險的平衡。" },
+        { start: 50, end: 58, speaker: "阿海", text: "步道上的發光點是突發事件…「候鳥迷航」？光電板的反光讓牠們找不到降落的淺灘了…" },
+        { start: 58, end: 66, speaker: "阿明", text: "(無線電) 阿海，關掉幾片面板吧，扣點發電量沒關係，給那些鳥留條活路啊！" },
+        { start: 66, end: 74, speaker: "系統提示", text: "【抉擇】每個選擇都有代價：關閉面板將面臨違約虧損；強行驅離鳥群則會造成嚴重的生態浩劫。" },
+        { start: 74, end: 80, speaker: "阿海", text: "如果所謂的「共生」，只能靠不斷妥協與犧牲來維持…那我們到底在保護什麼？" },
+        // -----------------------------------------------------
+
+        { start: 80, end: 88, speaker: "旁白", text: "當水面不再閃爍，被掩埋的，不只是底泥，還有生態的哀歌。" },
+        { start: 88, end: 98, speaker: "年輕志工", text: "可惡！不肖廠商為了擴建光電廠，偷偷把潟湖填平，剷平周遭珍貴的紅樹林作為建地，但這是我們大地之母呼吸的地方！" },
+        { start: 98, end: 105, speaker: "阿明", text: "對啦對啦～原本魚塭帶有滯洪的效果，都被這些人破壞了！" },
+        { start: 105, end: 112, speaker: "年輕志工", text: "這些魚塭附近全插滿了太陽能板，黑面琵鷺、白鷺鷥都找不到家了！" },
+        { start: 112, end: 120, speaker: "阿明", text: "這根本不是綠能轉型，這是對七股的掠奪！是光電對我們的剝削！" },
+        { start: 120, end: 128, speaker: "年輕志工", text: "我們要求總量管制！只要我們不放棄，七股的真相就一定會被看見！" },
+        { start: 128, end: 140, speaker: "旁白", text: "親自見證這片潮間帶的故事——《七股餘光》即刻體驗。" },
+        { start: 140, end: 150, speaker: "旁白", text: "了解真相，是改變的開始。請和我們一起，為七股的明天發聲。" }
+    ];
+
+    // 將原本的 90 秒運鏡拉長並重新分配到 150 秒內
+    const cameraShots = [
+        { start: 0, end: 15, camStart: [15, 4, 15], camEnd: [-5, 3, 10], look: [-65, 5, -65] }, // 廟宇遠景
+        { start: 15, end: 35, camStart: [-10, 1.5, 5], camEnd: [-30, 2, -15], look: [-40, 2, -20] }, // 漁民背影與光電板
+        { start: 35, end: 50, camStart: [-30, 1.5, 20], camEnd: [-10, 1.5, 20], look: [-20, 1, -20] }, // 實機展示片段 1
+        { start: 50, end: 65, camStart: [10, 1, -10], camEnd: [0, 1, -20], look: [0, 1, -30] }, // 實機展示片段 2
+        { start: 65, end: 80, camStart: [10, 2, -10], camEnd: [2, 2, -2], look: [0, 2, 0] }, // 實機展示片段 3
+        { start: 80, end: 98, camStart: [30, 5, 30], camEnd: [15, 5, 15], look: [15, 1, 0] }, // 史詩全景與真相核心
+        { start: 98, end: 112, camStart: [-10, 1.5, 10], camEnd: [-18, 1.5, 10], look: [-15, 1.5, 0] }, // 漁民側寫與鳥類
+        { start: 112, end: 128, camStart: [0, 3, 15], camEnd: [0, 2, 4], look: [0, 2, 0] }, // 衝突高潮運鏡
+        { start: 128, end: 155, camStart: [0, 2, 4], camEnd: [0, 2, 4], look: [0, 2, 0] } // 結尾靜止
+    ];
+
+    const subtitleText = document.getElementById('subtitle-text');
+    const timerDisplay = document.getElementById('timer-display');
+    const fadeOverlay = document.getElementById('fade-overlay');
+    const titleCard = document.getElementById('title-card');
+    
+    // 情境 UI 元素
+    const newsOverlay = document.getElementById('news-overlay');
+    const camOverlay = document.getElementById('cam-overlay');
+    const docOverlay = document.getElementById('doc-overlay');
+    const gameplayVideo = document.getElementById('gameplay-video');
+
+    let isPlaying = false;
+    let trailerTime = 0;
+    const totalTime = 150;
+    let currentSubtitleIndex = -1;
+    let currentCamStart = new THREE.Vector3(); let currentCamEnd = new THREE.Vector3(); let currentLookAt = new THREE.Vector3();
+
+    function updateSubtitle(time) {
+        let newIndex = -1;
+        for (let i = 0; i < subtitles.length; i++) {
+            if (time >= subtitles[i].start && time < subtitles[i].end) { newIndex = i; break; }
+        }
+        if (newIndex !== currentSubtitleIndex) {
+            currentSubtitleIndex = newIndex;
+            if (newIndex !== -1) {
+                const scene = subtitles[newIndex];
+                let color = "#e2e8f0"; // default 旁白
+                
+                // 新增說話者顏色辨識
+                if (scene.speaker === "阿明") color = "#fbbf24";        // 黃色 (老漁民)
+                else if (scene.speaker === "女主播") color = "#94a3b8";   // 灰色 (客觀播報)
+                else if (scene.speaker === "年輕志工") color = "#34d399"; // 綠色 (環保熱血)
+                else if (scene.speaker === "阿海") color = "#60a5fa";    // 藍色 (玩家主角/管理者)
+                else if (scene.speaker === "系統提示") color = "#f87171"; // 紅色 (冷酷的遊戲機制)
+                
+                let html = "";
+                if (scene.speaker) {
+                    html += `<span class='speaker-name' style='color:${color}; font-weight:900;'>【${scene.speaker}】</span>`;
+                }
+                
+                // 結尾標題金黃色特效
+                let textStyle = (scene.text.includes('七股餘光') || scene.text.includes('了解真相')) ? "color: #fcd34d;" : "color: #f8fafc;";
+                html += `<span style='${textStyle}'>${scene.text}</span>`;
+                
+                subtitleText.style.opacity = 0;
+                setTimeout(() => {
+                    subtitleText.innerHTML = html; subtitleText.style.display = 'inline-block'; subtitleText.style.opacity = 1;
+                }, 150);
+            } else { subtitleText.style.opacity = 0; }
+        }
+    }
+
+    document.getElementById('start-btn').addEventListener('click', () => {
+        document.getElementById('start-menu').style.display = 'none';
+        fadeOverlay.style.opacity = 0; isPlaying = true; trailerTime = 0; currentSubtitleIndex = -1;
+        core.material.color.setHex(0x00ffaa); light.color.setHex(0x00ffaa); titleCard.style.opacity = 0;
+    });
+
+    const clock = new THREE.Clock();
+
+    function animate() {
+        requestAnimationFrame(animate);
+        const delta = clock.getDelta(); const time = clock.getElapsedTime();
+
+        const positions = waterGeo.attributes.position;
+        for (let i = 0; i < positions.count; i++) {
+            const x = positions.getX(i); const y = positions.getY(i);
+            positions.setZ(i, waterInitialZ[i] + Math.sin(x*0.5+time)*0.08 + Math.cos(y*0.5+time)*0.08);
+        }
+        positions.needsUpdate = true; waterGeo.computeVertexNormals(); 
+
+        animatedObjects.forEach(anim => { anim.obj.position.y = anim.baseY + Math.sin(time * 2) * 0.015; });
+        flyingBirds.forEach(bird => {
+            bird.phase += delta * 0.8;
+            bird.wingL.rotation.z = Math.sin(time * 15) * 0.5; bird.wingR.rotation.z = -Math.sin(time * 15) * 0.5;
+            bird.group.position.x = Math.cos(bird.phase) * bird.radius; bird.group.position.z = Math.sin(bird.phase) * bird.radius;
+            bird.group.position.y = bird.centerY + Math.sin(bird.phase * 2) * 2; bird.group.rotation.y = -bird.phase + Math.PI;
+        });
+        
+        core.position.y = 2 + Math.sin(time * 2) * 0.2; light.position.y = core.position.y;
+
+        if (isPlaying) {
+            trailerTime += delta;
+            
+            let minutes = Math.floor(trailerTime / 60); let seconds = Math.floor(trailerTime % 60);
+            timerDisplay.innerText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} / 02:30`;
+
+            // ================= 新增：匹配 150 秒腳本的情境 UI =================
+            // 6-15秒：女主播新聞畫面
+            newsOverlay.style.opacity = (trailerTime >= 6 && trailerTime < 15) ? 1 : 0;
+            
+            // 35-80秒：中間的遊戲實機畫面段落 (處理影片播放)
+            const isGameplaySection = trailerTime >= 35 && trailerTime < 80;
+            camOverlay.style.opacity = isGameplaySection ? 1 : 0;
+            
+            // 影片切換邏輯
+            if (isGameplaySection && gameplayVideo.src) {
+                gameplayVideo.style.opacity = 1;
+                if (gameplayVideo.paused) gameplayVideo.play().catch(e => console.log("Video play blocked:", e));
+            } else {
+                gameplayVideo.style.opacity = 0;
+                if (!gameplayVideo.paused) gameplayVideo.pause();
+            }
+
+            // 60-68秒：在實機展示段落中間突然閃現機密文件
+            docOverlay.style.opacity = (trailerTime >= 60 && trailerTime < 68) ? 1 : 0;
+
+            // 運鏡
+            let currentShot = null;
+            for (let i = 0; i < cameraShots.length; i++) {
+                if (trailerTime >= cameraShots[i].start && trailerTime < cameraShots[i].end) { currentShot = cameraShots[i]; break; }
+            }
+            if (currentShot) {
+                const progress = (trailerTime - currentShot.start) / (currentShot.end - currentShot.start);
+                currentCamStart.fromArray(currentShot.camStart); currentCamEnd.fromArray(currentShot.camEnd);
+                camera.position.lerpVectors(currentCamStart, currentCamEnd, progress); camera.lookAt(currentLookAt.fromArray(currentShot.look));
+            }
+
+            updateSubtitle(trailerTime);
+
+            // 結尾 Fade to Black (126s 後，搭配標題出現)
+            if (trailerTime >= 126 && trailerTime < 128) {
+                fadeOverlay.style.opacity = 1; core.material.color.setHex(0xffffff); light.color.setHex(0xffffff);
+            }
+            if (trailerTime >= 128) { titleCard.style.opacity = 1; }
+
+            // 結束預告片 (150 秒)
+            if (trailerTime >= totalTime + 1) {
+                isPlaying = false; document.getElementById('start-btn').innerText = "重新播放 (REPLAY)";
+                document.getElementById('start-menu').style.display = 'flex'; titleCard.style.opacity = 0; timerDisplay.innerText = "00:00 / 02:30";
+                newsOverlay.style.opacity = 0; camOverlay.style.opacity = 0; docOverlay.style.opacity = 0;
+            }
+        }
+        renderer.render(scene, camera);
+    }
+
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+    animate();
+</script>
+</body>
+</html>
