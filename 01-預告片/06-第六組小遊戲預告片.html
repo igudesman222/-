@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>銀翼守護者:光電板之戰 - 官方預告片</title>
+    <!-- 載入 Three.js 與 Tailwind CSS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@700&family=Noto+Sans+TC:wght@300;400;700&display=swap');
+       
+        body {
+            margin: 0;
+            background: #000;
+            color: #fff;
+            font-family: 'Noto Sans TC', sans-serif;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* 影片播放層 */
+        #intro-video {
+            display: none;
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: contain; /* 維持影片完整比例不被裁切 */
+            background-color: #000; /* 剩餘空間用純黑填滿 */
+            z-index: 50;
+        }
+
+        /* 白光過場層 */
+        #white-flash {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: #ffffff;
+            z-index: 55;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1s ease-out;
+        }
+
+        /* 全螢幕文字層 (用於團隊名、結尾標語) */
+        #full-text-overlay {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 45;
+            background: transparent;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            padding: 2rem;
+        }
+
+        #full-text-content {
+            font-family: 'Noto Serif TC', serif;
+            font-size: 2.5rem;
+            line-height: 1.8;
+            font-weight: 700;
+            text-align: center;
+            color: #fff;
+            text-shadow: 0 4px 20px rgba(0,0,0,1), 0 0 10px rgba(255,200,100,0.5);
+            white-space: pre-line;
+        }
+
+        @media (min-width: 768px) {
+            #full-text-content { font-size: 3.5rem; }
+        }
+
+        #ui-layer {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 4rem 2rem;
+            z-index: 20;
+            background: linear-gradient(to top, rgba(0,0,5,0.95) 0%, rgba(0,0,0,0) 40%);
+        }
+
+        .subtitle {
+            font-size: 1.6rem;
+            line-height: 1.6;
+            text-shadow: 0 2px 10px rgba(0,0,0,1), 0 0 20px rgba(0,0,0,0.8);
+            max-width: 1000px;
+            margin: 0 auto;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @media (min-width: 768px) {
+            .subtitle { font-size: 2.2rem; }
+        }
+
+        .subtitle.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .speaker-tag {
+            font-family: 'Noto Serif TC', serif;
+            color: #fbbf24;
+            font-size: 1.2rem;
+            margin-bottom: 0.8rem;
+            display: block;
+            letter-spacing: 0.4rem;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+        }
+
+        /* 啟動畫面保持原樣 */
+        #start-overlay {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            text-align: center;
+            transition: opacity 1s ease;
+        }
+
+        .glitch {
+            font-size: 3rem;
+            font-weight: 900;
+            letter-spacing: 0.5rem;
+            color: #fff;
+            position: relative;
+            text-shadow: 0 0 20px rgba(255,255,255,0.2);
+        }
+
+        @media (min-width: 768px) {
+            .glitch { font-size: 5rem; letter-spacing: 1rem; }
+        }
+
+        .glitch::before, .glitch::after {
+            content: "銀羽守護者";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.8;
+        }
+
+        .glitch::before {
+            left: 2px;
+            text-shadow: -2px 0 #00ffff;
+            animation: glitch-anim 2s infinite linear alternate-reverse;
+        }
+
+        .glitch::after {
+            left: -2px;
+            text-shadow: -2px 0 #ff00ff;
+            animation: glitch-anim 3s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch-anim {
+            0% { clip-path: inset(20% 0 80% 0); }
+            20% { clip-path: inset(60% 0 10% 0); }
+            40% { clip-path: inset(40% 0 50% 0); }
+            60% { clip-path: inset(80% 0 5% 0); }
+            80% { clip-path: inset(10% 0 70% 0); }
+            100% { clip-path: inset(30% 0 40% 0); }
+        }
+
+        #scene-title {
+            position: absolute;
+            top: 5%;
+            left: 5%;
+            font-size: 0.8rem;
+            color: #aaa;
+            letter-spacing: 4px;
+            border-left: 2px solid #fbbf24;
+            padding-left: 10px;
+            z-index: 30;
+            text-shadow: 0 0 5px #000;
+        }
+
+        #boss-warning {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 15;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            color: #ff0000;
+            font-weight: 900;
+            opacity: 0;
+            letter-spacing: 1rem;
+            text-shadow: 0 0 40px #ff0000, 0 0 10px #fff;
+            transition: opacity 0.2s;
+        }
+
+        @media (min-width: 768px) {
+            #boss-warning { font-size: 8rem; letter-spacing: 2rem; }
+        }
+
+        #vignette {
+            position: absolute;
+            inset: 0;
+            box-shadow: inset 0 0 150px rgba(0,0,0,0.8);
+            z-index: 14;
+            pointer-events: none;
+            transition: box-shadow 0.5s;
+        }
+
+        #timer {
+            position: absolute;
+            top: 5%;
+            right: 5%;
+            font-family: monospace;
+            color: #fbbf24;
+            font-size: 1.2rem;
+            z-index: 30;
+            background: rgba(0,0,0,0.5);
+            padding: 4px 10px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- 初始啟動畫面 -->
+<div id="start-overlay" onclick="startApp()">
+    <div class="glitch mb-4 md:mb-8">銀羽守護者</div>
+    <p class="text-zinc-400 tracking-[0.3em] md:tracking-[0.5em] text-xs md:text-sm mb-8 px-4">SILVER WING : WAR OF SOLAR PANELS</p>
+    <div class="px-8 py-3 border border-zinc-600 rounded-sm hover:bg-white hover:text-black transition-all duration-500 tracking-widest text-sm cursor-pointer shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:shadow-[0_0_25px_rgba(255,255,255,0.5)]">
+        啟動播放序列 INIT SEQUENCE
+    </div>
+</div>
+
+<!-- 影片與過場特效 -->
+<video id="intro-video" src="06-第六組主視覺動畫.mp4" playsinline></video>
+<div id="white-flash"></div>
+
+<!-- 全螢幕大字體文字層 -->
+<div id="full-text-overlay">
+    <h1 id="full-text-content"></h1>
+</div>
+
+<!-- 遊戲預告片 UI -->
+<div id="scene-title">SCENE 00: INITIALIZING</div>
+<div id="timer">00:00</div>
+<div id="boss-warning">WARNING</div>
+<div id="vignette"></div>
+
+<div id="ui-layer" style="display: none;">
+    <div id="subtitle-container" class="subtitle">
+        <span id="speaker" class="speaker-tag">系統</span>
+        <p id="content">載入中...</p>
+    </div>
+</div>
+
+<!-- 3D 畫布 -->
+<div id="canvas-container" class="w-full h-screen opacity-0 transition-opacity duration-1000"></div>
+
+<script>
+// --- 時間軸與台詞設定 (完全依據 Word 檔指令) ---
+const scripts = [
+    // 【第一大段：議題交代爭議與故事背景】
+    { start: 14, end: 24, speaker: "農民1", text: "「大家都在說環保、說綠能，說這叫『共生』。但你有記得這片地原本的樣子嗎？」", scene: "第一段：議題交代爭議與故事背景", focus: "farmer1_sigh" },
+    { start: 25, end: 35, speaker: "農民2", text: "「以前這時候，水鳥多到數不清。現在板子蓋下去後，就很少看到他們的出現了。」", scene: "第一段：議題交代爭議與故事背景", focus: "farmer2_sad" },
+    { start: 36, end: 46, speaker: "農民1", text: "「魚塭被曬得太熱，連魚都養不活。這哪是共生？這根本是把我們逼走，把這塊地的命給斷了。」", scene: "第一段：議題交代爭議與故事背景", focus: "farmer1_angry" },
+    { start: 47, end: 57, speaker: "企業家", text: "「老先生，這是時代的必然。效率、碳權、乾淨能源，這才是未來的趨勢。至於那些鳥？我們部署了『雷虎自動驅趕系統』，保證發電效率不受任何生物干擾。」", scene: "第一段：議題交代爭議與故事背景", focus: "ceo" },
+    { start: 58, end: 69, speaker: "旁白", text: "「當政策成為枷鎖，當科技切斷了自然的退路……沈默的土地，終於發出了最後一聲鳴叫。」", scene: "第一段：議題交代爭議與故事背景", focus: "wide" },
+
+    // 【第二大段：介紹遊戲玩法與敘事推進】
+    { start: 70, end: 80, speaker: "農民2", text: "「看哪！那隻黑面琵鷺在做什麼？」", scene: "第二段：介紹遊戲玩法與敘事推進", focus: "farmer2_look" },
+    { start: 81, end: 92, speaker: "農民1", text: "「牠是在為了自己的家園奮鬥嗎？」", scene: "第二段：介紹遊戲玩法與敘事推進", focus: "player_reveal" },
+    { start: 93, end: 104, speaker: "旁白", text: "「光電板使黑面琵鷺逐漸受到生命影響，身為黑面琵鷺的一員，你只能反抗。」", scene: "第二段：介紹遊戲玩法與敘事推進", focus: "player_fight" },
+    { start: 105, end: 115, speaker: "企業家", text: "「那個生物是怎麼回事？他一直影響我們蓋光電板，我們必須將他擊落！這光電板一定要蓋成功」", scene: "第二段：介紹遊戲玩法與敘事推進", focus: "ceo_mad" },
+    { start: 116, end: 127, speaker: "銀翼", text: "「如果綠能是要我們卑躬屈膝，那我就讓你們看見生物的野蠻驕傲！」", scene: "第二段：介紹遊戲玩法與敘事推進", focus: "player_heroic" },
+
+    // 【第三大段：議題喚醒與遊戲宣傳語】
+    { start: 128, end: 138, speaker: "農民", text: "「那是什麼東西……老天爺，它把天都遮住了……」", scene: "第三段：議題喚醒與遊戲宣傳語", focus: "farmers_panic" },
+    { start: 139, end: 149, speaker: "企業家", text: "「讓這場鬧劇結束吧。啟動綠能霸權『雷虎首領』，讓這隻傻鳥知道，誰才是這片土地的新主人！」", scene: "第三段：議題喚醒與遊戲宣傳語", focus: "ceo_laugh" },
+    { start: 150, end: 161, speaker: "農民們", text: "「加油啊！千萬不要輸給萬惡的資本，展現出你身為七股住民的驕傲！」", scene: "第三段：議題喚醒與遊戲宣傳語", focus: "boss_reveal" },
+    { start: 162, end: 170, speaker: "旁白", text: "「面對鋼鐵的強權，銀羽的守護是否能迎來黎明？」", scene: "第三段：議題喚醒與遊戲宣傳語", focus: "standoff" }
+];
+
+let scene, camera, renderer;
+let player, leftWing, rightWing, birdBody;
+let farmer1, farmer2, ceoModel, bossDrone, bossRotors = [];
+let sunMesh, sunLight, ambientLight;
+let drones = [];
+let slashes = [];
+let explosions = [];
+let clock = new THREE.Clock();
+let isRunning = false;
+let lastAttackTime = 0;
+let timeOffset = 0; 
+
+// 狀態控制標記
+let videoHidden = false;
+let isFrozen = false; 
+
+// 粒子特效與環境物件
+let starParticles;
+let waterPlane;
+let panelGroup;
+
+function initThree() {
+    scene = new THREE.Scene();
+    // 夕陽斜照的暖色調背景與霧氣 (調亮背景色，並大幅降低霧氣濃度)
+    scene.background = new THREE.Color(0x5a2d1a);
+    scene.fog = new THREE.FogExp2(0x5a2d1a, 0.0006);
+
+    camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 15000);
+    
+    renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); 
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+    // 燈光設定 (夕陽氛圍 - 大幅增強環境光亮度以照亮暗部)
+    ambientLight = new THREE.AmbientLight(0x7a4530, 2.0);
+    scene.add(ambientLight);
+
+    sunLight = new THREE.DirectionalLight(0xffddaa, 2.0);
+    sunLight.position.set(0, 200, -3000); // 太陽在正前方極遠處
+    sunLight.castShadow = true;
+    sunLight.shadow.camera.left = -800;
+    sunLight.shadow.camera.right = 800;
+    sunLight.shadow.camera.top = 800;
+    sunLight.shadow.camera.bottom = -800;
+    sunLight.shadow.camera.far = 6000;
+    scene.add(sunLight);
+
+    const rimLight = new THREE.DirectionalLight(0x7777ff, 0.8); // 增強背面冷色補光
+    rimLight.position.set(0, 500, 1000);
+    scene.add(rimLight);
+
+    buildEnvironment();
+    buildCharacters();
+    buildPlayer();
+    buildBoss();
+
+    camera.position.set(0, 50, 300);
+}
+
+function buildEnvironment() {
+    // 1. 背景夕陽球體
+    const sunGeo = new THREE.SphereGeometry(300, 32, 32);
+    const sunMat = new THREE.MeshBasicMaterial({ color: 0xff6600, fog: false });
+    sunMesh = new THREE.Mesh(sunGeo, sunMat);
+    sunMesh.position.set(0, 250, -4500);
+    scene.add(sunMesh);
+
+    // 2. 魚塭水面 (調亮水面顏色，讓光電板剪影更清楚)
+    const waterGeo = new THREE.PlaneGeometry(8000, 8000);
+    const waterMat = new THREE.MeshPhongMaterial({ 
+        color: 0x3a2015, 
+        specular: 0xffaa33, 
+        shininess: 80,
+        transparent: true,
+        opacity: 0.95
+    });
+    waterPlane = new THREE.Mesh(waterGeo, waterMat);
+    waterPlane.rotation.x = -Math.PI / 2;
+    waterPlane.position.y = -5;
+    waterPlane.receiveShadow = true;
+    scene.add(waterPlane);
+
+    // 3. 無盡的光電板 (依據夕陽斜照圖)
+    panelGroup = new THREE.Group();
+    const panelSizeX = 40;
+    const panelSizeZ = 60;
+    
+    // 調亮光電板的材質，加上偏藍的底色與更高的金屬反光感
+    const panelGeo = new THREE.BoxGeometry(panelSizeX - 4, 1, panelSizeZ - 4);
+    const panelMat = new THREE.MeshStandardMaterial({ 
+        color: 0x1b2845, 
+        roughness: 0.1, 
+        metalness: 0.9,
+        emissive: 0x051020,
+        emissiveIntensity: 0.4
+    });
+    
+    // 調亮支架顏色為銀灰色，使其在水面上更明顯
+    const supportGeo = new THREE.CylinderGeometry(0.5, 0.5, 10);
+    const supportMat = new THREE.MeshStandardMaterial({color: 0xaaaaaa, metalness: 0.5});
+
+    for(let x = -20; x < 20; x++) {
+        for(let z = -30; z < 20; z++) {
+            const posZ = z * panelSizeZ;
+            // 避開堤岸所在的區域 (z 大約在 20 ~ 180 之間)，以免穿模
+            if(posZ > 20 && posZ < 180) continue; 
+            
+            if(Math.random() > 0.95) continue; 
+            const pGroup = new THREE.Group();
+            
+            const panel = new THREE.Mesh(panelGeo, panelMat);
+            panel.position.y = 8;
+            panel.rotation.x = 0.25; 
+            panel.castShadow = true;
+            panel.receiveShadow = true;
+
+            const support1 = new THREE.Mesh(supportGeo, supportMat);
+            support1.position.set(-15, 4, -20);
+            const support2 = new THREE.Mesh(supportGeo, supportMat);
+            support2.position.set(15, 4, -20);
+            const support3 = new THREE.Mesh(supportGeo, supportMat);
+            support3.position.set(0, 4, 20);
+            support3.scale.y = 0.5;
+            support3.position.y = 2;
+
+            pGroup.add(panel, support1, support2, support3);
+            pGroup.position.set(x * panelSizeX, 0, posZ);
+            pGroup.position.y += (Math.random() - 0.5) * 2;
+            
+            panelGroup.add(pGroup);
+        }
+    }
+    scene.add(panelGroup);
+
+    // 4. 建立農民與企業家站立的泥土堤岸
+    const landGeo = new THREE.BoxGeometry(500, 20, 120);
+    const landMat = new THREE.MeshStandardMaterial({
+        color: 0x3d2b1f, // 深泥土色
+        roughness: 1.0,
+        metalness: 0.05
+    });
+    const landMesh = new THREE.Mesh(landGeo, landMat);
+    // 水面在 y=-5，把堤岸放在這裡，讓它的頂部落在 y=5
+    landMesh.position.set(0, -5, 100); 
+    landMesh.receiveShadow = true;
+    landMesh.castShadow = true;
+    scene.add(landMesh);
+}
+
+function buildCharacters() {
+    farmer1 = createHumanoid(0x6b4423, 0x3d2b1f, true);
+    farmer1.position.set(-60, 5, 100); // 高度從 0 調整至 5
+    farmer1.rotation.y = 0.3;
+    scene.add(farmer1);
+
+    farmer2 = createHumanoid(0x2d5a27, 0x1a3314, false);
+    farmer2.position.set(-35, 5, 120); // 高度從 0 調整至 5
+    farmer2.rotation.y = -0.2;
+    scene.add(farmer2);
+
+    ceoModel = createHumanoid(0x1a1a2e, 0x0f0f1c, false);
+    ceoModel.position.set(50, 5, 80); // 高度從 0 調整至 5
+    ceoModel.rotation.y = Math.PI - 0.2;
+    const badge = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), new THREE.MeshBasicMaterial({color: 0xff0000}));
+    badge.position.set(3, 22, 3.5);
+    ceoModel.add(badge);
+    scene.add(ceoModel);
+}
+
+function createHumanoid(shirtColor, pantsColor, hasHat) {
+    const group = new THREE.Group();
+    const head = new THREE.Mesh(new THREE.BoxGeometry(7, 7, 7), new THREE.MeshPhongMaterial({color: 0xddaa77}));
+    head.position.y = 30;
+    head.castShadow = true;
+    
+    if(hasHat) {
+        const hat = new THREE.Mesh(new THREE.ConeGeometry(9, 3, 16), new THREE.MeshPhongMaterial({color: 0xc2a672}));
+        hat.position.y = 34.5;
+        hat.castShadow = true;
+        group.add(hat);
+    }
+
+    const torso = new THREE.Mesh(new THREE.BoxGeometry(12, 16, 7), new THREE.MeshPhongMaterial({color: shirtColor}));
+    torso.position.y = 18;
+    torso.castShadow = true;
+    
+    const legs = new THREE.Mesh(new THREE.BoxGeometry(10, 12, 6), new THREE.MeshPhongMaterial({color: pantsColor}));
+    legs.position.y = 6;
+    legs.castShadow = true;
+    
+    group.add(head, torso, legs);
+    return group;
+}
+
+function buildPlayer() {
+    player = new THREE.Group();
+    
+    const bodyGeo = new THREE.SphereGeometry(6, 32, 16);
+    bodyGeo.scale(1, 0.7, 2.2); 
+    const bodyMat = new THREE.MeshPhongMaterial({
+        color: 0xffffff, 
+        shininess: 30,
+        emissive: 0x222222 
+    });
+    birdBody = new THREE.Mesh(bodyGeo, bodyMat);
+    birdBody.castShadow = true;
+
+    const headGeo = new THREE.SphereGeometry(3.5, 16, 16);
+    const headMesh = new THREE.Mesh(headGeo, bodyMat);
+    headMesh.position.set(0, 4, 10);
+
+    const faceGeo = new THREE.CylinderGeometry(2, 2.5, 3, 16);
+    faceGeo.rotateX(Math.PI / 2);
+    const beakMat = new THREE.MeshPhongMaterial({color: 0x111111, roughness: 0.8});
+    const faceMesh = new THREE.Mesh(faceGeo, beakMat);
+    faceMesh.position.set(0, 4, 12.5);
+
+    const beakGeo = new THREE.BoxGeometry(1.5, 0.4, 12);
+    const beakMesh = new THREE.Mesh(beakGeo, beakMat);
+    beakMesh.position.set(0, 3.5, 18);
+    
+    const spoonGeo = new THREE.CylinderGeometry(1.5, 1.5, 0.4, 16);
+    spoonGeo.scale(1, 1, 1.5);
+    const spoonMesh = new THREE.Mesh(spoonGeo, beakMat);
+    spoonMesh.position.set(0, 3.5, 24);
+
+    const wingGeo = new THREE.BoxGeometry(28, 0.5, 14);
+    const wingMat = new THREE.MeshPhongMaterial({color: 0xffffff, side: THREE.DoubleSide});
+    
+    leftWing = new THREE.Group();
+    const lWingMesh = new THREE.Mesh(wingGeo, wingMat);
+    lWingMesh.position.set(-14, 0, 0); 
+    lWingMesh.castShadow = true;
+    leftWing.add(lWingMesh);
+    leftWing.position.set(-5, 2, 0);
+    
+    rightWing = new THREE.Group();
+    const rWingMesh = new THREE.Mesh(wingGeo, wingMat);
+    rWingMesh.position.set(14, 0, 0);
+    rWingMesh.castShadow = true;
+    rightWing.add(rWingMesh);
+    rightWing.position.set(5, 2, 0);
+
+    const tailGeo = new THREE.BoxGeometry(8, 0.5, 10);
+    const tailMesh = new THREE.Mesh(tailGeo, wingMat);
+    tailMesh.position.set(0, 1, -12);
+
+    player.add(birdBody, headMesh, faceMesh, beakMesh, spoonMesh, leftWing, rightWing, tailMesh);
+    
+    player.position.set(0, 120, 300);
+    player.rotation.y = Math.PI; 
+    player.visible = false;
+    scene.add(player);
+}
+
+function buildBoss() {
+    bossDrone = new THREE.Group();
+    
+    const bMainGeo = new THREE.BoxGeometry(450, 150, 300);
+    const bMainMat = new THREE.MeshStandardMaterial({
+        color: 0x1a1a1a, 
+        metalness: 0.9, 
+        roughness: 0.4
+    });
+    const bMainBody = new THREE.Mesh(bMainGeo, bMainMat);
+    bMainBody.castShadow = true;
+
+    const bEyeGeo = new THREE.SphereGeometry(50, 32, 32);
+    const bEyeMat = new THREE.MeshBasicMaterial({color: 0xff0000});
+    const bEye = new THREE.Mesh(bEyeGeo, bEyeMat);
+    bEye.position.set(0, 0, 150);
+    bEye.name = "eye";
+
+    const glowGeo = new THREE.PlaneGeometry(250, 250);
+    const glowMat = new THREE.MeshBasicMaterial({
+        color: 0xff0000, 
+        transparent: true, 
+        opacity: 0.6,
+        blending: THREE.AdditiveBlending,
+        map: createRadialGradient()
+    });
+    const glowMesh = new THREE.Mesh(glowGeo, glowMat);
+    glowMesh.position.set(0, 0, 160);
+    glowMesh.name = "eyeGlow";
+
+    const rotorGeo = new THREE.CylinderGeometry(120, 120, 10, 32);
+    const rotorMat = new THREE.MeshStandardMaterial({
+        color: 0x050505, 
+        metalness: 0.5,
+        transparent: true, 
+        opacity: 0.8
+    });
+    const positions = [
+        [-280, 50, -200], [280, 50, -200], 
+        [-280, 50, 200], [280, 50, 200]
+    ];
+    
+    positions.forEach((pos) => {
+        const rGroup = new THREE.Group();
+        const hub = new THREE.Mesh(new THREE.CylinderGeometry(20, 20, 30), bMainMat);
+        rGroup.add(hub);
+        const r = new THREE.Mesh(rotorGeo, rotorMat);
+        bossRotors.push(r);
+        rGroup.add(r);
+        rGroup.position.set(...pos);
+        bossDrone.add(rGroup);
+    });
+
+    bossDrone.add(bMainBody, bEye, glowMesh);
+    bossDrone.position.set(0, -500, -3500); // 藏在海平面下，隨劇情升起擋住夕陽
+    bossDrone.visible = false;
+    scene.add(bossDrone);
+}
+
+function createRadialGradient() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 128;
+    canvas.height = 128;
+    const ctx = canvas.getContext('2d');
+    const gradient = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+    gradient.addColorStop(0, 'rgba(255,255,255,1)');
+    gradient.addColorStop(0.2, 'rgba(255,0,0,0.8)');
+    gradient.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 128, 128);
+    const texture = new THREE.CanvasTexture(canvas);
+    return texture;
+}
+
+function createSurroundSlash() {
+    const slashGeo = new THREE.TorusGeometry(80, 3, 8, 64);
+    const slashMat = new THREE.MeshBasicMaterial({ 
+        color: 0x00ffff, 
+        transparent: true, 
+        opacity: 1.0,
+        blending: THREE.AdditiveBlending
+    });
+    const slash = new THREE.Mesh(slashGeo, slashMat);
+    slash.position.copy(player.position);
+    slash.rotation.x = Math.PI / 2;
+    slash.userData = { life: 20, maxLife: 20 };
+    slashes.push(slash);
+    scene.add(slash);
+
+    drones.forEach((d) => {
+        if(!d.userData.dead && slash.position.distanceTo(d.position) < 150) {
+            createExplosion(d.position);
+            d.userData.dead = true;
+            // 修正：無人機是一個 THREE.Group，我們需要遍歷子元件來改變顏色
+            d.children.forEach(child => {
+                if (child.isMesh && child.material) {
+                    child.material.color.setHex(0x111111);
+                }
+            });
+        }
+    });
+}
+
+function createExplosion(pos) {
+    const group = new THREE.Group();
+    const particleGeo = new THREE.BoxGeometry(4, 4, 4);
+    const particleMat = new THREE.MeshBasicMaterial({ color: 0xffaa00 });
+    
+    for(let i = 0; i < 30; i++) {
+        const p = new THREE.Mesh(particleGeo, particleMat);
+        const velocity = new THREE.Vector3(
+            (Math.random()-0.5)*25, 
+            (Math.random()-0.5)*25, 
+            (Math.random()-0.5)*25
+        );
+        p.userData = { velocity: velocity, rotationSpeed: new THREE.Vector3(Math.random(), Math.random(), Math.random()) };
+        group.add(p);
+    }
+
+    const flashGeo = new THREE.SphereGeometry(20, 16, 16);
+    const flashMat = new THREE.MeshBasicMaterial({color: 0xff5500, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending});
+    const flash = new THREE.Mesh(flashGeo, flashMat);
+    flash.name = "flash";
+    group.add(flash);
+
+    group.position.copy(pos);
+    group.userData = { life: 40, maxLife: 40 };
+    explosions.push(group);
+    scene.add(group);
+}
+
+function createDrone() {
+    const dGroup = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.BoxGeometry(15, 5, 15), new THREE.MeshPhongMaterial({ color: 0x222222, shininess: 80 }));
+    const eye = new THREE.Mesh(new THREE.BoxGeometry(5, 3, 3), new THREE.MeshBasicMaterial({color: 0xff0000}));
+    eye.position.set(0, 0, 7.5);
+    
+    dGroup.add(body, eye);
+    dGroup.position.set(
+        Math.random() * 1600 - 800, 
+        80 + Math.random() * 200, 
+        player.position.z - 2000 - Math.random() * 500
+    );
+    
+    dGroup.userData = { dead: false, driftX: (Math.random()-0.5)*3, driftY: (Math.random()-0.5)*3 };
+    drones.push(dGroup);
+    scene.add(dGroup);
+}
+
+function update() {
+    if (!isRunning) return;
+    const elapsed = clock.getElapsedTime() + timeOffset;
+
+    // --- 0:00 - 0:08 影片播放階段 ---
+    if (elapsed < 8) {
+        document.getElementById('intro-video').style.display = 'block';
+        requestAnimationFrame(update); // <--- 重要修復：必須持續呼叫以維持時間軸運作
+        return; 
+    }
+
+    // --- 0:08 閃白光過場 ---
+    if (elapsed >= 8 && !videoHidden) {
+        videoHidden = true;
+        const videoEl = document.getElementById('intro-video');
+        videoEl.style.display = 'none';
+        videoEl.pause();
+
+        const flash = document.getElementById('white-flash');
+        flash.style.display = 'block';
+        flash.style.opacity = '1';
+        setTimeout(() => {
+            document.getElementById('canvas-container').style.opacity = '1';
+            flash.style.opacity = '0';
+            setTimeout(() => flash.style.display = 'none', 1000);
+        }, 100);
+    }
+
+    // 如果畫面被碰撞凍結 (1:49 定格)，停止物理更新，直接跳出
+    if (isFrozen) {
+        updateUI(elapsed); // 修復：畫面凍結時，仍要持續更新字幕，讓旁白正常顯示與淡出
+        handleFullTexts(elapsed);
+        renderer.render(scene, camera);
+        
+        // 【新增】：當時間超過 182 秒（結尾宣傳字幕播放完畢並淡出後），回到主畫面
+        if (elapsed > 182) {
+            resetToMainMenu();
+            return;
+        }
+
+        requestAnimationFrame(update);
+        return;
+    }
+
+    // --- 3D 環境與全螢幕文字 UI 更新 ---
+    updateUI(elapsed);
+    handleFullTexts(elapsed);
+
+    const mins = Math.floor(elapsed / 60).toString().padStart(2, '0');
+    const secs = Math.floor(elapsed % 60).toString().padStart(2, '0');
+    document.getElementById('timer').innerText = `T+ ${mins}:${secs}`;
+
+    waterPlane.position.y = -5 + Math.sin(elapsed * 2) * 0.5;
+
+    // --- 第零段：開場團隊介紹 (00:08 - 00:13) ---
+    if (elapsed >= 8 && elapsed < 14) {
+        // 給予一個緩慢的全景推進，避免畫面看起來像卡住
+        camera.position.lerp(new THREE.Vector3(0, 80, 250), 0.01);
+        camera.lookAt(0, 20, 0);
+    }
+    // --- 第一段：議題交代 (00:14 - 01:09) ---
+    else if (elapsed >= 14 && elapsed < 70) {
+        document.getElementById('ui-layer').style.display = 'flex';
+        const script = scripts.find(s => elapsed >= s.start && elapsed <= s.end);
+        
+        // 呼吸動畫 (加上堤岸的基礎高度 5)
+        const breathe = Math.sin(elapsed * 3) * 0.5;
+        farmer1.position.y = 5 + breathe;
+        farmer2.position.y = 5 - breathe;
+        ceoModel.position.y = 5 + breathe;
+
+        if(script) {
+            if(script.focus === "farmer1_sigh" || script.focus === "farmer1_angry") {
+                camera.position.lerp(new THREE.Vector3(-100, 25, 180), 0.02);
+                camera.lookAt(farmer1.position.x, 25, farmer1.position.z);
+                if(script.focus === "farmer1_angry") farmer1.rotation.z = Math.sin(elapsed * 20) * 0.05; // 氣到發抖
+            } else if (script.focus === "farmer2_sad") {
+                camera.position.lerp(new THREE.Vector3(-70, 30, 190), 0.02);
+                camera.lookAt(farmer2.position.x, 25, farmer2.position.z);
+            } else if (script.focus === "ceo") {
+                camera.position.lerp(new THREE.Vector3(70, 15, 140), 0.02);
+                camera.lookAt(ceoModel.position.x, 30, ceoModel.position.z);
+            } else {
+                camera.position.lerp(new THREE.Vector3(0, 150, 400), 0.01);
+                camera.lookAt(0, 0, 0);
+            }
+        }
+    } 
+    // --- 第二段：銀翼反抗 (01:10 - 02:07) ---
+    else if (elapsed >= 70 && elapsed < 128) {
+        player.visible = true;
+        farmer1.visible = false;
+        farmer2.visible = false;
+        ceoModel.visible = false;
+
+        const flapSpeed = 15;
+        leftWing.rotation.z = Math.sin(elapsed * flapSpeed) * 0.8;
+        rightWing.rotation.z = -Math.sin(elapsed * flapSpeed) * 0.8;
+        birdBody.position.y = Math.sin(elapsed * flapSpeed * 2) * 1.5;
+
+        // 銀翼飛行移動
+        let speedZ = 6.0;
+        
+        // 1:56 (116s) - 中二英雄定點與迴旋姿勢
+        if (elapsed > 116 && elapsed <= 127) {
+            speedZ = 1.0; // 減速放慢
+            player.rotation.z += 0.1; // 空中迴旋 Barrel Roll
+            if (elapsed - lastAttackTime > 0.5) {
+                createSurroundSlash(); // 瘋狂發射特效
+                lastAttackTime = elapsed;
+            }
+        } else {
+            // 正常戰鬥
+            player.position.x = Math.sin(elapsed * 0.8) * 300;
+            player.rotation.z = Math.sin(elapsed * 0.8) * 0.3; // 機動傾角
+            player.rotation.x = Math.cos(elapsed * 1.2) * 0.1;
+            
+            if(elapsed - lastAttackTime > 1.2) {
+                createSurroundSlash();
+                lastAttackTime = elapsed;
+            }
+        }
+
+        player.position.y = 150 + Math.cos(elapsed * 1.2) * 60;
+        player.position.z -= speedZ; 
+
+        if(Math.floor(elapsed * 10) % 4 === 0 && drones.length < 100) createDrone();
+
+        const script = scripts.find(s => elapsed >= s.start && elapsed <= s.end);
+        if (script && script.focus === "ceo_mad") {
+            ceoModel.visible = true;
+            camera.position.lerp(new THREE.Vector3(ceoModel.position.x + 30, 20, ceoModel.position.z + 50), 0.1);
+            camera.lookAt(ceoModel.position.x, 30, ceoModel.position.z);
+        } else {
+            let targetCamX = player.position.x * 0.5;
+            let targetCamY = player.position.y + 80;
+            let targetCamZ = player.position.z + 250;
+            camera.position.lerp(new THREE.Vector3(targetCamX, targetCamY, targetCamZ), 0.05);
+            camera.lookAt(player.position.x, player.position.y, player.position.z - 200);
+        }
+    } 
+    // --- 第三段：Boss 對峙與碰撞 (02:08 - 02:50) ---
+    else if (elapsed >= 128 && elapsed < 170) {
+        player.rotation.z = 0; // 回復平飛
+        bossDrone.visible = true;
+
+        const script = scripts.find(s => elapsed >= s.start && elapsed <= s.end);
+
+        // 128-138 (2:08): 天空變暗，帶到農民
+        if (elapsed < 139) {
+            sunLight.intensity = Math.max(0.2, sunLight.intensity - 0.02); // 光源變暗
+            ambientLight.intensity = 0.2;
+            farmer1.visible = true;
+            farmer2.visible = true;
+            camera.position.lerp(new THREE.Vector3(-45, 10, 150), 0.05); // 由下往上看
+            camera.lookAt(-45, 200, 0); // 仰望天空
+        } 
+        // 139-149 (2:19): 企業家狂笑
+        else if (elapsed < 150) {
+            ceoModel.visible = true;
+            ceoModel.rotation.x = -0.2; // 狂妄仰頭
+            camera.position.lerp(new THREE.Vector3(50, 15, 120), 0.05);
+            camera.lookAt(ceoModel.position.x, 40, ceoModel.position.z);
+        } 
+        // 150-161 (2:30): Boss 擋住夕陽
+        else if (elapsed < 162) {
+            farmer1.visible = false;
+            farmer2.visible = false;
+            ceoModel.visible = false;
+            
+            // Boss 緩緩升起，擋在太陽正前方
+            bossDrone.position.y = THREE.MathUtils.lerp(bossDrone.position.y, 250, 0.02);
+            bossDrone.position.z = -3500;
+            
+            camera.position.lerp(new THREE.Vector3(0, 100, player.position.z + 200), 0.02);
+            camera.lookAt(bossDrone.position);
+            
+            const warning = document.getElementById('boss-warning');
+            warning.style.opacity = Math.sin(elapsed * 8) > 0 ? 0.8 : 0.1;
+        } 
+        // 162-170 (2:42): 雙方對峙與衝撞
+        else {
+            document.getElementById('boss-warning').style.opacity = 0;
+            
+            // 【修復核心】：電影級剪輯 (Cinematic Cut)
+            // 在 162 秒時，強制將雙方拉近到適合拍攝「特寫」的距離
+            if (elapsed >= 162 && elapsed < 162.2) {
+                player.position.set(0, 250, bossDrone.position.z + 1200);
+                // 鏡頭切換到銀翼側後方，準備拍攝對峙特寫
+                camera.position.set(150, 270, player.position.z + 100); 
+            }
+
+            // 162 ~ 167.5秒：對峙特寫
+            if (elapsed < 167.5) { 
+                // 鏡頭緩慢橫移，營造大戰前的緊繃感
+                const standoffCam = new THREE.Vector3(250, 260, player.position.z + 50);
+                camera.position.lerp(standoffCam, 0.01);
+                
+                // 焦點精準鎖定在 Boss 身上，前景會帶到銀翼的側臉與翅膀
+                camera.lookAt(bossDrone.position.x, bossDrone.position.y, bossDrone.position.z);
+            } 
+            // 167.5 秒後：雙方高速衝撞
+            else {
+                player.position.z -= 100;
+                bossDrone.position.z += 60; // Boss 體型大，移動稍微沉重一點
+                
+                // 衝撞時：鏡頭快速切換到雙方正中央的側邊，捕捉衝擊瞬間
+                const centerZ = (player.position.z + bossDrone.position.z) / 2;
+                const impactCam = new THREE.Vector3(450, 250, centerZ);
+                camera.position.lerp(impactCam, 0.3);
+                camera.lookAt(0, 250, centerZ);
+
+                // 相撞瞬間定格 (當 Boss 前緣與銀翼接觸時)
+                if (player.position.z <= bossDrone.position.z + 250) {
+                    isFrozen = true; // 凍結畫面
+                    
+                    const canvasCont = document.getElementById('canvas-container');
+                    canvasCont.style.transition = "filter 2s";
+                    canvasCont.style.filter = "brightness(0) grayscale(1)"; 
+                    
+                    document.getElementById('timer').style.display = 'none';
+                    document.getElementById('scene-title').style.display = 'none';
+                }
+            }
+
+            // Boss 動態維持
+            bossRotors.forEach((r, i) => r.rotation.y += (i % 2 === 0 ? 0.5 : -0.5));
+            const eye = bossDrone.getObjectByName("eye");
+            const eyeGlow = bossDrone.getObjectByName("eyeGlow");
+            const pulse = 1 + Math.sin(elapsed * 10) * 0.2;
+            eye.scale.setScalar(pulse);
+            eyeGlow.scale.setScalar(pulse * 1.5);
+        }
+    } // <-- 修復語法錯誤：補上這一個遺漏的右括號
+
+    // 處理斬擊特效與爆炸物理
+    slashes.forEach((s, i) => {
+        s.scale.multiplyScalar(1.08); 
+        s.userData.life--;
+        s.material.opacity = (s.userData.life / s.userData.maxLife);
+        if(s.userData.life <= 0) { 
+            scene.remove(s); 
+            s.geometry.dispose();
+            s.material.dispose();
+            slashes.splice(i, 1); 
+        }
+    });
+
+    drones.forEach((d, i) => {
+        if(!d.userData.dead) {
+            d.position.z += 12; 
+            d.position.x += d.userData.driftX;
+            d.position.y += d.userData.driftY;
+            d.rotation.z = Math.sin(elapsed * 5 + i) * 0.2;
+        } else {
+            d.position.y -= 5;
+            d.rotation.x += 0.2;
+            d.rotation.z += 0.1;
+        }
+        if(d.position.z > player.position.z + 800 || d.position.y < -50) {
+            scene.remove(d); 
+            drones.splice(i, 1);
+        }
+    });
+
+    explosions.forEach((ex, i) => {
+        ex.children.forEach(p => {
+            if(p.name !== "flash") {
+                p.position.add(p.userData.velocity);
+                p.rotation.x += p.userData.rotationSpeed.x;
+                p.rotation.y += p.userData.rotationSpeed.y;
+                p.userData.velocity.y -= 0.5; 
+            }
+        });
+        const flash = ex.getObjectByName("flash");
+        if(flash) flash.scale.multiplyScalar(0.8); 
+        ex.userData.life--;
+        if(ex.userData.life <= 0) { 
+            scene.remove(ex); 
+            explosions.splice(i, 1); 
+        }
+    });
+
+    renderer.render(scene, camera);
+    requestAnimationFrame(update);
+}
+
+function handleFullTexts(elapsed) {
+    const fullText = document.getElementById('full-text-content');
+    const fullTextContainer = document.getElementById('full-text-overlay');
+
+    // 0:09 - 0:13 團隊介紹
+    if (elapsed >= 9 && elapsed <= 13) {
+        fullText.innerText = "高雄市立瑞祥高中\n海洋探險隊子家、威辰、楚峻";
+        fullTextContainer.style.opacity = '1';
+    } 
+    // 2:50 - 2:55 核心標語
+    else if (elapsed >= 170 && elapsed < 175) {
+        fullText.innerText = "魚電共生──這象徵七股未來的圖騰，\n應建築在大家的福祉上。";
+        fullTextContainer.style.opacity = '1';
+    } 
+    // 2:55 - 3:00 遊戲宣傳標語
+    else if (elapsed >= 175 && elapsed <= 180) {
+        fullText.innerText = "七股的未來，應你我來守護！\n一起加入銀翼守護者吧！\n5月26日不會公測！";
+        fullTextContainer.style.opacity = '1';
+    } 
+    else {
+        fullTextContainer.style.opacity = '0';
+    }
+}
+
+function updateUI(t) {
+    const script = scripts.find(s => t >= s.start && t <= s.end);
+    const container = document.getElementById('subtitle-container');
+    
+    if (script) {
+        document.getElementById('speaker').innerText = script.speaker;
+        document.getElementById('content').innerText = script.text;
+        document.getElementById('scene-title').innerText = script.scene.toUpperCase();
+        container.classList.add('active');
+        return script;
+    } else {
+        container.classList.remove('active');
+        return null;
+    }
+}
+
+// 【新增】：重置所有設定，回到起始主畫面的函式
+function resetToMainMenu() {
+    isRunning = false;
+    isFrozen = false;
+    videoHidden = false;
+    timeOffset = 0;
+
+    // 停止並重置開場影片
+    const videoEl = document.getElementById('intro-video');
+    videoEl.pause();
+    videoEl.currentTime = 0;
+    videoEl.style.display = 'none';
+
+    // 移除舊的 3D 畫布與定格時的濾鏡特效
+    const canvasCont = document.getElementById('canvas-container');
+    canvasCont.innerHTML = ''; 
+    canvasCont.style.transition = "none"; 
+    canvasCont.style.filter = "none";
+    canvasCont.style.opacity = "0";
+    
+    // 重置所有 UI 顯示
+    document.getElementById('full-text-overlay').style.opacity = '0';
+    document.getElementById('ui-layer').style.display = 'none';
+    document.getElementById('timer').style.display = 'block';
+    document.getElementById('scene-title').style.display = 'block';
+    document.getElementById('boss-warning').style.opacity = '0';
+
+    // 清空陣列避免重複累積與記憶體流失
+    drones = [];
+    slashes = [];
+    explosions = [];
+    bossRotors = [];
+
+    // 重新顯示主畫面選單
+    const overlay = document.getElementById('start-overlay');
+    overlay.style.display = 'flex';
+    setTimeout(() => {
+        overlay.style.opacity = '1';
+    }, 50);
+}
+
+function startApp() {
+    const overlay = document.getElementById('start-overlay');
+    overlay.style.opacity = '0';
+    
+    const videoEl = document.getElementById('intro-video');
+    
+    setTimeout(() => {
+        overlay.style.display = 'none';
+        isRunning = true;
+        clock.start();
+        initThree();
+        
+        // 嘗試播放影片 (處理瀏覽器自動播放政策)
+        videoEl.play().catch(e => {
+            console.warn("影片自動播放被阻擋或找不到檔案，直接進入 3D", e);
+            timeOffset = 8; // 跳過影片時間
+            videoEl.style.display = 'none';
+        });
+        
+        update();
+    }, 1000);
+}
+
+// 處理視窗大小改變
+window.addEventListener('resize', () => {
+    if (!camera || !renderer) return;
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// 開發用快捷鍵：按 'S' 跳過 10 秒
+window.addEventListener('keydown', (e) => {
+    if(e.key === 's' || e.key === 'S') {
+        timeOffset += 10; 
+        console.log("快轉至 T+" + Math.floor(clock.getElapsedTime() + timeOffset) + "秒");
+    }
+});
+</script>
+</body>
+</html>
