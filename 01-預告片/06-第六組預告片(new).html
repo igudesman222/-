@@ -140,6 +140,23 @@
             transition: opacity 1s ease-out;
         }
 
+        /* 結尾慢慢變暗黑幕：蓋在字幕與 3D 畫面之上，低於起始主畫面 */
+        #final-fade-overlay {
+            display: block;
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 95;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s linear;
+            will-change: opacity;
+        }
+
+        #final-fade-overlay.menu-reveal {
+            transition: opacity 1.2s ease-in-out;
+        }
+
         /* 全螢幕文字層 (用於團隊名、結尾標語) */
         #full-text-overlay {
             position: fixed;
@@ -434,6 +451,7 @@
 </audio>
 
 <div id="white-flash"></div>
+<div id="final-fade-overlay" aria-hidden="true"></div>
 
 <!-- 全螢幕大字體文字層 -->
 <div id="full-text-overlay">
@@ -478,7 +496,10 @@ const THIRD_SECTION_END = 169;
 const FINAL_TEXT_ONE_START = THIRD_SECTION_END;
 const FINAL_TEXT_TWO_START = FINAL_TEXT_ONE_START + 5;
 const FINAL_TEXT_END = FINAL_TEXT_TWO_START + 5;
-const RESET_TO_MENU_TIME = FINAL_TEXT_END + 2;
+const FINAL_FADE_START = FINAL_TEXT_TWO_START + 2; // 最後字幕出現 2 秒後開始慢慢變暗
+const FINAL_FADE_DURATION = 4.5; // 黑幕淡入時間，數值越大越慢
+const FINAL_BLACK_HOLD_DURATION = 0.8; // 全黑後短暫停留再回主畫面
+const RESET_TO_MENU_TIME = FINAL_FADE_START + FINAL_FADE_DURATION + FINAL_BLACK_HOLD_DURATION;
 
 const GITHUB_GAMEPLAY_VIDEO_URL = "https://raw.githubusercontent.com/igudesman222/igudesman2012/5ebc03782161436801091e4f91d3fdba1e1c116c/06-%E7%AC%AC%E5%85%AD%E7%B5%84%E8%B3%87%E6%BA%90/06-001-%E5%BD%B1%E7%89%87/06-%E5%B0%8F%E9%81%8A%E6%88%B2%E8%A9%A6%E7%8E%A9.mp4";
 const BGM_TARGET_VOLUME = {
@@ -926,7 +947,7 @@ function createDrone() {
 function getSegmentAudioId(elapsed) {
     if (elapsed >= FIRST_SECTION_START && elapsed < FIRST_SECTION_END) return 'bgm-first';
     if (elapsed >= FIRST_SECTION_END && elapsed < SECOND_SECTION_END) return 'bgm-second';
-    if (elapsed >= SECOND_SECTION_END && elapsed < RESET_TO_MENU_TIME) return 'bgm-third';
+    if (elapsed >= SECOND_SECTION_END && elapsed < FINAL_FADE_START) return 'bgm-third';
     return null;
 }
 
@@ -1087,6 +1108,51 @@ function resetGameplayVideo() {
     }
 }
 
+function updateFinalFade(elapsed) {
+    const finalFade = document.getElementById('final-fade-overlay');
+    if (!finalFade) return;
+
+    if (elapsed >= FINAL_FADE_START) {
+        const progress = Math.min(1, Math.max(0, (elapsed - FINAL_FADE_START) / FINAL_FADE_DURATION));
+        finalFade.classList.remove('menu-reveal');
+        finalFade.style.display = 'block';
+        finalFade.style.opacity = progress.toFixed(3);
+    } else {
+        finalFade.classList.remove('menu-reveal');
+        finalFade.style.display = 'block';
+        finalFade.style.opacity = '0';
+    }
+}
+
+function resetFinalFade() {
+    const finalFade = document.getElementById('final-fade-overlay');
+    if (!finalFade) return;
+    finalFade.classList.remove('menu-reveal');
+    finalFade.style.display = 'block';
+    finalFade.style.opacity = '0';
+}
+
+function holdFinalFadeBlack() {
+    const finalFade = document.getElementById('final-fade-overlay');
+    if (!finalFade) return;
+    finalFade.classList.remove('menu-reveal');
+    finalFade.style.display = 'block';
+    finalFade.style.opacity = '1';
+}
+
+function revealMainMenuFromBlack() {
+    const finalFade = document.getElementById('final-fade-overlay');
+    if (!finalFade) return;
+    finalFade.classList.add('menu-reveal');
+    finalFade.style.opacity = '1';
+    setTimeout(() => {
+        finalFade.style.opacity = '0';
+    }, 80);
+    setTimeout(() => {
+        finalFade.classList.remove('menu-reveal');
+    }, 1400);
+}
+
 function update() {
     if (!isRunning) return;
     const elapsed = clock.getElapsedTime() + timeOffset;
@@ -1121,9 +1187,10 @@ function update() {
     if (isFrozen) {
         updateUI(elapsed); // 修復：畫面凍結時，仍要持續更新字幕，讓旁白正常顯示與淡出
         handleFullTexts(elapsed);
+        updateFinalFade(elapsed);
         renderer.render(scene, camera);
         
-        // 【新增】：當時間超過結尾字幕時間（結尾宣傳字幕播放完畢並淡出後），回到主畫面
+        // 【新增】：當結尾字幕完成並黑幕淡入後，回到主畫面
         if (elapsed > RESET_TO_MENU_TIME) {
             resetToMainMenu();
             return;
@@ -1136,6 +1203,7 @@ function update() {
     // --- 3D 環境與全螢幕文字 UI 更新 ---
     updateUI(elapsed);
     handleFullTexts(elapsed);
+    updateFinalFade(elapsed);
 
     const mins = Math.floor(elapsed / 60).toString().padStart(2, '0');
     const secs = Math.floor(elapsed % 60).toString().padStart(2, '0');
@@ -1374,8 +1442,8 @@ function handleFullTexts(elapsed) {
 應建築在大家的福祉上。`;
         fullTextContainer.style.opacity = '1';
     } 
-    // 2:54 - 2:59 遊戲宣傳標語
-    else if (elapsed >= FINAL_TEXT_TWO_START && elapsed < FINAL_TEXT_END) {
+    // 2:54 起：遊戲宣傳標語；黑幕淡入時仍保留，讓字幕跟著畫面慢慢暗下去
+    else if (elapsed >= FINAL_TEXT_TWO_START && elapsed < RESET_TO_MENU_TIME) {
         fullText.innerText = `七股的未來，應你我來守護！
 一起加入銀翼守護者吧！
 5月26日不會公測！`;
@@ -1426,7 +1494,8 @@ function resetToMainMenu() {
     canvasCont.style.filter = "none";
     canvasCont.style.opacity = "0";
     
-    // 重置所有 UI 顯示
+    // 重置所有 UI 顯示；先保持全黑，等主畫面準備好後再淡出黑幕
+    holdFinalFadeBlack();
     document.getElementById('full-text-overlay').style.opacity = '0';
     document.getElementById('team-card').classList.remove('active');
     document.getElementById('ui-layer').style.display = 'none';
@@ -1440,11 +1509,12 @@ function resetToMainMenu() {
     explosions = [];
     bossRotors = [];
 
-    // 重新顯示主畫面選單
+    // 重新顯示主畫面選單，並從黑畫面淡回最初畫面
     const overlay = document.getElementById('start-overlay');
     overlay.style.display = 'flex';
     setTimeout(() => {
         overlay.style.opacity = '1';
+        revealMainMenuFromBlack();
     }, 50);
 }
 
@@ -1453,6 +1523,7 @@ function startApp() {
     overlay.style.opacity = '0';
     
     const videoEl = document.getElementById('intro-video');
+    resetFinalFade();
     stopAllSegmentAudio(true);
     resetGameplayVideo();
     thirdSegmentPrepared = false;
