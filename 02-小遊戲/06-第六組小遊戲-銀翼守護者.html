@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>銀羽守護者：光電板之戰</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #442200; font-family: "Microsoft JhengHei", sans-serif; }
+        #ui { position: absolute; top: 20px; left: 20px; color: #fff; z-index: 10; pointer-events: none; }
+        .bar-outer { width: 250px; height: 12px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; overflow: hidden; margin: 5px 0; }
+        #hp-inner { width: 100%; height: 100%; background: linear-gradient(90deg, #ff4b2b, #ff416c); transition: width 0.3s; }
+        
+        #skill-ui { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 20px; align-items: center; }
+        .skill-box { width: 100px; height: 100px; background: rgba(0,0,0,0.6); border: 2px solid #555; border-radius: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+        .skill-box.ready { border-color: #0ff; box-shadow: 0 0 20px rgba(0,255,255,0.6); }
+        .skill-name { color: #fff; font-size: 12px; font-weight: bold; margin-top: 5px; text-shadow: 0 0 5px #000; }
+        .energy-text { color: #0ff; font-size: 18px; font-weight: bold; z-index: 2; }
+        .energy-subtext { color: #fff; font-size: 10px; opacity: 0.7; z-index: 2; }
+
+        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(80,40,0,0.7), rgba(0,0,0,0.9)); display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; z-index: 100; text-align: center; }
+        .start-btn { padding: 15px 50px; font-size: 24px; background: #ffcc00; color: #000; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; margin-top: 20px; box-shadow: 0 5px 20px rgba(255,200,0,0.4); }
+        
+        #msg-box { position: absolute; top: 100px; left: 50%; transform: translateX(-50%); color: #ffcc00; font-weight: bold; font-size: 32px; text-shadow: 0 0 15px #f00; display: none; pointer-events: none; text-align: center; z-index: 50; }
+        
+        #boss-ui { position: absolute; top: 20px; right: 20px; width: 300px; display: none; }
+        .boss-hp-bar { width: 100%; height: 20px; background: #333; border: 2px solid #f00; border-radius: 10px; overflow: hidden; }
+        #boss-hp-inner { width: 100%; height: 100%; background: #f00; }
+    </style>
+</head>
+<body>
+
+    <div id="overlay">
+        <h1 style="font-size: 60px; margin: 0; text-shadow: 0 0 30px #ffcc00;">銀羽守護者</h1>
+        <p style="font-size: 20px; color: #ffeebb;">擊退 200 台無人機以引出雷虎首領</p>
+        <div style="margin: 20px 0; background: rgba(255,255,255,0.15); padding: 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2);">
+            滑鼠左鍵：啄擊 (<b>可打掉敵方子彈</b>)<br>
+            滑鼠右鍵：<b>強風氣旋</b> (擊殺充能，圓形大範圍震退)<br>
+            WASD: 移動 | Space: 向上 | Shift: 向下
+        </div>
+        <button class="start-btn" onclick="startGame()">開始戰鬥</button>
+    </div>
+
+    <div id="ui">
+        <div class="bar-outer"><div id="hp-inner"></div></div>
+        <div id="hp-display" style="font-size: 12px; opacity: 0.8;">HP: 1000 / 1000</div>
+    </div>
+
+    <div id="boss-ui">
+        <div style="color: #f00; font-weight: bold; margin-bottom: 5px;">雷虎首領 BOSS</div>
+        <div class="boss-hp-bar"><div id="boss-hp-inner"></div></div>
+    </div>
+
+    <div id="skill-ui">
+        <div id="skill-l" class="skill-box ready">
+            <span style="font-size: 24px;">🪶</span>
+            <span class="skill-name">左鍵：啄擊</span>
+        </div>
+        <div id="skill-r" class="skill-box">
+            <div id="energy-val" class="energy-text">10</div>
+            <div class="energy-subtext">次擊殺後就緒</div>
+            <span class="skill-name">右鍵：強風氣旋</span>
+        </div>
+    </div>
+
+    <div id="msg-box"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        let scene, camera, renderer, player, clock;
+        let enemies = [], bullets = [], particles = [];
+        let score = 0, hp = 1000, isDead = false;
+        let gameState = "waiting"; 
+        let yaw = 0;
+        const keys = {};
+        const MAX_HP = 1000;
+        
+        // 大招能量
+        let energyNeeded = 10;
+        let currentEnergy = 0;
+        const ENERGY_GOAL = 10;
+        let skillReady = false;
+
+        // 敵人生成控制
+        let lastSpawnTime = 0;
+        let spawnInterval = 3000; 
+        let maxEnemiesOnScreen = 5; 
+        
+        // Boss 控制
+        let boss = null;
+        let bossActive = false;
+        const BOSS_TARGET_SCORE = 200;
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x442211);
+            scene.fog = new THREE.Fog(0x442211, 50, 450);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1500);
+            
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            document.body.appendChild(renderer.domElement);
+
+            clock = new THREE.Clock();
+
+            const ambient = new THREE.AmbientLight(0xffddbb, 0.6);
+            scene.add(ambient);
+            const sun = new THREE.DirectionalLight(0xffaa44, 1.5);
+            sun.position.set(100, 50, -100);
+            scene.add(sun);
+
+            createSolarFarm();
+            createEgret();
+            setupControls();
+            
+            animate();
+        }
+
+        function createSolarFarm() {
+            const group = new THREE.Group();
+            const dirtGeo = new THREE.PlaneGeometry(2000, 2000);
+            const dirtMat = new THREE.MeshStandardMaterial({ color: 0x221105 });
+            const dirt = new THREE.Mesh(dirtGeo, dirtMat);
+            dirt.rotation.x = -Math.PI / 2;
+            scene.add(dirt);
+
+            const panelGeo = new THREE.PlaneGeometry(3.5, 2);
+            const panelMat = new THREE.MeshStandardMaterial({ color: 0x0a2244, metalness: 0.8, roughness: 0.2 });
+
+            for(let x = -300; x < 300; x += 15) {
+                for(let z = -300; z < 300; z += 20) {
+                    const panel = new THREE.Mesh(panelGeo, panelMat);
+                    panel.position.set(x, 1, z);
+                    panel.rotation.x = -Math.PI / 6;
+                    group.add(panel);
+                }
+            }
+            scene.add(group);
+        }
+
+        function createEgret() {
+            player = new THREE.Group();
+            const whiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+            const body = new THREE.Mesh(new THREE.SphereGeometry(1), whiteMat);
+            body.scale.set(0.6, 0.7, 1.5);
+            player.add(body);
+            const head = new THREE.Mesh(new THREE.SphereGeometry(0.4), whiteMat);
+            head.position.set(0, 2.2, 1.8);
+            player.add(head);
+            const beak = new THREE.Mesh(new THREE.ConeGeometry(0.1, 1.2), new THREE.MeshStandardMaterial({color: 0xffaa00}));
+            beak.rotation.x = Math.PI/2; beak.position.set(0, 2.2, 2.5);
+            player.add(beak);
+            const wingGeo = new THREE.BoxGeometry(5, 0.05, 2);
+            const lWing = new THREE.Mesh(wingGeo, whiteMat); lWing.name = "lWing"; lWing.position.x = -2.5;
+            player.add(lWing);
+            const rWing = new THREE.Mesh(wingGeo, whiteMat); rWing.name = "rWing"; rWing.position.x = 2.5;
+            player.add(rWing);
+            player.position.set(0, 15, 0);
+            scene.add(player);
+        }
+
+        function createDrone(isBoss = false) {
+            const drone = new THREE.Group();
+            const darkMat = new THREE.MeshPhongMaterial({ color: isBoss ? 0x330000 : 0x111111 });
+            const body = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.8, 3), darkMat);
+            drone.add(body);
+            if(isBoss) drone.scale.set(8, 8, 8);
+            return drone;
+        }
+
+        function startGame() {
+            document.getElementById('overlay').style.display = 'none';
+            gameState = "playing";
+            renderer.domElement.requestPointerLock();
+            spawnEnemy();
+        }
+
+        function spawnEnemy() {
+            if(bossActive) return;
+            if(enemies.length >= maxEnemiesOnScreen) return;
+            const enemy = createDrone();
+            const angle = Math.random() * Math.PI * 2;
+            const dist = 150 + Math.random() * 50;
+            enemy.position.set(player.position.x + Math.cos(angle)*dist, 20 + Math.random()*20, player.position.z + Math.sin(angle)*dist);
+            enemy.userData = { hp: 100, lastShot: 0, stun: 0 };
+            enemies.push(enemy);
+            scene.add(enemy);
+        }
+
+        function triggerBoss() {
+            bossActive = true;
+            document.getElementById('msg-box').innerText = "警告：偵測到雷虎首領能量反應！";
+            document.getElementById('msg-box').style.display = "block";
+            setTimeout(() => { document.getElementById('msg-box').style.display = "none"; }, 5000);
+            
+            boss = createDrone(true);
+            boss.position.set(player.position.x, 60, player.position.z + 150);
+            boss.userData = { hp: 5000, maxHp: 5000, lastShot: 0, type: 'boss' };
+            enemies.push(boss);
+            scene.add(boss);
+            document.getElementById('boss-ui').style.display = 'block';
+        }
+
+        function setupControls() {
+            document.addEventListener('mousedown', e => {
+                if(gameState !== "playing" || isDead) return;
+                if(e.button === 0) attackMelee();
+                if(e.button === 2 && skillReady) useWindSkill();
+            });
+            document.addEventListener('mousemove', e => {
+                if (document.pointerLockElement === renderer.domElement) yaw -= e.movementX * 0.002;
+            });
+            window.addEventListener('keydown', e => { keys[e.key.toLowerCase()] = true; });
+            window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
+            window.addEventListener('contextmenu', e => e.preventDefault());
+        }
+
+        function attackMelee() {
+            const slashGeo = new THREE.TorusGeometry(8, 0.15, 8, 30, Math.PI * 0.8);
+            const slashMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9 });
+            const slash = new THREE.Mesh(slashGeo, slashMat);
+            slash.position.copy(player.position);
+            slash.rotation.copy(player.rotation);
+            slash.rotation.y += Math.PI; slash.rotation.x += Math.PI/2;
+            slash.position.add(new THREE.Vector3(0, 2, 4).applyQuaternion(player.quaternion));
+            scene.add(slash);
+            particles.push({ mesh: slash, type: 'slash', timer: 0 });
+
+            // 攻擊判定：擊殺敵軍 & 打掉子彈
+            const hitRadius = 18;
+            for(let i = bullets.length - 1; i >= 0; i--) {
+                if(bullets[i].position.distanceTo(slash.position) < hitRadius) {
+                    scene.remove(bullets[i]);
+                    bullets.splice(i, 1);
+                }
+            }
+            enemies.forEach((en, idx) => {
+                if(en.position.distanceTo(player.position) < hitRadius + 5) {
+                    damageEnemy(idx, 60);
+                }
+            });
+        }
+
+        function useWindSkill() {
+            skillReady = false;
+            currentEnergy = 0;
+            updateEnergyUI();
+
+            const sphereGeo = new THREE.SphereGeometry(1, 32, 32);
+            const sphereMat = new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.7 });
+            const windSphere = new THREE.Mesh(sphereGeo, sphereMat);
+            windSphere.position.copy(player.position);
+            scene.add(windSphere);
+            particles.push({ mesh: windSphere, type: 'wind_sphere', timer: 0 });
+
+            enemies.forEach((en, idx) => {
+                const dist = en.position.distanceTo(player.position);
+                if(dist < 60) {
+                    const dir = en.position.clone().sub(player.position).normalize();
+                    en.position.add(dir.multiplyScalar(40));
+                    damageEnemy(idx, 80);
+                    if(enemies.includes(en)) en.userData.stun = 5.0;
+                }
+            });
+        }
+
+        function damageEnemy(idx, amt) {
+            const en = enemies[idx];
+            if(!en) return;
+            en.userData.hp -= amt;
+            
+            if(en.userData.type === 'boss') {
+                document.getElementById('boss-hp-inner').style.width = (en.userData.hp / en.userData.maxHp * 100) + '%';
+            }
+
+            if(en.userData.hp <= 0) {
+                const exp = new THREE.Mesh(new THREE.SphereGeometry(en.userData.type === 'boss' ? 20 : 2), new THREE.MeshBasicMaterial({color:0xff3300, transparent:true}));
+                exp.position.copy(en.position);
+                scene.add(exp);
+                particles.push({mesh: exp, type: 'exp', timer: 0});
+                scene.remove(en);
+                enemies.splice(idx, 1);
+                
+                if(en.userData.type === 'boss') {
+                    document.getElementById('msg-box').innerText = "雷虎首領已擊敗！守護成功！";
+                    document.getElementById('msg-box').style.display = "block";
+                    gameState = "win";
+                    return;
+                }
+
+                score++;
+                hp = Math.min(MAX_HP, hp + 30);
+                
+                // 能量進度
+                if(!skillReady) {
+                    currentEnergy++;
+                    if(currentEnergy >= ENERGY_GOAL) {
+                        skillReady = true;
+                    }
+                    updateEnergyUI();
+                }
+
+                // 難度曲線
+                maxEnemiesOnScreen = 5 + Math.floor(score / 20);
+                spawnInterval = Math.max(800, 3000 - (score * 10));
+
+                if(score === BOSS_TARGET_SCORE) triggerBoss();
+                updateUI();
+            }
+        }
+
+        function updateEnergyUI() {
+            const box = document.getElementById('skill-r');
+            const txt = document.getElementById('energy-val');
+            const sub = document.querySelector('.energy-subtext');
+            if(skillReady) {
+                box.classList.add('ready');
+                txt.innerText = "READY";
+                sub.innerText = "右鍵釋放強風";
+            } else {
+                box.classList.remove('ready');
+                txt.innerText = (ENERGY_GOAL - currentEnergy);
+                sub.innerText = "次擊殺後就緒";
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('hp-inner').style.width = (hp/MAX_HP*100) + '%';
+            document.getElementById('hp-display').innerText = `HP: ${Math.floor(hp)} / ${MAX_HP}`;
+        }
+
+        function update() {
+            if(gameState !== "playing" && gameState !== "win") return;
+            const delta = clock.getDelta();
+            const now = Date.now();
+
+            if(!bossActive && now - lastSpawnTime > spawnInterval) {
+                spawnEnemy();
+                lastSpawnTime = now;
+            }
+
+            player.rotation.y = yaw;
+            const moveDir = new THREE.Vector3();
+            if(keys['w']) moveDir.z += 1; if(keys['s']) moveDir.z -= 1;
+            if(keys['a']) moveDir.x += 1; if(keys['d']) moveDir.x -= 1;
+            if(moveDir.length() > 0) {
+                moveDir.normalize().applyQuaternion(player.quaternion);
+                player.position.add(moveDir.multiplyScalar(0.9));
+            }
+            if(keys[' ']) player.position.y += 0.7; if(keys['shift']) player.position.y -= 0.7;
+            player.position.y = Math.max(2.5, Math.min(100, player.position.y));
+
+            const lWing = player.getObjectByName("lWing");
+            const rWing = player.getObjectByName("rWing");
+            lWing.rotation.z = Math.sin(now * 0.01) * 0.8;
+            rWing.rotation.z = -Math.sin(now * 0.01) * 0.8;
+
+            enemies.forEach(en => {
+                if(en.userData.stun > 0) { en.userData.stun -= delta; return; }
+                const toPlayer = player.position.clone().sub(en.position);
+                const isBoss = en.userData.type === 'boss';
+                
+                if(toPlayer.length() > (isBoss ? 80 : 25)) {
+                    en.position.add(toPlayer.normalize().multiplyScalar(isBoss ? 0.15 : 0.35));
+                }
+                
+                const shootCD = isBoss ? 800 : 3500;
+                if(now - en.userData.lastShot > shootCD) {
+                    shootBullet(en.position, isBoss);
+                    en.userData.lastShot = now;
+                }
+            });
+
+            for(let i=bullets.length-1; i>=0; i--) {
+                const b = bullets[i];
+                b.position.add(b.userData.vel);
+                if(b.position.distanceTo(player.position) < 5) {
+                    hp -= 100; updateUI(); scene.remove(b); bullets.splice(i, 1);
+                } else if(b.position.length() > 800) {
+                    scene.remove(b); bullets.splice(i, 1);
+                }
+            }
+
+            for(let i=particles.length-1; i>=0; i--) {
+                const p = particles[i]; p.timer += delta;
+                if(p.type === 'wind_sphere') { p.mesh.scale.addScalar(2.5); p.mesh.material.opacity -= 0.03; }
+                else if(p.type === 'slash') { p.mesh.rotation.z += 0.2; p.mesh.material.opacity -= 0.06; }
+                else if(p.type === 'exp') { p.mesh.scale.addScalar(0.4); p.mesh.material.opacity -= 0.03; }
+                if(p.mesh.material.opacity <= 0) { scene.remove(p.mesh); particles.splice(i, 1); }
+            }
+
+            if(hp <= 0 && !isDead) {
+                isDead = true;
+                document.getElementById('msg-box').innerText = "守護失敗... 重新啟動中";
+                document.getElementById('msg-box').style.display = "block";
+                setTimeout(() => location.reload(), 3000);
+            }
+
+            const camPos = new THREE.Vector3(0, 15, -40).applyQuaternion(player.quaternion).add(player.position);
+            camera.position.lerp(camPos, 0.1);
+            camera.lookAt(player.position);
+        }
+
+        function shootBullet(from, isBoss = false) {
+            const b = new THREE.Mesh(new THREE.SphereGeometry(isBoss ? 1.5 : 0.6), new THREE.MeshBasicMaterial({color: isBoss ? 0xff0000 : 0xffaa00}));
+            b.position.copy(from);
+            const dir = player.position.clone().sub(from).normalize();
+            // Boss 散彈效果
+            if(isBoss) {
+                for(let i=-1; i<=1; i++) {
+                    const bb = b.clone();
+                    const spreadDir = dir.clone().applyAxisAngle(new THREE.Vector3(0,1,0), i * 0.2);
+                    bb.userData = { vel: spreadDir.multiplyScalar(2.2) };
+                    bullets.push(bb); scene.add(bb);
+                }
+            } else {
+                b.userData = { vel: dir.multiplyScalar(1.8) };
+                bullets.push(b); scene.add(b);
+            }
+        }
+
+        function animate() { requestAnimationFrame(animate); update(); renderer.render(scene, camera); }
+        window.onload = init;
+        window.onresize = () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); };
+    </script>
+</body>
+</html>
+
+
