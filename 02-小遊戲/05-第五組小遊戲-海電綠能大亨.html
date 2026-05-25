@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>海岸綠能大亨 - 璐娜設計</title>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+   <script src="https://cdn.tailwindcss.com"></script>
+   <style>
+       body { margin: 0; overflow: hidden; font-family: 'Microsoft JhengHei', sans-serif; }
+       #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+       .interactive { pointer-events: auto; }
+       #loading-screen {
+           position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+           background: #1a202c; display: flex; flex-direction: column;
+           justify-content: center; align-items: center; color: white; z-index: 100;
+       }
+       .build-btn {
+           transition: all 0.3s;
+           background: rgba(255, 255, 255, 0.15);
+           backdrop-filter: blur(10px);
+       }
+       .build-btn:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.25); }
+       .build-btn.active { border: 2px solid #4fd1c5; background: rgba(79, 209, 197, 0.2); }
+   </style>
+</head>
+<body>
+
+
+<div id="loading-screen">
+   <h1 class="text-4xl font-bold mb-4">海岸綠能大亨</h1>
+   <div class="w-64 h-2 bg-gray-700 rounded-full overflow-hidden">
+       <div id="loading-bar" class="h-full bg-teal-400" style="width: 0%"></div>
+   </div>
+   <p class="mt-2 text-gray-400">正在準備海岸線...</p>
+</div>
+
+
+<div id="ui-layer">
+   <div class="flex justify-between p-6">
+       <div class="bg-black/40 backdrop-blur-md p-4 rounded-2xl border border-white/10 text-white interactive">
+           <div class="text-xs uppercase tracking-widest text-teal-300 font-bold">目前電力 (Energy)</div>
+           <div class="text-3xl font-black italic" id="energy-val">0</div>
+       </div>
+       <div class="bg-black/40 backdrop-blur-md p-4 rounded-2xl border border-white/10 text-white text-right interactive">
+           <div class="text-xs uppercase tracking-widest text-amber-300 font-bold">發電效率</div>
+           <div class="text-xl font-bold" id="efficiency-val">+0 /s</div>
+       </div>
+   </div>
+
+
+   <div class="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-4 interactive">
+       <button onclick="setBuildMode('wind')" id="btn-wind" class="build-btn p-4 rounded-2xl text-white flex flex-col items-center w-32 border border-white/10">
+           <span class="text-2xl">🌀</span>
+           <span class="font-bold">風力發電</span>
+           <span class="text-xs text-teal-300 mt-1">成本: 50</span>
+       </button>
+       <button onclick="setBuildMode('thermal')" id="btn-thermal" class="build-btn p-4 rounded-2xl text-white flex flex-col items-center w-32 border border-white/10">
+           <span class="text-2xl">🔥</span>
+           <span class="font-bold">溫差發電</span>
+           <span class="text-xs text-teal-300 mt-1">成本: 120</span>
+       </button>
+       <button onclick="setBuildMode(null)" id="btn-move" class="build-btn active p-4 rounded-2xl text-white flex flex-col items-center w-32 border border-white/10">
+           <span class="text-2xl">🏃</span>
+           <span class="font-bold">移動模式</span>
+           <span class="text-xs text-gray-400 mt-1">自由行走</span>
+       </button>
+   </div>
+
+
+   <div id="msg-box" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/80 text-white px-6 py-3 rounded-full opacity-0 transition-opacity pointer-events-none text-center">
+       電力不足！
+   </div>
+</div>
+
+
+<script>
+   let scene, camera, renderer, player, clock;
+   let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
+   const structures = [];
+   let energy = 100;
+   let efficiency = 0;
+   let buildMode = null;
+   let ghostBuilding = null;
+
+
+   const config = {
+       wind: { cost: 50, gen: 5, color: 0x4fd1c5, label: '風力' },
+       thermal: { cost: 120, gen: 15, color: 0xf6ad55, label: '溫差' }
+   };
+
+
+   window.onload = init;
+
+
+   function init() {
+       scene = new THREE.Scene();
+       scene.background = new THREE.Color(0x87ceeb);
+       scene.fog = new THREE.FogExp2(0x87ceeb, 0.015);
+
+
+       camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+      
+       renderer = new THREE.WebGLRenderer({ antialias: true });
+       renderer.setSize(window.innerWidth, window.innerHeight);
+       renderer.shadowMap.enabled = true;
+       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+       document.body.appendChild(renderer.domElement);
+
+
+       clock = new THREE.Clock();
+
+
+       const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+       scene.add(ambientLight);
+
+
+       const sun = new THREE.DirectionalLight(0xffffff, 1);
+       sun.position.set(50, 100, 50);
+       sun.castShadow = true;
+       sun.shadow.mapSize.width = 2048;
+       sun.shadow.mapSize.height = 2048;
+       scene.add(sun);
+
+
+       createWorld();
+       createPlayer();
+       setupControls();
+
+
+       document.getElementById('loading-bar').style.width = '100%';
+       setTimeout(() => {
+           document.getElementById('loading-screen').style.opacity = '0';
+           setTimeout(() => document.getElementById('loading-screen').style.display = 'none', 500);
+       }, 500);
+
+
+       animate();
+      
+       setInterval(() => {
+           energy += efficiency;
+           updateUI();
+       }, 1000);
+   }
+
+
+   function createWorld() {
+       const groundGeo = new THREE.PlaneGeometry(200, 200, 20, 20);
+       const groundMat = new THREE.MeshPhongMaterial({ color: 0xe3c9a6 });
+       const ground = new THREE.Mesh(groundGeo, groundMat);
+       ground.rotation.x = -Math.PI / 2;
+       ground.receiveShadow = true;
+       scene.add(ground);
+
+
+       const waterGeo = new THREE.PlaneGeometry(200, 100);
+       const waterMat = new THREE.MeshPhongMaterial({
+           color: 0x0077be,
+           transparent: true,
+           opacity: 0.8,
+           shininess: 100
+       });
+       const water = new THREE.Mesh(waterGeo, waterMat);
+       water.rotation.x = -Math.PI / 2;
+       water.position.set(0, 0.1, -60);
+       scene.add(water);
+
+
+       for(let i=0; i<50; i++) {
+           const isRock = Math.random() > 0.5;
+           const geo = isRock ? new THREE.DodecahedronGeometry(Math.random() * 0.5 + 0.2) : new THREE.ConeGeometry(0.1, 0.5, 4);
+           const mat = new THREE.MeshPhongMaterial({ color: isRock ? 0x808080 : 0x2d5a27 });
+           const mesh = new THREE.Mesh(geo, mat);
+           mesh.position.set(Math.random()*80 - 40, 0, Math.random()*60 - 20);
+           mesh.rotation.y = Math.random() * Math.PI;
+           mesh.castShadow = true;
+           scene.add(mesh);
+       }
+   }
+
+
+   function createPlayer() {
+       const group = new THREE.Group();
+      
+       // 修正：手動建立膠囊形狀，避免版本不支援的 CapsuleGeometry
+       const bodyRadius = 0.3;
+       const bodyHeight = 0.7;
+       const bodyColor = 0xff6347;
+      
+       // 中間圓柱
+       const mid = new THREE.Mesh(
+           new THREE.CylinderGeometry(bodyRadius, bodyRadius, bodyHeight, 12),
+           new THREE.MeshPhongMaterial({ color: bodyColor })
+       );
+       mid.position.y = bodyHeight / 2 + bodyRadius;
+       mid.castShadow = true;
+       group.add(mid);
+
+
+       // 頂部半球
+       const topSphere = new THREE.Mesh(
+           new THREE.SphereGeometry(bodyRadius, 12, 12),
+           new THREE.MeshPhongMaterial({ color: bodyColor })
+       );
+       topSphere.position.y = bodyHeight + bodyRadius;
+       topSphere.castShadow = true;
+       group.add(topSphere);
+
+
+       // 底部半球
+       const botSphere = new THREE.Mesh(
+           new THREE.SphereGeometry(bodyRadius, 12, 12),
+           new THREE.MeshPhongMaterial({ color: bodyColor })
+       );
+       botSphere.position.y = bodyRadius;
+       botSphere.castShadow = true;
+       group.add(botSphere);
+
+
+       // 工程帽
+       const hat = new THREE.Mesh(
+           new THREE.SphereGeometry(bodyRadius + 0.05, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2),
+           new THREE.MeshPhongMaterial({ color: 0xffd700 })
+       );
+       hat.position.y = bodyHeight + bodyRadius + 0.05;
+       group.add(hat);
+
+
+       player = group;
+       player.position.set(0, 0, 10);
+       scene.add(player);
+   }
+
+
+   function setupControls() {
+       const onKeyDown = (e) => {
+           switch(e.code) {
+               case 'ArrowUp': case 'KeyW': moveForward = true; break;
+               case 'ArrowLeft': case 'KeyA': moveLeft = true; break;
+               case 'ArrowDown': case 'KeyS': moveBackward = true; break;
+               case 'ArrowRight': case 'KeyD': moveRight = true; break;
+               case 'Space': if(buildMode) placeBuilding(); break;
+           }
+       };
+       const onKeyUp = (e) => {
+           switch(e.code) {
+               case 'ArrowUp': case 'KeyW': moveForward = false; break;
+               case 'ArrowLeft': case 'KeyA': moveLeft = false; break;
+               case 'ArrowDown': case 'KeyS': moveBackward = false; break;
+               case 'ArrowRight': case 'KeyD': moveRight = false; break;
+           }
+       };
+       window.addEventListener('keydown', onKeyDown);
+       window.addEventListener('keyup', onKeyUp);
+      
+       renderer.domElement.addEventListener('pointerdown', (e) => {
+           if(buildMode && e.button === 0) placeBuilding();
+       });
+   }
+
+
+   function setBuildMode(type) {
+       buildMode = type;
+       document.querySelectorAll('.build-btn').forEach(btn => btn.classList.remove('active'));
+       if(!type) {
+           document.getElementById('btn-move').classList.add('active');
+           if(ghostBuilding) scene.remove(ghostBuilding);
+           ghostBuilding = null;
+       } else {
+           document.getElementById(`btn-${type}`).classList.add('active');
+           updateGhost();
+       }
+   }
+
+
+   function updateGhost() {
+       if(ghostBuilding) scene.remove(ghostBuilding);
+       const geo = buildMode === 'wind' ? new THREE.CylinderGeometry(0.2, 0.2, 3) : new THREE.BoxGeometry(1.5, 1, 1.5);
+       const mat = new THREE.MeshPhongMaterial({
+           color: config[buildMode].color,
+           transparent: true,
+           opacity: 0.4
+       });
+       ghostBuilding = new THREE.Mesh(geo, mat);
+       scene.add(ghostBuilding);
+   }
+
+
+   function placeBuilding() {
+       const conf = config[buildMode];
+       if(energy < conf.cost) {
+           showMessage(`電力不足！還差 ${Math.floor(conf.cost - energy)} 電力`);
+           return;
+       }
+
+
+       energy -= conf.cost;
+       efficiency += conf.gen;
+      
+       const building = createBuildingModel(buildMode);
+       building.position.copy(ghostBuilding.position);
+       building.scale.set(0,0,0);
+       scene.add(building);
+       structures.push({ mesh: building, type: buildMode });
+
+
+       updateUI();
+       showMessage(`成功建造 ${conf.label}設施！`);
+   }
+
+
+   function createBuildingModel(type) {
+       const group = new THREE.Group();
+       if(type === 'wind') {
+           const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.15, 4), new THREE.MeshPhongMaterial({color: 0xeeeeee}));
+           pole.position.y = 2;
+           pole.castShadow = true;
+           group.add(pole);
+
+
+           const blades = new THREE.Group();
+           for(let i=0; i<3; i++) {
+               const blade = new THREE.Mesh(new THREE.BoxGeometry(0.2, 1.5, 0.05), new THREE.MeshPhongMaterial({color: 0xffffff}));
+               blade.position.y = 0.75;
+               const pivot = new THREE.Group();
+               pivot.rotation.z = (i * Math.PI * 2) / 3;
+               pivot.add(blade);
+               blades.add(pivot);
+           }
+           blades.position.y = 4;
+           blades.position.z = 0.2;
+           group.add(blades);
+           group.userData.animated = blades;
+       } else {
+           const base = new THREE.Mesh(new THREE.BoxGeometry(2, 1.2, 2), new THREE.MeshPhongMaterial({color: 0x708090}));
+           base.position.y = 0.6;
+           base.castShadow = true;
+           group.add(base);
+
+
+           const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 1), new THREE.MeshPhongMaterial({color: 0x4682b4}));
+           pipe.position.y = 1.2;
+           group.add(pipe);
+          
+           const steam = new THREE.Mesh(new THREE.SphereGeometry(0.25), new THREE.MeshPhongMaterial({color: 0xffffff, transparent: true, opacity: 0.6}));
+           steam.position.y = 1.8;
+           group.add(steam);
+           group.userData.animated = steam;
+       }
+       return group;
+   }
+
+
+   function showMessage(text) {
+       const box = document.getElementById('msg-box');
+       box.innerText = text;
+       box.style.opacity = '1';
+       setTimeout(() => box.style.opacity = '0', 2000);
+   }
+
+
+   function updateUI() {
+       document.getElementById('energy-val').innerText = Math.floor(energy);
+       document.getElementById('efficiency-val').innerText = `+${efficiency} /s`;
+   }
+
+
+   function animate() {
+       requestAnimationFrame(animate);
+       const delta = clock.getDelta();
+
+
+       const speed = 6 * delta;
+       const moveDir = new THREE.Vector3(0, 0, 0);
+       if (moveForward) moveDir.z -= 1;
+       if (moveBackward) moveDir.z += 1;
+       if (moveLeft) moveDir.x -= 1;
+       if (moveRight) moveDir.x += 1;
+
+
+       if (moveDir.length() > 0) {
+           moveDir.normalize();
+           player.position.add(moveDir.clone().multiplyScalar(speed));
+           const targetRotation = Math.atan2(moveDir.x, moveDir.z);
+           let diff = targetRotation - player.rotation.y;
+           while (diff < -Math.PI) diff += Math.PI * 2;
+           while (diff > Math.PI) diff -= Math.PI * 2;
+           player.rotation.y += diff * 0.15;
+       }
+
+
+       player.position.x = THREE.MathUtils.clamp(player.position.x, -95, 95);
+       player.position.z = THREE.MathUtils.clamp(player.position.z, -25, 95);
+
+
+       const camOffset = new THREE.Vector3(0, 18, 15);
+       const targetCamPos = player.position.clone().add(camOffset);
+       camera.position.lerp(targetCamPos, 0.08);
+       camera.lookAt(player.position.x, 0, player.position.z);
+
+
+       if(ghostBuilding) {
+           const offsetDist = 3.5;
+           ghostBuilding.position.set(
+               Math.round(player.position.x + Math.sin(player.rotation.y) * offsetDist),
+               buildMode === 'wind' ? 2 : 0.6,
+               Math.round(player.position.z + Math.cos(player.rotation.y) * offsetDist)
+           );
+       }
+
+
+       structures.forEach(s => {
+           if(s.mesh.scale.x < 1) {
+               const step = 0.15;
+               s.mesh.scale.x = THREE.MathUtils.lerp(s.mesh.scale.x, 1, step);
+               s.mesh.scale.y = THREE.MathUtils.lerp(s.mesh.scale.y, 1, step);
+               s.mesh.scale.z = THREE.MathUtils.lerp(s.mesh.scale.z, 1, step);
+           }
+           if(s.type === 'wind') {
+               s.mesh.userData.animated.rotation.z += 0.06;
+           } else {
+               const time = Date.now() * 0.006;
+               s.mesh.userData.animated.position.y = 1.8 + Math.sin(time) * 0.15;
+               const scl = 1 + Math.sin(time) * 0.1;
+               s.mesh.userData.animated.scale.set(scl, scl, scl);
+           }
+       });
+
+
+       renderer.render(scene, camera);
+   }
+
+
+   window.addEventListener('resize', () => {
+       camera.aspect = window.innerWidth / window.innerHeight;
+       camera.updateProjectionMatrix();
+       renderer.setSize(window.innerWidth, window.innerHeight);
+   });
+</script>
+</body>
+</html>
