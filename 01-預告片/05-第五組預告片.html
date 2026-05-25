@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>海岸綠能大亨 - 官方預告片</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap');
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000;
+            font-family: 'Noto Serif TC', serif;
+        }
+
+        #scene-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        #overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .gold-text {
+            color: #d4af37;
+            text-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
+            opacity: 0;
+            transition: opacity 2s ease-in-out, transform 10s linear;
+        }
+
+        .dialogue-box {
+            position: absolute;
+            bottom: 15%;
+            width: 80%;
+            max-width: 800px;
+            background: rgba(0, 0, 0, 0.6);
+            border-left: 4px solid #d4af37;
+            padding: 20px;
+            color: #fff;
+            opacity: 0;
+            transition: opacity 1s;
+        }
+
+        .role-name {
+            color: #d4af37;
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 1.2rem;
+        }
+
+        #start-btn {
+            pointer-events: auto;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #d4af37;
+            color: #d4af37;
+            padding: 15px 40px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            transition: all 0.3s;
+            z-index: 100;
+        }
+
+        #start-btn:hover {
+            background: #d4af37;
+            color: #000;
+        }
+
+        .fade-black {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            z-index: 50;
+            pointer-events: none;
+            opacity: 1;
+            transition: opacity 3s;
+        }
+
+        #game-title {
+            font-size: 4rem;
+            letter-spacing: 0.5rem;
+            margin-bottom: 20px;
+        }
+
+        .efficiency-ui {
+            position: absolute;
+            top: 50px;
+            left: 50px;
+            color: #4ade80;
+            font-family: monospace;
+            font-size: 1.5rem;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="fade-overlay" class="fade-black"></div>
+    
+    <div id="overlay">
+        <button id="start-btn">點擊播放預告片</button>
+        
+        <div id="intro-text" class="gold-text text-3xl font-bold">組別：第五組</div>
+        
+        <div id="dialogue" class="dialogue-box">
+            <div class="role-name" id="role"></div>
+            <div class="text-xl" id="content"></div>
+        </div>
+
+        <div id="title-screen" class="hidden flex flex-col items-center">
+            <h1 id="game-title" class="gold-text">海岸綠能大亨</h1>
+            <p class="text-white text-lg opacity-0 transition-opacity duration-1000 mb-8" id="sub-title">權衡，是開發者的唯一天職。</p>
+            <a href="#" class="px-8 py-3 bg-white text-black font-bold rounded-full hover:bg-yellow-400 transition-colors opacity-0" id="download-link">立即下載</a>
+        </div>
+    </div>
+
+    <div class="efficiency-ui" id="stats">
+        POWER: <span id="power-val">0</span> kW<br>
+        EFFICIENCY: <span id="eff-val">0</span> %
+    </div>
+
+    <div id="scene-container"></div>
+
+    <!-- 音效資源 -->
+    <audio id="bgm1" src="窗邊雨痕.mp3" loop></audio>
+    <audio id="bgm2" src="藍色晶片雨.mp3" loop></audio>
+
+    <script>
+        let scene, camera, renderer, ocean, sand, windmill, player;
+        let clock = new THREE.Clock();
+        let isStarted = false;
+
+        function init3D() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xffffff); // 初始純白
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            document.getElementById('scene-container').appendChild(renderer.domElement);
+
+            // 燈光
+            const ambient = new THREE.AmbientLight(0xffffff, 0.7);
+            scene.add(ambient);
+            const sun = new THREE.DirectionalLight(0xffffff, 1);
+            sun.position.set(50, 50, 50);
+            sun.castShadow = true;
+            scene.add(sun);
+
+            // 沙灘
+            const sandGeo = new THREE.PlaneGeometry(200, 200);
+            const sandMat = new THREE.MeshPhongMaterial({ color: 0xedc9af });
+            sand = new THREE.Mesh(sandGeo, sandMat);
+            sand.rotation.x = -Math.PI / 2;
+            sand.receiveShadow = true;
+            scene.add(sand);
+
+            // 海面
+            const oceanGeo = new THREE.PlaneGeometry(200, 100);
+            const oceanMat = new THREE.MeshPhongMaterial({ 
+                color: 0x0077be, 
+                transparent: true, 
+                opacity: 0.8,
+                shininess: 100
+            });
+            ocean = new THREE.Mesh(oceanGeo, oceanMat);
+            ocean.rotation.x = -Math.PI / 2;
+            ocean.position.y = 0.1;
+            ocean.position.z = -50;
+            scene.add(ocean);
+
+            // 玩家角色 (簡單示意)
+            const playerGeo = new THREE.BoxGeometry(1, 2, 1);
+            const playerMat = new THREE.MeshPhongMaterial({ color: 0xffff00 });
+            player = new THREE.Mesh(playerGeo, playerMat);
+            player.position.set(0, 1, 10);
+            player.castShadow = true;
+            scene.add(player);
+
+            // 風機 (隱藏直到演出)
+            windmill = new THREE.Group();
+            const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.4, 10), new THREE.MeshPhongMaterial({color: 0xffffff}));
+            pole.position.y = 5;
+            windmill.add(pole);
+            const head = new THREE.Mesh(new THREE.SphereGeometry(0.5), new THREE.MeshPhongMaterial({color: 0xffffff}));
+            head.position.y = 10;
+            windmill.add(head);
+            const blades = new THREE.Group();
+            for(let i=0; i<3; i++) {
+                const blade = new THREE.Mesh(new THREE.BoxGeometry(0.5, 5, 0.1), new THREE.MeshPhongMaterial({color: 0xffffff}));
+                blade.position.y = 2.5;
+                const pivot = new THREE.Group();
+                pivot.rotation.z = (Math.PI * 2 / 3) * i;
+                pivot.add(blade);
+                blades.add(pivot);
+            }
+            blades.position.y = 10;
+            blades.position.z = 0.6;
+            windmill.add(blades);
+            windmill.position.set(10, 0, -5);
+            windmill.scale.set(0,0,0);
+            scene.add(windmill);
+            windmill.userData.blades = blades;
+
+            camera.position.set(0, 5, 50);
+            camera.lookAt(0, 0, 0);
+
+            animate();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            let time = Date.now() * 0.001;
+            
+            // 海浪動態
+            ocean.position.y = 0.1 + Math.sin(time) * 0.1;
+            
+            if(windmill.scale.x > 0) {
+                windmill.userData.blades.rotation.z += 0.05;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        const timeline = [
+            {
+                time: 0,
+                action: () => {
+                    document.getElementById('bgm1').play();
+                    document.getElementById('intro-text').style.opacity = '1';
+                    document.getElementById('intro-text').style.transform = 'scale(1.1)';
+                    document.getElementById('fade-overlay').style.opacity = '0';
+                }
+            },
+            {
+                time: 8000,
+                action: () => {
+                    document.getElementById('intro-text').style.opacity = '0';
+                }
+            },
+            {
+                time: 10000,
+                action: () => {
+                    scene.background = new THREE.Color(0x87ceeb); // 藍天
+                    // 鏡頭拉近對焦
+                    new TWEEN_Simple(camera.position, {z: 25, y: 3}, 5000);
+                }
+            },
+            {
+                time: 12000,
+                action: () => { showDialogue("居民", "這片海養了我們好幾代人。以前我們在這裡聽浪聲，現在妳卻要帶進機器的運轉聲？"); }
+            },
+            {
+                time: 18000,
+                action: () => { showDialogue("開發者（玩家）", "我明白這份寧靜的價值。但如果我們不利用這份自然的餽贈，村子只能在能源貧乏中逐漸凋零。"); }
+            },
+            {
+                time: 23000,
+                action: () => { 
+                    showDialogue("居民", "難道進步的代價，一定要犧牲我們熟悉的風景嗎？"); 
+                    document.getElementById('bgm1').pause();
+                    document.getElementById('bgm2').play();
+                }
+            },
+            {
+                time: 27000,
+                action: () => {
+                    hideDialogue();
+                    // 快速切換鏡頭展示放置
+                    camera.position.set(15, 10, 20);
+                    camera.lookAt(10, 5, -5);
+                    windmill.scale.set(1, 1, 1);
+                    document.getElementById('stats').style.opacity = '1';
+                    updateStats();
+                }
+            },
+            {
+                time: 30000,
+                action: () => { showDialogue("開發者（玩家）", "這不是犧牲，而是共生。妳看，這座風機提供的電力，能點亮妳家孩子書桌上的那盞燈。"); }
+            },
+            {
+                time: 36000,
+                action: () => {
+                    hideDialogue();
+                    // 黃昏場景
+                    scene.background = new THREE.Color(0xff7f50);
+                    new TWEEN_Simple(camera.position, {x: -15, y: 5, z: 30}, 10000);
+                }
+            },
+            {
+                time: 40000,
+                action: () => { showDialogue("居民", "電力的確跳動了，但這片海岸的樣子也變了。開發者，當妳在那邊精算著『效率』時，有沒有想過我們的心情？"); }
+            },
+            {
+                time: 48000,
+                action: () => {
+                    hideDialogue();
+                    player.rotation.y = Math.PI; // 轉身面對鏡頭
+                    camera.position.set(0, 2, 14);
+                    camera.lookAt(0, 1.5, 10);
+                }
+            },
+            {
+                time: 51000,
+                action: () => { showDialogue("開發者（玩家）", "權衡與選擇，是我來到這裡的原因。妳 your 的聲音，我會一直聽著。"); }
+            },
+            {
+                time: 56000,
+                action: () => { showDialogue("居民", "那就讓我們看看，妳最後會把這片海岸變成什麼樣子吧。"); }
+            },
+            {
+                time: 60000,
+                action: () => {
+                    document.getElementById('bgm2').pause();
+                    document.getElementById('bgm2').currentTime = 0;
+                    document.getElementById('fade-overlay').style.opacity = '1';
+                    hideDialogue();
+                }
+            },
+            {
+                time: 62000,
+                action: () => {
+                    document.getElementById('title-screen').classList.remove('hidden');
+                    setTimeout(() => {
+                        document.getElementById('game-title').style.opacity = '1';
+                        document.getElementById('sub-title').style.opacity = '1';
+                        document.getElementById('download-link').style.opacity = '1';
+                    }, 500);
+                }
+            }
+        ];
+
+        function showDialogue(role, text) {
+            const diag = document.getElementById('dialogue');
+            document.getElementById('role').innerText = role;
+            document.getElementById('content').innerText = text;
+            diag.style.opacity = '1';
+        }
+
+        function hideDialogue() {
+            document.getElementById('dialogue').style.opacity = '0';
+        }
+
+        function updateStats() {
+            let p = 0;
+            let e = 0;
+            let timer = setInterval(() => {
+                p += Math.floor(Math.random() * 50);
+                e = (Math.random() * 15 + 80).toFixed(1);
+                document.getElementById('power-val').innerText = p;
+                document.getElementById('eff-val').innerText = e;
+                if(p > 2000) clearInterval(timer);
+            }, 100);
+        }
+
+        // 簡易的補間動畫模擬
+        class TWEEN_Simple {
+            constructor(obj, target, duration) {
+                const start = { ...obj };
+                const startTime = Date.now();
+                const animate = () => {
+                    const now = Date.now();
+                    const progress = Math.min((now - startTime) / duration, 1);
+                    for (let key in target) {
+                        obj[key] = start[key] + (target[key] - start[key]) * progress;
+                    }
+                    if (progress < 1) requestAnimationFrame(animate);
+                };
+                animate();
+            }
+        }
+
+        document.getElementById('start-btn').addEventListener('click', () => {
+            document.getElementById('start-btn').style.display = 'none';
+            isStarted = true;
+            init3D();
+            
+            timeline.forEach(step => {
+                setTimeout(step.action, step.time);
+            });
+        });
+
+        window.addEventListener('resize', () => {
+            if(camera) {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        });
+
+    </script>
+</body>
+</html>
