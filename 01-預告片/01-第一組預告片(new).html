@@ -202,7 +202,9 @@
         #intro-video {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            display: block;
+            object-fit: contain;
+            object-position: center center;
             background: #000;
         }
 
@@ -218,6 +220,118 @@
             background: rgba(2, 6, 23, 0.62);
             font-size: 13px;
             letter-spacing: 0.14em;
+        }
+
+
+        /* 第二大段：遊戲試玩畫面 */
+        #gameplay-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 35;
+            background: #000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 650ms ease;
+        }
+
+        #gameplay-video {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: contain;
+            object-position: center center;
+            background: #000;
+            filter: saturate(1.08) contrast(1.06) brightness(0.9);
+        }
+
+        .gameplay-vignette {
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(180deg, rgba(0, 0, 0, 0.42), transparent 20%, transparent 62%, rgba(0, 0, 0, 0.72)),
+                radial-gradient(circle at 50% 44%, transparent 42%, rgba(0, 0, 0, 0.38) 100%);
+            pointer-events: none;
+        }
+
+        .gameplay-panel {
+            position: absolute;
+            top: calc(11.5vh + 64px);
+            left: 24px;
+            z-index: 2;
+            width: min(36vw, 420px);
+            min-width: 280px;
+            padding: 18px 20px;
+            border: 1px solid rgba(125, 211, 252, 0.42);
+            border-radius: 20px;
+            background: rgba(2, 6, 23, 0.68);
+            box-shadow: 0 0 34px rgba(14, 165, 233, 0.16), inset 0 0 30px rgba(14, 165, 233, 0.06);
+            backdrop-filter: blur(10px);
+        }
+
+        .gameplay-panel h2 {
+            margin: 0 0 12px;
+            color: #e0f2fe;
+            font-size: clamp(18px, 2vw, 28px);
+            letter-spacing: 0.12em;
+        }
+
+        .control-grid {
+            display: grid;
+            gap: 8px;
+            color: #cbd5e1;
+            font-size: clamp(13px, 1.35vw, 17px);
+            line-height: 1.55;
+            letter-spacing: 0.06em;
+        }
+
+        .control-grid b {
+            display: inline-block;
+            min-width: 76px;
+            margin-right: 6px;
+            padding: 2px 8px;
+            border: 1px solid rgba(125, 211, 252, 0.42);
+            border-radius: 8px;
+            color: #67e8f9;
+            background: rgba(14, 165, 233, 0.12);
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            text-align: center;
+        }
+
+        .mission-panel {
+            position: absolute;
+            right: 24px;
+            bottom: calc(14.5vh + 142px);
+            z-index: 2;
+            width: min(38vw, 460px);
+            min-width: 300px;
+            padding: 18px 20px;
+            border: 1px solid rgba(250, 204, 21, 0.34);
+            border-radius: 20px;
+            background: rgba(2, 6, 23, 0.7);
+            box-shadow: 0 0 30px rgba(250, 204, 21, 0.12), inset 0 0 34px rgba(14, 165, 233, 0.05);
+            backdrop-filter: blur(10px);
+        }
+
+        .mission-panel h3 {
+            margin: 0 0 10px;
+            color: #fde68a;
+            font-size: clamp(16px, 1.8vw, 24px);
+            letter-spacing: 0.12em;
+        }
+
+        .mission-panel p {
+            margin: 0;
+            color: #e2e8f0;
+            font-size: clamp(13px, 1.45vw, 18px);
+            line-height: 1.65;
+            letter-spacing: 0.06em;
+        }
+
+        .pass-condition {
+            margin-top: 12px !important;
+            padding-top: 12px;
+            border-top: 1px solid rgba(250, 204, 21, 0.24);
+            color: #fef3c7 !important;
         }
 
         /* 製作團隊畫面：只放指定文字 */
@@ -522,6 +636,8 @@
             #scene-title { left: 12px; right: 12px; top: 13vh; text-align: center; }
             #timer { right: 12px; top: auto; bottom: 3.6vh; }
             .letterbox { height: 10vh; }
+            .gameplay-panel { top: 15vh; left: 12px; width: calc(100vw - 24px); min-width: 0; }
+            .mission-panel { right: 12px; bottom: 24vh; width: calc(100vw - 24px); min-width: 0; }
         }
     </style>
 </head>
@@ -548,6 +664,27 @@
             <div class="team-school">高雄市立瑞祥高中</div>
             <div class="team-name">海洋探險隊</div>
             <div class="team-members">安翊、子晴、舜丞、威仁</div>
+        </div>
+    </div>
+
+
+    <div id="gameplay-screen" aria-hidden="true">
+        <video id="gameplay-video" preload="auto" playsinline muted loop crossorigin="anonymous">
+            <source src="https://raw.githubusercontent.com/igudesman222/igudesman2012/5ebc03782161436801091e4f91d3fdba1e1c116c/01-%E7%AC%AC%E4%B8%80%E7%B5%84%E8%B3%87%E6%BA%90/002-%E5%BD%B1%E7%89%87%E4%B8%BB%E8%A6%96%E8%A6%BA/%E7%AC%AC%E4%B8%80%E7%B5%84%E8%A9%A6%E7%8E%A9%E7%95%AB%E9%9D%A2">
+        </video>
+        <div class="gameplay-vignette"></div>
+        <div class="gameplay-panel">
+            <h2>遊戲遊玩方式</h2>
+            <div class="control-grid">
+                <div><b>WASD</b>駕駛潛艇移動，避開施工亂流與海底障礙。</div>
+                <div><b>SPACE</b>啟動探照／互動，掃描海域並取得環評線索。</div>
+                <div><b>SHIFT</b>短暫加速衝刺，但要留意生態與能量消耗。</div>
+            </div>
+        </div>
+        <div class="mission-panel">
+            <h3>任務與通關條件</h3>
+            <p>深入海底蒐集環評數據，在「能源開發」與「環境保育」的抉擇中找出可行方案。</p>
+            <p class="pass-condition">通關條件：完成指定數據蒐集，維持生態完整度不歸零，並抵達任務終點。</p>
         </div>
     </div>
 
@@ -598,6 +735,13 @@
         const INTRO_VIDEO_MS = 10000;
         const TEAM_CARD_MS = 5000;
         const RAW_VIDEO_URL = "https://raw.githubusercontent.com/igudesman222/igudesman2012/5ebc03782161436801091e4f91d3fdba1e1c116c/01-%E7%AC%AC%E4%B8%80%E7%B5%84%E8%B3%87%E6%BA%90/002-%E5%BD%B1%E7%89%87%E4%B8%BB%E8%A6%96%E8%A6%BA/01-%E7%AC%AC%E4%B8%80%E7%B5%84%E4%B8%BB%E8%A6%96%E8%A6%BA%E5%8B%95%E7%95%AB.mp4";
+        const RAW_GAMEPLAY_VIDEO_URL = "https://raw.githubusercontent.com/igudesman222/igudesman2012/5ebc03782161436801091e4f91d3fdba1e1c116c/01-%E7%AC%AC%E4%B8%80%E7%B5%84%E8%B3%87%E6%BA%90/002-%E5%BD%B1%E7%89%87%E4%B8%BB%E8%A6%96%E8%A6%BA/%E7%AC%AC%E4%B8%80%E7%B5%84%E8%A9%A6%E7%8E%A9%E7%95%AB%E9%9D%A2";
+
+        const RAW_AUDIO_URLS = {
+            first: "https://raw.githubusercontent.com/igudesman222/igudesman2012/5ebc03782161436801091e4f91d3fdba1e1c116c/01-%E7%AC%AC%E4%B8%80%E7%B5%84%E8%B3%87%E6%BA%90/003-%E8%83%8C%E6%99%AF%E9%9F%B3%E6%A8%82/%E6%B5%B7%E5%BA%95%E5%A3%93%E7%97%95.mp3%20%E7%AC%AC%E4%B8%80%E6%AE%B5.mp3",
+            second: "https://raw.githubusercontent.com/igudesman222/igudesman2012/5ebc03782161436801091e4f91d3fdba1e1c116c/01-%E7%AC%AC%E4%B8%80%E7%B5%84%E8%B3%87%E6%BA%90/003-%E8%83%8C%E6%99%AF%E9%9F%B3%E6%A8%82/%E7%8B%B9%E7%B8%AB%E5%A5%94%E9%80%83.mp3%20%E7%AC%AC%E4%BA%8C%E6%AE%B5.mp3",
+            third: "https://raw.githubusercontent.com/igudesman222/igudesman2012/5ebc03782161436801091e4f91d3fdba1e1c116c/01-%E7%AC%AC%E4%B8%80%E7%B5%84%E8%B3%87%E6%BA%90/003-%E8%83%8C%E6%99%AF%E9%9F%B3%E6%A8%82/%E7%A0%B4%E6%9B%89%E5%9B%9E%E8%81%B2.mp3%20%E7%AC%AC%E4%B8%89%E6%AE%B5.mp3"
+        };
 
         let scene, camera, renderer;
         let npcs = {}, corals = [], fish = [], bubbles = [];
@@ -607,6 +751,8 @@
         let currentTimelineIndex = -1;
         let introTimer = null;
         let teamTimer = null;
+        let bgm = {};
+        let currentMusicKey = null;
 
         const ui = {
             opening: document.getElementById('opening-menu'),
@@ -614,6 +760,8 @@
             videoScreen: document.getElementById('video-screen'),
             introVideo: document.getElementById('intro-video'),
             teamScreen: document.getElementById('team-screen'),
+            gameplayScreen: document.getElementById('gameplay-screen'),
+            gameplayVideo: document.getElementById('gameplay-video'),
             subtitleContainer: document.getElementById('subtitle-container'),
             speaker: document.getElementById('speaker-name'),
             subtitle: document.getElementById('subtitle'),
@@ -831,6 +979,7 @@
             scene.background = curState.bgColor;
             scene.fog = new THREE.FogExp2(curState.bgColor, 0.038);
             renderer.render(scene, camera);
+            initAudio();
 
             ui.playBtn.addEventListener('click', startExperience);
             window.addEventListener('resize', onWindowResize);
@@ -968,6 +1117,54 @@
             scene.add(dataBuoy);
         }
 
+
+        function initAudio() {
+            bgm = Object.fromEntries(Object.entries(RAW_AUDIO_URLS).map(([key, src]) => {
+                const audio = new Audio(src);
+                audio.preload = 'auto';
+                audio.loop = true;
+                audio.volume = 0.68;
+                return [key, audio];
+            }));
+        }
+
+        function playSectionMusic(key) {
+            if (!key || currentMusicKey === key) return;
+            Object.entries(bgm).forEach(([musicKey, audio]) => {
+                if (musicKey === key) return;
+                audio.pause();
+                audio.currentTime = 0;
+            });
+            const target = bgm[key];
+            if (!target) return;
+            currentMusicKey = key;
+            target.currentTime = 0;
+            const attempt = target.play();
+            if (attempt && typeof attempt.catch === 'function') {
+                attempt.catch(() => {
+                    // 若瀏覽器阻擋遠端音訊，流程仍可繼續播放畫面與字幕。
+                });
+            }
+        }
+
+        function stopSectionMusic() {
+            Object.values(bgm).forEach(audio => {
+                audio.pause();
+                audio.currentTime = 0;
+            });
+            currentMusicKey = null;
+        }
+
+        function updateSectionMusicByTime(elapsedSec) {
+            if (elapsedSec >= 163) {
+                playSectionMusic('third');
+            } else if (elapsedSec >= 74) {
+                playSectionMusic('second');
+            } else {
+                playSectionMusic('first');
+            }
+        }
+
         function startExperience() {
             ui.playBtn.disabled = true;
             ui.opening.classList.add('fade-out');
@@ -1015,6 +1212,7 @@
             currentTimelineIndex = -1;
             mainStartTime = performance.now();
             clock.start();
+            playSectionMusic('first');
             animate();
         }
 
@@ -1032,8 +1230,10 @@
             dirState.fishPanic = 0;
             submarine.position.set(0, 3.4, 14);
             ui.finalOverlay.classList.remove('fade-in');
+            stopSectionMusic();
             hideFullCard();
             hideSubtitle();
+            hideGameplayVideo();
         }
 
         function animate() {
@@ -1042,9 +1242,36 @@
             const dt = Math.min(clock.getDelta(), 0.1);
             const elapsedSec = (performance.now() - mainStartTime) / 1000;
             updateTimeline(elapsedSec);
+            updateSectionMusicByTime(elapsedSec);
+            updateGameplayVideoByTime(elapsedSec);
             updateWorld(dt, elapsedSec);
             updateLabels();
             renderer.render(scene, camera);
+        }
+
+        function showGameplayVideo() {
+            if (!ui.gameplayScreen || !ui.gameplayVideo) return;
+            ui.gameplayScreen.classList.add('fade-in');
+            ui.gameplayScreen.setAttribute('aria-hidden', 'false');
+            if (!ui.gameplayVideo.src) ui.gameplayVideo.src = RAW_GAMEPLAY_VIDEO_URL;
+            const attempt = ui.gameplayVideo.play();
+            if (attempt && typeof attempt.catch === 'function') {
+                attempt.catch(() => {
+                    // 若遠端影片尚未載入，仍保留操作說明與 Three.js 背景。
+                });
+            }
+        }
+
+        function hideGameplayVideo() {
+            if (!ui.gameplayScreen || !ui.gameplayVideo) return;
+            ui.gameplayScreen.classList.remove('fade-in');
+            ui.gameplayScreen.setAttribute('aria-hidden', 'true');
+            ui.gameplayVideo.pause();
+        }
+
+        function updateGameplayVideoByTime(elapsedSec) {
+            if (elapsedSec >= 74 && elapsedSec < 163) showGameplayVideo();
+            else hideGameplayVideo();
         }
 
         function updateTimeline(elapsedSec) {
@@ -1333,8 +1560,10 @@
 
         function endTrailer() {
             isPlaying = false;
+            stopSectionMusic();
             hideSubtitle();
             hideFullCard();
+            hideGameplayVideo();
             ui.hud.style.opacity = 0;
             ui.sceneTitle.style.opacity = 0;
             ui.timer.style.opacity = 0;
@@ -1342,6 +1571,7 @@
             ui.finalOverlay.setAttribute('aria-hidden', 'false');
             setTimeout(() => {
                 ui.finalOverlay.classList.remove('fade-in');
+            stopSectionMusic();
                 ui.finalOverlay.setAttribute('aria-hidden', 'true');
                 ui.opening.classList.remove('hidden', 'fade-out');
                 ui.playBtn.disabled = false;
