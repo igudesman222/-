@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>漁民的抉擇 - 3D實機對白預告片</title>
+    <title>漁民的抉擇 - 宣傳片講稿版</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
 
@@ -30,11 +30,98 @@
         #letterbox-top { top: 0; }
         #letterbox-bottom { bottom: 0; }
 
-        /* ======== 實機遊玩影片 UI ======== */
-        #gameplay-video {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            object-fit: cover; z-index: 5; opacity: 0; pointer-events: none;
-            transition: opacity 0.5s ease;
+        /* ======== GitHub 影片素材 UI ======== */
+        .stage-video {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* 保持全部畫面呈現：手機、平板、桌機都不裁切 */
+            object-position: center center;
+            background: #000;
+            z-index: 6;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.45s ease;
+        }
+        #opening-visual-video { z-index: 7; }
+        #gameplay-video { z-index: 8; }
+        .stage-video.is-visible { opacity: 1; }
+
+        #gameplay-info-panel {
+            position: absolute;
+            right: clamp(12px, 4vw, 48px);
+            bottom: calc(12% + clamp(14px, 3vw, 28px));
+            width: min(420px, calc(100vw - 24px));
+            padding: clamp(14px, 3vw, 22px);
+            border: 1px solid rgba(255,255,255,0.28);
+            border-radius: 18px;
+            background: linear-gradient(135deg, rgba(2, 6, 23, 0.82), rgba(15, 23, 42, 0.68));
+            box-shadow: 0 18px 45px rgba(0,0,0,0.45);
+            backdrop-filter: blur(10px);
+            z-index: 55;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.35s ease, transform 0.35s ease;
+            pointer-events: none;
+        }
+        #gameplay-info-panel.is-visible { opacity: 1; transform: translateY(0); }
+        #gameplay-info-panel h2 {
+            margin: 0 0 10px; color: #67e8f9; font-size: clamp(1.05rem, 2.6vw, 1.45rem);
+            letter-spacing: 0.08em;
+        }
+        .gameplay-info-grid { display: grid; gap: 10px; }
+        .gameplay-info-card {
+            border-left: 4px solid #67e8f9;
+            padding-left: 12px;
+        }
+        .gameplay-info-card strong { display:block; color:#fcd34d; margin-bottom:4px; }
+        .gameplay-info-card p { margin:0; color:#e2e8f0; line-height:1.55; font-size: clamp(0.9rem, 2.2vw, 1rem); }
+
+
+        #team-intro-card,
+        #ending-cta-card {
+            position: absolute;
+            left: 50%; top: 50%; transform: translate(-50%, -50%) scale(0.98);
+            width: min(860px, calc(100vw - 32px));
+            padding: clamp(22px, 5vw, 46px);
+            box-sizing: border-box;
+            border: 1px solid rgba(103,232,249,0.45);
+            border-radius: 24px;
+            background: radial-gradient(circle at top, rgba(8,145,178,0.45), rgba(2,6,23,0.9) 62%);
+            box-shadow: 0 25px 70px rgba(0,0,0,0.58), inset 0 0 42px rgba(103,232,249,0.12);
+            text-align: center;
+            z-index: 58;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.45s ease, transform 0.45s ease;
+        }
+        #team-intro-card.is-visible,
+        #ending-cta-card.is-visible { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        #team-intro-card h2,
+        #ending-cta-card h2 { margin: 0 0 14px; color: #67e8f9; font-size: clamp(1.6rem, 5vw, 3.4rem); letter-spacing: 0.12em; }
+        #team-intro-card p,
+        #ending-cta-card p { margin: 8px 0; color: #e2e8f0; font-size: clamp(1rem, 2.8vw, 1.35rem); line-height: 1.7; }
+        #ending-cta-card { z-index: 95; }
+
+        #ending-cta-card .qr-placeholder {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: clamp(116px, 24vw, 180px); height: clamp(116px, 24vw, 180px);
+            margin-top: 18px; border: 2px dashed rgba(252,211,77,0.85); border-radius: 18px;
+            color: #fcd34d; font-weight: 900; letter-spacing: 0.08em;
+            background: rgba(15,23,42,0.68);
+        }
+
+        @media (max-width: 768px) {
+            .letterbox { height: 8%; }
+            #subtitle-container { bottom: 8%; width: 94%; }
+            #subtitle-text { font-size: 1.05rem; padding: 10px 14px; max-width: 94vw; }
+            .speaker-name { font-size: 0.92rem; }
+            #gameplay-info-panel {
+                left: 12px; right: 12px; bottom: calc(8% + 10px); width: auto;
+                padding: 12px 14px; border-radius: 14px;
+            }
+            #timer-display { font-size: 1rem; }
         }
 
         /* ======== 情境特效 Overlays ======== */
@@ -149,13 +236,45 @@
 <body>
 
 <div id="game-container"></div>
-<video id="gameplay-video" src="02-小遊戲遊玩.mp4" muted playsinline loop></video>
+<video id="opening-visual-video" class="stage-video" src="https://raw.githubusercontent.com/igudesman222/igudesman2012/3b222eca70ac5952d69e441898173afdb146bc97/02-%E7%AC%AC%E4%BA%8C%E7%B5%84%E8%B3%87%E6%BA%90/02-001-%E5%BD%B1%E7%89%87/02-%E7%AC%AC%E4%BA%8C%E7%B5%84%E4%B8%BB%E8%A6%96%E8%A6%BA%E5%8B%95%E7%95%AB.mp4" playsinline preload="auto" crossorigin="anonymous"></video>
+<video id="gameplay-video" class="stage-video" src="https://raw.githubusercontent.com/igudesman222/igudesman2012/3b222eca70ac5952d69e441898173afdb146bc97/02-%E7%AC%AC%E4%BA%8C%E7%B5%84%E8%B3%87%E6%BA%90/02-001-%E5%BD%B1%E7%89%87/02-%E5%B0%8F%E9%81%8A%E6%88%B2%E9%81%8A%E7%8E%A9.mp4" muted playsinline loop preload="metadata"></video>
+
+<div id="gameplay-info-panel" aria-live="polite">
+    <h2>小遊戲遊玩說明</h2>
+    <div class="gameplay-info-grid">
+        <div class="gameplay-info-card">
+            <strong>操作方式</strong>
+            <p>W、A、S、D 控制方向，在魚塭步道巡視；按住滑鼠左鍵滑動，可 360 度環顧七股魚塭；靠近發光光圈後按 E 觸發事件。</p>
+        </div>
+        <div class="gameplay-info-card">
+            <strong>關鍵指標</strong>
+            <p>每個選擇都會改變魚群健康、發電達成率、生態評估與營運資金四項數值。</p>
+        </div>
+        <div class="gameplay-info-card">
+            <strong>通關條件</strong>
+            <p>撐過五天營運並避免營運資金歸零；資金歸零會被財團收購並提前 Game Over，最後依抉擇產生專屬結局。</p>
+        </div>
+    </div>
+</div>
+
+<div id="team-intro-card">
+    <h2>海洋探險隊</h2>
+    <p>高雄市立瑞祥高中</p>
+    <p>鈺荃・維元・柏凱</p>
+</div>
+
+<div id="ending-cta-card">
+    <h2>《漁民的抉擇》即刻體驗</h2>
+    <p>了解真相，是改變的開始。</p>
+    <p>請和我們一起，守護七股的海。</p>
+    <div class="qr-placeholder">QR Code / 遊玩連結</div>
+</div>
 
 <!-- 情境特效 Overlays -->
 <div id="news-overlay">
     <div class="news-live">LIVE</div>
     <div class="news-banner">
-        <h2 style="margin:0; font-size: 1.8rem; text-shadow: 1px 1px 2px #000;">BREAKING NEWS | 全台最大『漁電共生』示範區正式啟用</h2>
+        <h2 style="margin:0; font-size: 1.8rem; text-shadow: 1px 1px 2px #000;">BREAKING NEWS | 七股頂山子段漁電共生案場啟用</h2>
     </div>
 </div>
 <div id="cam-overlay">
@@ -173,7 +292,7 @@
 <div id="fade-overlay"></div>
 <div id="letterbox-top" class="letterbox"></div>
 <div id="letterbox-bottom" class="letterbox"></div>
-<div id="timer-display">00:00 / 02:30</div>
+<div id="timer-display">00:00 / 04:05</div>
 
 <div id="subtitle-container"><div id="subtitle-text"></div></div>
 
@@ -186,11 +305,11 @@
     <!-- 修改了這裡的標題 -->
     <h1 style="color:#0ff; text-shadow:0 0 20px #0ff; font-size:3.5rem; margin-bottom:10px;">漁民的抉擇</h1>
     <p style="color:#aaa; max-width:700px; text-align:center; line-height:1.6; margin-bottom: 40px; font-size: 1.2rem;">
-        3D 實機場景 結合 150 秒完整對白<br>
-        點擊下方按鈕開始預覽
+        依講稿重排：開場動畫、議題背景、玩法介紹與宣傳收束<br>
+        點擊下方按鈕開始播放 4 分 05 秒預告片
     </p>
 
-    <button id="start-btn">播放 2分30秒 預告片</button>
+    <button id="start-btn">播放講稿版預告片</button>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -301,41 +420,48 @@
     // 結合後的腳本資料 (150秒) 與 重新分配的運鏡
     // ==========================================
     const subtitles = [
-        { start: 0, end: 6, speaker: "旁白", text: "在這片曾被夕陽染成金色的潟湖，一場名為『轉型』的風暴，正席捲而來。" },
-        { start: 6, end: 15, speaker: "女主播", text: "台南七股頂山子段、下山子寮段及口寮段迎來全台最大『漁電共生』示範區，預計為國家帶來龐大的綠能效益。" },
-        { start: 15, end: 25, speaker: "阿明", text: "以前，七股養殖區的水是清澈的，裡面滿滿的文蛤和虱目魚……現在發展漁電共生後，不僅租金翻了快十倍，讓我們這些漁民連租都租不起。" },
-        { start: 25, end: 35, speaker: "阿明", text: "還有養殖區裡的生物，因為一些化學污染造成水質不佳而導致死亡，我們漁民因此收入銳減。" },
-        
-        // --- 新增：實機遊玩對白 (35s ~ 80s) 結合教學與議題 ---
-        { start: 35, end: 42, speaker: "阿海", text: "(看著派令) 漁電管理者…這就是我現在的工作嗎？使用 WASD 鍵，巡視這片被鋼鐵覆蓋的七股。" },
-        { start: 42, end: 50, speaker: "系統提示", text: "【教學】請時刻注意左側指標：魚群健康、發電達成、生態評估。你必須在「綠能收益」與「生態存續」間維持危險的平衡。" },
-        { start: 50, end: 58, speaker: "阿海", text: "步道上的發光點是突發事件…「候鳥迷航」？光電板的反光讓牠們找不到降落的淺灘了…" },
-        { start: 58, end: 66, speaker: "阿明", text: "(無線電) 阿海，關掉幾片面板吧，扣點發電量沒關係，給那些鳥留條活路啊！" },
-        { start: 66, end: 74, speaker: "系統提示", text: "【抉擇】每個選擇都有代價：關閉面板將面臨違約虧損；強行驅離鳥群則會造成嚴重的生態浩劫。" },
-        { start: 74, end: 80, speaker: "阿海", text: "如果所謂的「共生」，只能靠不斷妥協與犧牲來維持…那我們到底在保護什麼？" },
-        // -----------------------------------------------------
+        { start: 0, end: 8, speaker: "", text: "" },
 
-        { start: 80, end: 88, speaker: "旁白", text: "當水面不再閃爍，被掩埋的，不只是底泥，還有生態的哀歌。" },
-        { start: 88, end: 98, speaker: "年輕志工", text: "可惡！不肖廠商為了擴建光電廠，偷偷把潟湖填平，剷平周遭珍貴的紅樹林作為建地，但這是我們大地之母呼吸的地方！" },
-        { start: 98, end: 105, speaker: "阿明", text: "對啦對啦～原本魚塭帶有滯洪的效果，都被這些人破壞了！" },
-        { start: 105, end: 112, speaker: "年輕志工", text: "這些魚塭附近全插滿了太陽能板，黑面琵鷺、白鷺鷥都找不到家了！" },
-        { start: 112, end: 120, speaker: "阿明", text: "這根本不是綠能轉型，這是對七股的掠奪！是光電對我們的剝削！" },
-        { start: 120, end: 128, speaker: "年輕志工", text: "我們要求總量管制！只要我們不放棄，七股的真相就一定會被看見！" },
-        { start: 128, end: 140, speaker: "旁白", text: "親自見證這片潮間帶的故事——《七股餘光》即刻體驗。" },
-        { start: 140, end: 150, speaker: "旁白", text: "了解真相，是改變的開始。請和我們一起，為七股的明天發聲。" }
+        // 【第一大段：議題交代爭議與故事背景】
+        { start: 14, end: 21, speaker: "旁白", text: "在這片曾被夕陽染成金色的潟湖，一場名為『轉型』的風暴，正席捲而來。" },
+        { start: 22, end: 33, speaker: "女廣播", text: "現在為您插播，位於台南七股的全台最大漁電共生案場：七股頂山子段，預計年發電量達 1.8 億度，將能滿足五萬戶家庭用電。" },
+        { start: 34, end: 59, speaker: "阿明", text: "唉……以前啊，七股到處都是魚塭，隨便撈都是滿滿的文蛤跟虱目魚。現在搞什麼漁電共生，魚塭都抽乾了，土地租金也翻了快十倍！我們這些老骨頭連租都租不起，是要怎麼活？" },
+        { start: 60, end: 69, speaker: "阿海", text: "不只這樣啦！那些施工用的化學物料流進水裡，水質整個壞掉，魚蝦死一堆，我們連成本都收不回來！" },
+        { start: 70, end: 76, speaker: "旁白", text: "當水面不再閃爍，被埋葬的，不只是七股人民的記憶，還有當地生態……" },
+        { start: 77, end: 87, speaker: "阿海", text: "太扯了，有聽說一些不肖廠商為多塞幾塊光電板，偷偷填平潟湖，連旁邊的紅樹林都直接剷掉！這裡本來是天然的滯洪池耶！" },
+        { start: 88, end: 96, speaker: "阿明", text: "對啊！滯洪池沒了，以後只要颱風一來、大雨一落，我們這附近的庄頭誰不怕淹水？" },
+        { start: 97, end: 105, speaker: "阿海", text: "而且你們看，魚塭全插滿了太陽能板，連黑面琵鷺、白鷺鷥飛過來，都找不到地方落腳覓食，這到底算哪門子的『共生』？" },
+
+        // 【第二大段：介紹遊戲玩法與敘事推進】
+        { start: 106, end: 111, speaker: "旁白", text: "歡迎來到 3D 經營互動遊戲——《漁民的抉擇》。" },
+        { start: 112, end: 118, speaker: "阿海", text: "哇，我的畫面變成 3D 的了？那我該怎麼玩？是要親自下去養魚嗎？" },
+        { start: 119, end: 132, speaker: "年輕志工", text: "很直覺啦！你只要用鍵盤的 W、A、S、D，就能控制方向，在這片超大的魚塭步道上巡視。再來，按住滑鼠左鍵滑動，還可以 360 度環顧七股魚塭的風景喔！" },
+        { start: 133, end: 144, speaker: "阿明", text: "沒錯，但你可不是來觀光的！巡視的時候，你要注意尋找地上那些發光的光圈。一走進去，按下鍵盤的 E，就會觸發當地的突發事件。" },
+        { start: 145, end: 155, speaker: "旁白", text: "從異常的高溫、颱風警報，到黑面琵鷺的迷航。每一次按下 E 的抉擇，都伴隨著沉重的代價。" },
+        { start: 156, end: 160, speaker: "阿海", text: "哇，感覺壓力好大……那我亂選會怎麼樣嗎？" },
+        { start: 161, end: 171, speaker: "年輕志工", text: "嘿，亂選可是會出局的喔！你的每個決定，都會改變畫面上這四個數值：魚群健康、發電達成率、生態評估，還有最重要的營運資金。" },
+        { start: 172, end: 183, speaker: "阿海", text: "這遊戲超現實的啦！我得努力撐過五天的日常營運。如果為了救魚或做環保，把營運資金花到變零，魚塭就會直接被財團收購，提早 Game Over！" },
+        { start: 184, end: 192, speaker: "年輕志工", text: "一路上所有大小的抉擇都會產生蝴蝶效應。當你走完整趟旅程，遊戲就會根據你前面的決定，出現專屬於你的結局。" },
+        { start: 193, end: 203, speaker: "旁白", text: "你的抉擇，會為這片魚塭帶來怎樣的未來？你能否看破魚塭的秘密？遊戲，即將開始。" },
+
+        // 【第三大段：議題喚醒與遊戲宣傳語】
+        { start: 204, end: 214, speaker: "旁白", text: "這裡是七股，是台南鄉親賴以維生的海，也是黑面琵鷺眷戀的家。然而，當綠能插旗，是轉型，還是吞噬？" },
+        { start: 215, end: 223, speaker: "阿海", text: "政府說『漁電共生』是雙贏，但如果連漁民的飯碗跟生態都保不住，這種綠能，真的值得提倡嗎？" },
+        { start: 224, end: 231, speaker: "年輕志工", text: "沒錯，讓我們一起走進這片被光電板覆蓋的土地，親自見證七股魚塭的故事。" },
+        { start: 232, end: 245, speaker: "旁白", text: "《漁民的抉擇》即刻體驗。了解真相，是改變的開始。請和我們一起，守護七股的海。" }
     ];
 
-    // 將原本的 90 秒運鏡拉長並重新分配到 150 秒內
+    // 依講稿 4:05 時間軸重新配置運鏡
     const cameraShots = [
-        { start: 0, end: 15, camStart: [15, 4, 15], camEnd: [-5, 3, 10], look: [-65, 5, -65] }, // 廟宇遠景
-        { start: 15, end: 35, camStart: [-10, 1.5, 5], camEnd: [-30, 2, -15], look: [-40, 2, -20] }, // 漁民背影與光電板
-        { start: 35, end: 50, camStart: [-30, 1.5, 20], camEnd: [-10, 1.5, 20], look: [-20, 1, -20] }, // 實機展示片段 1
-        { start: 50, end: 65, camStart: [10, 1, -10], camEnd: [0, 1, -20], look: [0, 1, -30] }, // 實機展示片段 2
-        { start: 65, end: 80, camStart: [10, 2, -10], camEnd: [2, 2, -2], look: [0, 2, 0] }, // 實機展示片段 3
-        { start: 80, end: 98, camStart: [30, 5, 30], camEnd: [15, 5, 15], look: [15, 1, 0] }, // 史詩全景與真相核心
-        { start: 98, end: 112, camStart: [-10, 1.5, 10], camEnd: [-18, 1.5, 10], look: [-15, 1.5, 0] }, // 漁民側寫與鳥類
-        { start: 112, end: 128, camStart: [0, 3, 15], camEnd: [0, 2, 4], look: [0, 2, 0] }, // 衝突高潮運鏡
-        { start: 128, end: 155, camStart: [0, 2, 4], camEnd: [0, 2, 4], look: [0, 2, 0] } // 結尾靜止
+        { start: 0, end: 13, camStart: [15, 4, 15], camEnd: [15, 4, 15], look: [-65, 5, -65] },
+        { start: 14, end: 33, camStart: [15, 4, 15], camEnd: [-5, 3, 10], look: [-65, 5, -65] },
+        { start: 34, end: 76, camStart: [-10, 1.5, 5], camEnd: [-30, 2, -15], look: [-40, 2, -20] },
+        { start: 77, end: 105, camStart: [30, 5, 30], camEnd: [12, 4, 12], look: [0, 1.5, 0] },
+        { start: 106, end: 132, camStart: [-30, 1.5, 20], camEnd: [-10, 1.5, 20], look: [-20, 1, -20] },
+        { start: 133, end: 160, camStart: [10, 1, -10], camEnd: [0, 1, -20], look: [0, 1, -30] },
+        { start: 161, end: 203, camStart: [10, 2, -10], camEnd: [2, 2, -2], look: [0, 2, 0] },
+        { start: 204, end: 231, camStart: [-10, 1.5, 10], camEnd: [-18, 1.5, 10], look: [-15, 1.5, 0] },
+        { start: 232, end: 248, camStart: [0, 2, 4], camEnd: [0, 2, 4], look: [0, 2, 0] }
     ];
 
     const subtitleText = document.getElementById('subtitle-text');
@@ -347,13 +473,98 @@
     const newsOverlay = document.getElementById('news-overlay');
     const camOverlay = document.getElementById('cam-overlay');
     const docOverlay = document.getElementById('doc-overlay');
+    const openingVisualVideo = document.getElementById('opening-visual-video');
     const gameplayVideo = document.getElementById('gameplay-video');
+    const gameplayInfoPanel = document.getElementById('gameplay-info-panel');
+    const teamIntroCard = document.getElementById('team-intro-card');
+    const endingCtaCard = document.getElementById('ending-cta-card');
 
     let isPlaying = false;
     let trailerTime = 0;
-    const totalTime = 150;
+    const totalTime = 245;
     let currentSubtitleIndex = -1;
     let currentCamStart = new THREE.Vector3(); let currentCamEnd = new THREE.Vector3(); let currentLookAt = new THREE.Vector3();
+
+    // --- 主視覺背景音樂增幅與清晰化 ---
+    // 只處理 02-第二組主視覺動畫.mp4：在使用者按下開始後啟用 Web Audio，避免瀏覽器自動播放限制。
+    let openingAudioContext = null;
+    let openingAudioSource = null;
+    let openingAudioReady = false;
+
+    function initOpeningVisualAudio() {
+        if (!openingVisualVideo || openingAudioReady) return;
+        try {
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContextClass) {
+                openingVisualVideo.muted = false;
+                openingVisualVideo.volume = 1.0;
+                return;
+            }
+
+            openingAudioContext = openingAudioContext || new AudioContextClass();
+            openingAudioSource = openingAudioSource || openingAudioContext.createMediaElementSource(openingVisualVideo);
+
+            // 清掉低頻轟鳴，讓主視覺音樂更乾淨。
+            const highPass = openingAudioContext.createBiquadFilter();
+            highPass.type = 'highpass';
+            highPass.frequency.value = 85;
+            highPass.Q.value = 0.7;
+
+            // 稍微降低混濁低頻。
+            const lowShelf = openingAudioContext.createBiquadFilter();
+            lowShelf.type = 'lowshelf';
+            lowShelf.frequency.value = 180;
+            lowShelf.gain.value = -1.8;
+
+            // 提升人耳較敏感的清晰度頻段，讓背景音樂更亮、更清新。
+            const presence = openingAudioContext.createBiquadFilter();
+            presence.type = 'peaking';
+            presence.frequency.value = 3200;
+            presence.Q.value = 0.9;
+            presence.gain.value = 3.2;
+
+            // 保留空氣感，但避免高頻太刺。
+            const air = openingAudioContext.createBiquadFilter();
+            air.type = 'highshelf';
+            air.frequency.value = 8000;
+            air.gain.value = 1.6;
+
+            // 壓縮動態，讓背景音樂整體聽起來更大聲但不容易爆音。
+            const compressor = openingAudioContext.createDynamicsCompressor();
+            compressor.threshold.value = -24;
+            compressor.knee.value = 24;
+            compressor.ratio.value = 3.2;
+            compressor.attack.value = 0.004;
+            compressor.release.value = 0.22;
+
+            // 最後增益。若現場設備仍偏小，可把 1.8 調到 2.0；若破音，調回 1.5。
+            const gainNode = openingAudioContext.createGain();
+            gainNode.gain.value = 1.8;
+
+            openingAudioSource
+                .connect(highPass)
+                .connect(lowShelf)
+                .connect(presence)
+                .connect(air)
+                .connect(compressor)
+                .connect(gainNode)
+                .connect(openingAudioContext.destination);
+
+            openingVisualVideo.muted = false;
+            openingVisualVideo.volume = 0.95;
+            openingAudioReady = true;
+        } catch (error) {
+            console.warn('Opening visual audio enhancement fallback:', error);
+            openingVisualVideo.muted = false;
+            openingVisualVideo.volume = 1.0;
+        }
+    }
+
+    function resumeOpeningVisualAudio() {
+        if (openingAudioContext && openingAudioContext.state === 'suspended') {
+            openingAudioContext.resume().catch(error => console.warn('Audio resume failed:', error));
+        }
+    }
 
     function updateSubtitle(time) {
         let newIndex = -1;
@@ -368,10 +579,10 @@
                 
                 // 新增說話者顏色辨識
                 if (scene.speaker === "阿明") color = "#fbbf24";        // 黃色 (老漁民)
-                else if (scene.speaker === "女主播") color = "#94a3b8";   // 灰色 (客觀播報)
+                else if (scene.speaker === "女主播" || scene.speaker === "女廣播") color = "#94a3b8";   // 灰色 (客觀播報)
                 else if (scene.speaker === "年輕志工") color = "#34d399"; // 綠色 (環保熱血)
                 else if (scene.speaker === "阿海") color = "#60a5fa";     // 藍色 (玩家主角/管理者)
-                else if (scene.speaker === "系統提示") color = "#f87171"; // 紅色 (冷酷的遊戲機制)
+                else if (scene.speaker === "系統提示") color = "#f87171";
                 
                 let html = "";
                 if (scene.speaker) {
@@ -379,7 +590,7 @@
                 }
                 
                 // 結尾標題金黃色特效
-                let textStyle = (scene.text.includes('七股餘光') || scene.text.includes('了解真相')) ? "color: #fcd34d;" : "color: #f8fafc;";
+                let textStyle = (scene.text.includes('漁民的抉擇') || scene.text.includes('了解真相')) ? "color: #fcd34d;" : "color: #f8fafc;";
                 html += `<span style='${textStyle}'>${scene.text}</span>`;
                 
                 subtitleText.style.opacity = 0;
@@ -390,10 +601,31 @@
         }
     }
 
+    function setVideoVisible(video, shouldShow) {
+        if (!video) return;
+        video.classList.toggle('is-visible', shouldShow);
+        if (shouldShow) {
+            if (video === openingVisualVideo) {
+                initOpeningVisualAudio();
+                resumeOpeningVisualAudio();
+                openingVisualVideo.muted = false;
+                openingVisualVideo.volume = 0.95;
+            } else {
+                video.muted = true;
+            }
+            if (video.paused) video.play().catch(e => console.log('Video play blocked:', e));
+        } else if (!video.paused) {
+            video.pause();
+        }
+    }
+
     document.getElementById('start-btn').addEventListener('click', () => {
         document.getElementById('start-menu').style.display = 'none';
         fadeOverlay.style.opacity = 0; isPlaying = true; trailerTime = 0; currentSubtitleIndex = -1;
         core.material.color.setHex(0x00ffaa); light.color.setHex(0x00ffaa); titleCard.style.opacity = 0;
+        initOpeningVisualAudio();
+        resumeOpeningVisualAudio();
+        [openingVisualVideo, gameplayVideo].forEach(video => { if (video) video.currentTime = 0; });
     });
 
     const clock = new THREE.Clock();
@@ -423,27 +655,25 @@
             trailerTime += delta;
             
             let minutes = Math.floor(trailerTime / 60); let seconds = Math.floor(trailerTime % 60);
-            timerDisplay.innerText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} / 02:30`;
+            timerDisplay.innerText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} / 04:05`;
 
-            // ================= 新增：匹配 150 秒腳本的情境 UI =================
-            // 6-15秒：女主播新聞畫面
-            newsOverlay.style.opacity = (trailerTime >= 6 && trailerTime < 15) ? 1 : 0;
-            
-            // 35-80秒：中間的遊戲實機畫面段落 (處理影片播放)
-            const isGameplaySection = trailerTime >= 35 && trailerTime < 80;
+            // ================= 依講稿分段播放 =================
+            // 0-8秒：開場主視覺只播放一次；9-13秒：製作團隊介紹只顯示一次。
+            // 主視覺不再延伸到團隊卡背後，避免畫面重複。
+            const isOpeningVisualSection = trailerTime >= 0 && trailerTime < 8.2;
+            teamIntroCard.classList.toggle('is-visible', trailerTime >= 9 && trailerTime < 14);
+
+            // 1:46-2:49：背景替換為小遊戲遊玩畫面。
+            const isGameplaySection = trailerTime >= 106 && trailerTime < 169;
+            setVideoVisible(openingVisualVideo, isOpeningVisualSection);
+            setVideoVisible(gameplayVideo, isGameplaySection);
+            gameplayInfoPanel.classList.toggle('is-visible', trailerTime >= 112 && trailerTime < 169);
+
+            // 0:22-0:33：女廣播新聞畫面；1:45左右閃現機密文件強化爭議。
+            newsOverlay.style.opacity = (trailerTime >= 22 && trailerTime < 33) ? 1 : 0;
             camOverlay.style.opacity = isGameplaySection ? 1 : 0;
-            
-            // 影片切換邏輯
-            if (isGameplaySection && gameplayVideo.src) {
-                gameplayVideo.style.opacity = 1;
-                if (gameplayVideo.paused) gameplayVideo.play().catch(e => console.log("Video play blocked:", e));
-            } else {
-                gameplayVideo.style.opacity = 0;
-                if (!gameplayVideo.paused) gameplayVideo.pause();
-            }
-
-            // 60-68秒：在實機展示段落中間突然閃現機密文件
-            docOverlay.style.opacity = (trailerTime >= 60 && trailerTime < 68) ? 1 : 0;
+            docOverlay.style.opacity = (trailerTime >= 145 && trailerTime < 155) ? 1 : 0;
+            endingCtaCard.classList.toggle('is-visible', trailerTime >= 232 && trailerTime < 246);
 
             // 運鏡
             let currentShot = null;
@@ -458,17 +688,18 @@
 
             updateSubtitle(trailerTime);
 
-            // 結尾 Fade to Black (126s 後，搭配標題出現)
-            if (trailerTime >= 126 && trailerTime < 128) {
+            // 結尾 Fade to Black（3:52 後，搭配宣傳語與 QR Code 區塊）
+            if (trailerTime >= 232 && trailerTime < 234) {
                 fadeOverlay.style.opacity = 1; core.material.color.setHex(0xffffff); light.color.setHex(0xffffff);
             }
-            if (trailerTime >= 128) { titleCard.style.opacity = 1; }
+            // 結尾由 endingCtaCard 呈現宣傳語；不再重複顯示開場標題卡。
+            if (trailerTime >= 232) { titleCard.style.opacity = 0; }
 
-            // 結束預告片 (150 秒)
+            // 結束預告片（4分05秒）
             if (trailerTime >= totalTime + 1) {
                 isPlaying = false; document.getElementById('start-btn').innerText = "重新播放 (REPLAY)";
-                document.getElementById('start-menu').style.display = 'flex'; titleCard.style.opacity = 0; timerDisplay.innerText = "00:00 / 02:30";
-                newsOverlay.style.opacity = 0; camOverlay.style.opacity = 0; docOverlay.style.opacity = 0;
+                document.getElementById('start-menu').style.display = 'flex'; titleCard.style.opacity = 0; timerDisplay.innerText = "00:00 / 04:05";
+                newsOverlay.style.opacity = 0; camOverlay.style.opacity = 0; docOverlay.style.opacity = 0; gameplayInfoPanel.classList.remove('is-visible'); teamIntroCard.classList.remove('is-visible'); endingCtaCard.classList.remove('is-visible'); setVideoVisible(openingVisualVideo, false); setVideoVisible(gameplayVideo, false);
             }
         }
         renderer.render(scene, camera);
