@@ -2,8 +2,8 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>海之契約：離岸之爭 - 聲景同步預告片</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>海之契約：離岸之爭 預告片</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@700&family=Noto+Sans+TC:wght@300;400;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -15,6 +15,12 @@
             --contract-cyan: rgba(45, 212, 191, 0.4);
         }
 
+        html, body {
+            width: 100%;
+            height: 100%;
+            overscroll-behavior: none;
+        }
+
         body {
             margin: 0;
             background-color: var(--sea-dark);
@@ -22,6 +28,8 @@
             font-family: 'Noto Sans TC', sans-serif;
             overflow: hidden;
             user-select: none;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
 
         /* 掃描線特效 */
@@ -42,7 +50,7 @@
 
         .viewport {
             width: 100vw;
-            height: 100vh;
+            height: calc(var(--vh, 1vh) * 100);
             position: relative;
             background: radial-gradient(circle at center, var(--sea-mid) 0%, var(--sea-dark) 100%);
             display: flex;
@@ -171,6 +179,61 @@
             object-fit: cover;
             filter: contrast(1.08) saturate(1.08) brightness(0.9);
         }
+
+        #gameplay-visual {
+            position: fixed;
+            inset: 0;
+            z-index: 42;
+            background: #010409;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.85s ease, filter 0.85s ease;
+            overflow: hidden;
+        }
+
+        #gameplay-visual.active {
+            opacity: 1;
+        }
+
+        #gameplay-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: contrast(1.08) saturate(1.05) brightness(0.68);
+            transform: scale(1.015);
+        }
+
+        .gameplay-veil {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, rgba(0, 53, 84, 0.06), rgba(1, 4, 9, 0.52) 75%),
+                        linear-gradient(180deg, rgba(1, 4, 9, 0.12), rgba(1, 4, 9, 0.56));
+            box-shadow: inset 0 0 120px rgba(1, 4, 9, 0.88);
+            pointer-events: none;
+        }
+
+        .gameplay-corner {
+            position: absolute;
+            left: 42px;
+            top: 42px;
+            color: rgba(125, 255, 242, 0.68);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 0.45em;
+            text-transform: uppercase;
+            text-shadow: 0 0 18px rgba(45, 212, 191, 0.8);
+            pointer-events: none;
+        }
+
+        #gameplay-visual::after {
+            content: '';
+            position: absolute;
+            inset: 28px;
+            border: 1px solid rgba(45, 212, 191, 0.18);
+            box-shadow: inset 0 0 34px rgba(45, 212, 191, 0.07), 0 0 28px rgba(45, 212, 191, 0.08);
+            pointer-events: none;
+        }
+
 
         .opening-frame {
             position: absolute;
@@ -405,6 +468,84 @@
         .final-fade-overlay.active {
             opacity: 1;
         }
+
+        /* 手機與平板響應式調整：比例自適應、特效降載、字幕可讀性提升 */
+        @media (max-width: 1024px) {
+            body::after { opacity: 0.18; background-size: 100% 5px, 4px 100%; }
+            .viewport { perspective: 800px; }
+            #opening-video, #gameplay-video {
+                object-fit: contain;
+                background: #010409;
+                transform: none;
+            }
+            #opening-video { filter: contrast(1.04) saturate(1.04) brightness(0.95); }
+            #gameplay-video { filter: contrast(1.05) saturate(1.02) brightness(0.74); }
+            .opening-frame { inset: max(14px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left)); }
+            .opening-caption { left: max(20px, env(safe-area-inset-left)); bottom: max(22px, env(safe-area-inset-bottom)); font-size: 9px; letter-spacing: 0.28em; }
+            .gameplay-corner { left: max(18px, env(safe-area-inset-left)); top: max(18px, env(safe-area-inset-top)); font-size: 8px; letter-spacing: 0.24em; }
+            #gameplay-visual::after { inset: 14px; }
+            .grid-3d { background-size: 72px 72px; opacity: 0.055; animation-duration: 42s; }
+            .system-timer { top: max(16px, env(safe-area-inset-top)); right: max(16px, env(safe-area-inset-right)); }
+            .timer-value { font-size: clamp(1.15rem, 4vw, 2rem); }
+            .dialogue-window {
+                width: min(92vw, 780px);
+                bottom: max(12%, calc(env(safe-area-inset-bottom) + 76px));
+                padding: clamp(20px, 4.5vw, 32px) clamp(22px, 5vw, 38px);
+                border-left-width: 3px;
+                backdrop-filter: blur(12px);
+            }
+            #text-content { font-size: clamp(1rem, 3.6vw, 1.65rem) !important; line-height: 1.55 !important; letter-spacing: 0.08em !important; }
+            #speaker { left: 24px !important; font-size: 9px !important; letter-spacing: 0.22em !important; padding: 4px 14px !important; }
+            .chapter-title { font-size: clamp(2.2rem, 10vw, 5rem); letter-spacing: clamp(0.28rem, 4vw, 1.4rem); padding-left: clamp(0.28rem, 4vw, 1.4rem); }
+            .chapter-title.show { letter-spacing: clamp(0.42rem, 5vw, 1.8rem); }
+            .team-title { max-width: 92vw; font-size: clamp(1.55rem, 6.6vw, 3.4rem) !important; letter-spacing: 0.16em !important; padding-left: 0.16em; }
+            .final-tagline { max-width: 92vw; font-size: clamp(1.65rem, 7vw, 3.6rem) !important; letter-spacing: 0.08em !important; padding-left: 0.08em; }
+            .gameplay-main { font-size: clamp(2.45rem, 11vw, 5.5rem) !important; letter-spacing: clamp(0.28rem, 4vw, 0.72em) !important; padding-left: clamp(0.28rem, 4vw, 0.72em); }
+            .gameplay-subtitle {
+                max-width: 92vw;
+                margin-top: clamp(16px, 3.5vw, 26px) !important;
+                font-size: clamp(1.25rem, 5.5vw, 2.65rem) !important;
+                line-height: 1.42;
+                letter-spacing: 0.055em !important;
+                padding: clamp(14px, 3.5vw, 20px) clamp(14px, 4.5vw, 24px);
+                border-radius: 14px;
+            }
+            .gameplay-label { font-size: 9px !important; letter-spacing: 0.28em !important; }
+            .viewport > .absolute.bottom-10 {
+                left: max(16px, env(safe-area-inset-left)) !important;
+                right: max(16px, env(safe-area-inset-right)) !important;
+                bottom: max(14px, env(safe-area-inset-bottom)) !important;
+            }
+            .viewport > .absolute.bottom-10 .flex.justify-between { gap: 10px; align-items: flex-end; }
+            #audio-info { max-width: 50vw; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        }
+
+        @media (max-width: 600px) {
+            .boot-kicker { font-size: 8px; letter-spacing: 0.36em; margin-bottom: 20px; }
+            .boot-title-main { font-size: clamp(2rem, 11vw, 3.2rem); letter-spacing: 0.12em; padding-left: 0.12em; line-height: 1.28; }
+            .boot-title-sub { font-size: 9px; letter-spacing: 0.32em; margin-bottom: 30px; }
+            .boot-seal { width: 84%; margin-bottom: 32px; }
+            .boot-btn { padding: 16px 30px; font-size: 12px; letter-spacing: 0.32em; }
+            .system-timer { opacity: 0.74; }
+            .system-timer .text-\[9px\] { display: none; }
+            .dialogue-window { width: 90vw; bottom: max(11%, calc(env(safe-area-inset-bottom) + 70px)); }
+            .gameplay-subtitle { text-shadow: 0 0 14px rgba(45,212,191,0.9), 0 0 34px rgba(0,53,84,0.95); background: rgba(2,8,15,0.62); }
+            .opening-caption, .gameplay-corner { display: none; }
+            .viewport > .absolute.bottom-10 .flex.items-center.space-x-4 { gap: 6px; }
+            .viewport > .absolute.bottom-10 .text-\[9px\] { font-size: 8px !important; letter-spacing: 0.08em !important; }
+        }
+
+        @media (orientation: portrait) and (max-width: 900px) {
+            .absolute.inset-0.flex.flex-col.justify-center.items-center.z-50 { justify-content: center; padding-left: 5vw; padding-right: 5vw; }
+            #gameplay-video, #opening-video { object-fit: contain; }
+            .gameplay-veil { background: radial-gradient(circle at center, rgba(0,53,84,0.02), rgba(1,4,9,0.34) 80%), linear-gradient(180deg, rgba(1,4,9,0.06), rgba(1,4,9,0.42)); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .grid-3d, .flash-anim, .title-pop, .subtitle-pop, .touch-ripple, .sonar-pulse { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+            * { scroll-behavior: auto !important; }
+        }
+
     </style>
 </head>
 <body>
@@ -420,9 +561,16 @@
 
 <div class="viewport" id="stage">
     <div id="opening-visual">
-        <video id="opening-video" playsinline preload="auto" crossorigin="anonymous" src="https://raw.githubusercontent.com/igudesman222/igudesman2012/0dff1235a24eab14bfca9ee71cd86aae66fd2060/07-%E7%AC%AC%E4%B8%83%E7%B5%84%E8%B3%87%E6%BA%90/07-001-%E5%BD%B1%E7%89%87/07-%E7%AC%AC%E4%B8%83%E7%B5%84%E4%B8%BB%E8%A6%96%E8%A6%BA%E5%8B%95%E7%95%AB.mp4"></video>
+        <video id="opening-video" playsinline preload="auto" crossorigin="anonymous" src="https://raw.githubusercontent.com/igudesman222/igudesman2012/d1278a5538b420f840b166fe84935837d3909e48/07-%E7%AC%AC%E4%B8%83%E7%B5%84%E8%B3%87%E6%BA%90/07-001-%E5%BD%B1%E7%89%87/07-%E7%AC%AC%E4%B8%83%E7%B5%84%E4%B8%BB%E8%A6%96%E8%A6%BA%E5%8B%95%E7%95%AB.mp4"></video>
         <div class="opening-frame"></div>
         <div class="opening-caption">07-第七組主視覺動畫 // Offshore Signal Opening</div>
+    </div>
+    <div id="gameplay-visual">
+        <video id="gameplay-video" playsinline muted preload="auto" crossorigin="anonymous">
+            <source src="https://raw.githubusercontent.com/igudesman222/igudesman2012/d1278a5538b420f840b166fe84935837d3909e48/07-%E7%AC%AC%E4%B8%83%E7%B5%84%E8%B3%87%E6%BA%90/07-001-%E5%BD%B1%E7%89%87/07-%E5%B0%8F%E9%81%8A%E6%88%B2%E9%81%8A%E7%8E%A9%E9%8C%84%E8%A3%BD.mp4" type="video/mp4">
+        </video>
+        <div class="gameplay-veil"></div>
+        <div class="gameplay-corner">07-小遊戲遊玩錄製 // Gameplay Sync</div>
     </div>
     <div class="grid-3d"></div>
     
@@ -473,11 +621,25 @@
 </div>
 
 <script>
+
+    // 1:50-3:00 使用 GitHub d1278a5 版本的 07-小遊戲遊玩錄製.mp4 作為背景影片
+    const GAMEPLAY_VIDEO_START = 110;
+    const GAMEPLAY_VIDEO_END = 180;
+    const GAMEPLAY_VIDEO_OFFSET = 0;
+    const gameplayVideoSources = [
+        'https://raw.githubusercontent.com/igudesman222/igudesman2012/d1278a5538b420f840b166fe84935837d3909e48/07-%E7%AC%AC%E4%B8%83%E7%B5%84%E8%B3%87%E6%BA%90/07-001-%E5%BD%B1%E7%89%87/07-%E5%B0%8F%E9%81%8A%E6%88%B2%E9%81%8A%E7%8E%A9%E9%8C%84%E8%A3%BD.mp4',
+        'https://raw.githubusercontent.com/igudesman222/igudesman2012/d1278a5538b420f840b166fe84935837d3909e48/07-%E7%AC%AC%E4%B8%83%E7%B5%84%E8%B3%87%E6%BA%90/07-001-%E5%BD%B1%E7%89%87/07-%E5%B0%8F%E9%81%8A%E6%88%B2%E9%81%8A%E7%8E%A9%E9%8C%84%E8%A3%BD.MP4',
+        'https://raw.githubusercontent.com/igudesman222/igudesman2012/d1278a5538b420f840b166fe84935837d3909e48/07-%E7%AC%AC%E4%B8%83%E7%B5%84%E8%B3%87%E6%BA%90/07-001-%E5%BD%B1%E7%89%87/07-%E5%BD%B1%E7%89%87/07-%E5%B0%8F%E9%81%8A%E6%88%B2%E9%81%8A%E7%8E%A9%E9%8C%84%E8%A3%BD.mp4',
+        'https://raw.githubusercontent.com/igudesman222/igudesman2012/d1278a5538b420f840b166fe84935837d3909e48/07-%E7%AC%AC%E4%B8%83%E7%B5%84%E8%B3%87%E6%BA%90/07-001-%E5%BD%B1%E7%89%87/07-%E5%BD%B1%E7%89%87/07-%E5%B0%8F%E9%81%8A%E6%88%B2%E9%81%8A%E7%8E%A9%E9%8C%84%E8%A3%BD.MP4'
+    ];
+    let gameplaySourceIndex = 0;
+    let gameplaySourceLoaded = false;
+
     // 資源設定：三段背景音樂依講稿指定區間切換
     const audioAssets = {
-        part1: new Audio('https://raw.githubusercontent.com/igudesman222/igudesman2012/0dff1235a24eab14bfca9ee71cd86aae66fd2060/07-%E7%AC%AC%E4%B8%83%E7%B5%84%E8%B3%87%E6%BA%90/07-003-%E9%9F%B3%E6%A8%82/01-%E6%B5%B7%E9%9D%88%E7%9A%84%E6%8A%95%E5%BD%B1(%E7%AC%AC%E4%B8%80%E5%A4%A7%E6%AE%B5).mp3'),
-        part2: new Audio('https://raw.githubusercontent.com/igudesman222/igudesman2012/0dff1235a24eab14bfca9ee71cd86aae66fd2060/07-%E7%AC%AC%E4%B8%83%E7%B5%84%E8%B3%87%E6%BA%90/07-003-%E9%9F%B3%E6%A8%82/02-%E7%8F%8A%E7%91%9A%E5%9B%9E%E9%9F%B3%E7%A5%AD(%E7%AC%AC%E4%BA%8C%E5%A4%A7%E6%AE%B5).mp3'),
-        part3: new Audio('https://raw.githubusercontent.com/igudesman222/igudesman2012/0dff1235a24eab14bfca9ee71cd86aae66fd2060/07-%E7%AC%AC%E4%B8%83%E7%B5%84%E8%B3%87%E6%BA%90/07-003-%E9%9F%B3%E6%A8%82/03-%E7%8F%8A%E7%91%9A%E5%9B%9E%E9%9F%B3%E7%A5%AD(%E7%B5%82)(%E7%AC%AC%E4%B8%89%E5%A4%A7%E6%AE%B5).mp3')
+        part1: new Audio('https://raw.githubusercontent.com/igudesman222/igudesman2012/d1278a5538b420f840b166fe84935837d3909e48/07-%E7%AC%AC%E4%B8%83%E7%B5%84%E8%B3%87%E6%BA%90/07-003-%E9%9F%B3%E6%A8%82/01-%E6%B5%B7%E9%9D%88%E7%9A%84%E6%8A%95%E5%BD%B1(%E7%AC%AC%E4%B8%80%E5%A4%A7%E6%AE%B5).mp3'),
+        part2: new Audio('https://raw.githubusercontent.com/igudesman222/igudesman2012/d1278a5538b420f840b166fe84935837d3909e48/07-%E7%AC%AC%E4%B8%83%E7%B5%84%E8%B3%87%E6%BA%90/07-003-%E9%9F%B3%E6%A8%82/02-%E7%8F%8A%E7%91%9A%E5%9B%9E%E9%9F%B3%E7%A5%AD(%E7%AC%AC%E4%BA%8C%E5%A4%A7%E6%AE%B5).mp3'),
+        part3: new Audio('https://raw.githubusercontent.com/igudesman222/igudesman2012/d1278a5538b420f840b166fe84935837d3909e48/07-%E7%AC%AC%E4%B8%83%E7%B5%84%E8%B3%87%E6%BA%90/07-003-%E9%9F%B3%E6%A8%82/03-%E7%8F%8A%E7%91%9A%E5%9B%9E%E9%9F%B3%E7%A5%AD(%E7%B5%82)(%E7%AC%AC%E4%B8%89%E5%A4%A7%E6%AE%B5).mp3')
     };
 
     const audioSchedule = [
@@ -486,6 +648,12 @@
         { start: 143, end: 182, key: 'part3', label: '第三大段｜珊瑚回音祭(終)' }
     ];
 
+    Object.values(audioAssets).forEach(audio => {
+        audio.preload = 'auto';
+        audio.crossOrigin = 'anonymous';
+        audio.playsInline = true;
+    });
+
     let currentAudio = null;
     let activeBgmKey = null;
     let isStarted = false;
@@ -493,6 +661,25 @@
     let sonarLoop = null;
     let endingStarted = false;
     let seaAnimationStarted = false;
+
+    const deviceProfile = {
+        isTouch: window.matchMedia('(pointer: coarse)').matches,
+        smallScreen: Math.min(window.innerWidth, window.innerHeight) <= 700,
+        reduceMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    };
+
+    function setAppHeight() {
+        document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+    }
+
+    function performanceScale() {
+        if (deviceProfile.reduceMotion) return 0.35;
+        if (deviceProfile.smallScreen) return 0.48;
+        if (deviceProfile.isTouch) return 0.65;
+        return 1;
+    }
+
+    setAppHeight();
 
     // 按鍵觸及音效：以 Web Audio 生成短促的「海洋聲納／水滴」回饋音，不需額外素材檔。
     let audioContext = null;
@@ -596,6 +783,55 @@
         }
     }
 
+
+
+    function prepareGameplayVideo() {
+        const gameplayVideo = document.getElementById('gameplay-video');
+        if (!gameplayVideo || gameplaySourceLoaded) return;
+        gameplayVideo.setAttribute('playsinline', '');
+        gameplayVideo.setAttribute('webkit-playsinline', '');
+        gameplayVideo.preload = deviceProfile.smallScreen ? 'metadata' : 'auto';
+        gameplayVideo.muted = true;
+        gameplayVideo.src = gameplayVideoSources[gameplaySourceIndex];
+        gameplayVideo.load();
+        gameplaySourceLoaded = true;
+        gameplayVideo.addEventListener('error', () => {
+            if (gameplaySourceIndex < gameplayVideoSources.length - 1) {
+                gameplaySourceIndex += 1;
+                gameplayVideo.src = gameplayVideoSources[gameplaySourceIndex];
+                gameplayVideo.load();
+            } else {
+                document.getElementById('status-tag').innerText = 'GAMEPLAY_VIDEO_FALLBACK';
+            }
+        });
+    }
+
+    function handleGameplayVideo(elapsed) {
+        const gameplayVisual = document.getElementById('gameplay-visual');
+        const gameplayVideo = document.getElementById('gameplay-video');
+        if (!gameplayVisual || !gameplayVideo) return;
+
+        if (elapsed >= GAMEPLAY_VIDEO_START && elapsed <= GAMEPLAY_VIDEO_END) {
+            prepareGameplayVideo();
+            gameplayVisual.classList.add('active');
+            const targetTime = Math.max(0, elapsed - GAMEPLAY_VIDEO_START + GAMEPLAY_VIDEO_OFFSET);
+            if (Number.isFinite(gameplayVideo.duration) && targetTime > gameplayVideo.duration - 0.25) {
+                gameplayVideo.currentTime = Math.max(0, gameplayVideo.duration - 0.25);
+            } else if (Math.abs((gameplayVideo.currentTime || 0) - targetTime) > 0.35) {
+                try { gameplayVideo.currentTime = targetTime; } catch (e) {}
+            }
+            if (gameplayVideo.paused) {
+                gameplayVideo.play().catch(e => console.warn('Gameplay video blocked or unavailable; continuing timeline.'));
+            }
+        } else {
+            gameplayVisual.classList.remove('active');
+            if (!gameplayVideo.paused) gameplayVideo.pause();
+            if (elapsed < GAMEPLAY_VIDEO_START) {
+                try { gameplayVideo.currentTime = 0; } catch (e) {}
+            }
+        }
+    }
+
     // 劇情腳本：依最新版講稿秒數修正字幕
     const script = [
         { t: 0,   type: 'video',   main: '07-第七組主視覺動畫', sub: '開場主視覺', label: '00:00-00:08 MAIN VISUAL' },
@@ -619,7 +855,7 @@
         { t: 122, type: 'montage', main: '第二關', sub: '請運用滑鼠將聲波的頻率對齊，共三次', label: '02:02-02:07 GAMEPLAY 02' },
         { t: 127, type: 'montage', main: '第三關', sub: '請將畫面上呈現的單字在有限時間內運用鍵盤拼出，共三個', label: '02:07-02:12 GAMEPLAY 03' },
         { t: 132, type: 'montage', main: '第四關', sub: '請利用空白鍵，當魚叉（紅色線條）移動到左方紅線後，點擊空白鍵消除魚叉，共累積 15 艘', label: '02:12-02:17 GAMEPLAY 04' },
-        { t: 137, type: 'visual',  main: '通關條件', sub: '完成上述任務，才能成功守護白海豚', label: '02:17-02:22 CLEAR CONDITION' },
+        { t: 137, type: 'visual',  main: '通關條件', sub: '完成上述任務，才能成功守護了白海豚', label: '02:17-02:22 CLEAR CONDITION' },
 
         { t: 143, type: 'talk',    who: '02:23-02:30｜遠德', msg: '（自信）看到了吧？只要我在這片土地上，誰都別想傷害白海豚！' },
         { t: 151, type: 'talk',    who: '02:31-02:39｜阿建', msg: '（氣急敗壞）你這可惡的死小孩，竟敢壞我好事！你給我等著，下一次我絕對不會放過你！' },
@@ -679,25 +915,32 @@
     let bubbles = [];
 
     function initSea() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        bubbles = Array.from({length: 100}, () => ({
-            x: Math.random() * canvas.width,
-            y: Math.random() * canvas.height,
+        const scale = performanceScale();
+        const dpr = Math.min(window.devicePixelRatio || 1, deviceProfile.smallScreen ? 1.25 : 1.75);
+        canvas.width = Math.floor(window.innerWidth * dpr);
+        canvas.height = Math.floor(window.innerHeight * dpr);
+        canvas.style.width = window.innerWidth + 'px';
+        canvas.style.height = window.innerHeight + 'px';
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        const areaFactor = Math.min(1.2, Math.max(0.55, (window.innerWidth * window.innerHeight) / (1280 * 720)));
+        const bubbleCount = Math.max(28, Math.floor(100 * scale * areaFactor));
+        bubbles = Array.from({length: bubbleCount}, () => ({
+            x: Math.random() * window.innerWidth,
+            y: Math.random() * window.innerHeight,
             radius: Math.random() * 1.5 + 0.5,
-            speedY: Math.random() * 0.5 + 0.2,
+            speedY: (Math.random() * 0.5 + 0.2) * Math.max(0.7, scale),
             opacity: Math.random() * 0.5 + 0.1,
-            pulse: Math.random() * 0.02
+            pulse: (Math.random() * 0.02) * Math.max(0.7, scale)
         }));
     }
 
     function drawSea() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
         bubbles.forEach(b => {
             b.y -= b.speedY;
             b.opacity += b.pulse;
             if (b.opacity > 0.6 || b.opacity < 0.1) b.pulse *= -1;
-            if (b.y < -10) b.y = canvas.height + 10;
+            if (b.y < -10) b.y = window.innerHeight + 10;
             ctx.beginPath();
             ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
             ctx.fillStyle = `rgba(45, 212, 191, ${b.opacity})`;
@@ -707,9 +950,10 @@
     }
 
     function spawnSonar() {
+        if (deviceProfile.reduceMotion) return;
         const sonar = document.createElement('div');
         sonar.className = 'sonar-pulse';
-        const size = 300;
+        const size = deviceProfile.smallScreen ? 180 : 300;
         sonar.style.width = size + 'px';
         sonar.style.height = size + 'px';
         sonar.style.left = (Math.random() * 100) + '%';
@@ -900,13 +1144,14 @@
         }
         if (sonarLoop) clearInterval(sonarLoop);
         sonarLoop = setInterval(() => {
-            if (isStarted && Math.random() > 0.5) spawnSonar();
-        }, 3000);
+            if (isStarted && Math.random() > (deviceProfile.smallScreen ? 0.72 : 0.5)) spawnSonar();
+        }, deviceProfile.smallScreen ? 5200 : 3000);
         if (trailerLoop) clearInterval(trailerLoop);
         trailerLoop = setInterval(() => {
             const elapsed = (Date.now() - startTime) / 1000;
             document.getElementById('runtime-clock').innerText = formatTime(elapsed);
             handleAudioSchedule(elapsed);
+            handleGameplayVideo(elapsed);
             const idx = script.findLastIndex(s => s.t <= elapsed);
             if (idx !== currentIdx && idx !== -1) {
                 currentIdx = idx;
@@ -917,7 +1162,7 @@
                 trailerLoop = null;
                 beginEndingSequence();
             }
-        }, 30);
+        }, deviceProfile.smallScreen ? 50 : 30);
     }
 
     document.addEventListener('pointerdown', (event) => {
@@ -933,6 +1178,7 @@
         if (isStarted) return;
         playTouchSfx('confirm');
         boostOpeningVideoAudio();
+        prepareGameplayVideo();
         isStarted = true;
         const fade = document.getElementById('final-fade');
         fade.classList.remove('active');
@@ -943,7 +1189,16 @@
         }, 1500);
     });
 
-    window.addEventListener('resize', initSea);
+    window.addEventListener('resize', () => {
+        setAppHeight();
+        initSea();
+    });
+    window.addEventListener('orientationchange', () => {
+        setTimeout(() => {
+            setAppHeight();
+            initSea();
+        }, 250);
+    });
 </script>
 
 </body>
