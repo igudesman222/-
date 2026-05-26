@@ -147,6 +147,47 @@
             background: #000;
         }
 
+
+        .audio-status {
+            position: absolute;
+            left: 50%;
+            bottom: max(18px, env(safe-area-inset-bottom));
+            transform: translateX(-50%);
+            z-index: 1000;
+            padding: 8px 14px;
+            border: 1px solid rgba(56, 189, 248, 0.45);
+            border-radius: 999px;
+            background: rgba(2, 6, 23, 0.72);
+            color: #e0f2fe;
+            font: 700 12px/1.4 system-ui, -apple-system, BlinkMacSystemFont, "Noto Sans TC", sans-serif;
+            letter-spacing: 0.08em;
+            backdrop-filter: blur(8px);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity .35s ease;
+            max-width: min(88vw, 560px);
+            text-align: center;
+        }
+        .audio-status.show { opacity: 1; }
+
+        .mobile-audio-btn {
+            position: absolute;
+            left: 50%;
+            bottom: calc(max(18px, env(safe-area-inset-bottom)) + 42px);
+            transform: translateX(-50%);
+            z-index: 1001;
+            display: none;
+            padding: 12px 20px;
+            border-radius: 999px;
+            border: 1px solid rgba(125, 211, 252, .7);
+            background: rgba(14, 165, 233, .92);
+            color: white;
+            font-weight: 900;
+            letter-spacing: .12em;
+            box-shadow: 0 0 24px rgba(14, 165, 233, .45);
+        }
+        .mobile-audio-btn.show { display: block; }
+
         @media (orientation: portrait) {
             #opening-visual-bg,
             #video-intro video {
@@ -202,7 +243,7 @@
 
     <div id="overlay" class="absolute inset-0 flex flex-col items-center justify-center z-[500] bg-black">
         <video id="opening-visual-bg" autoplay muted loop playsinline preload="auto" poster="">
-            <source src="https://raw.githubusercontent.com/igudesman222/igudesman2012/d1278a5538b420f840b166fe84935837d3909e48/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E8%B3%87%E6%BA%90/04-001-%E5%BD%B1%E7%89%87/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E4%B8%BB%E8%A6%96%E8%A6%BA%E5%8B%95%E7%95%AB.mp4" type="video/mp4">
+            <source src="https://raw.githubusercontent.com/igudesman222/igudesman2012/49111a380bf2be0027cba3a8e50b664d8737abd0/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E8%B3%87%E6%BA%90/04-001-%E5%BD%B1%E7%89%87/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E4%B8%BB%E8%A6%96%E8%A6%BA%E5%8B%95%E7%95%AB.mp4" type="video/mp4">
         </video>
         <div class="absolute inset-0 bg-black/60 pointer-events-none z-[1]"></div>
         
@@ -247,42 +288,239 @@
     imgWutao.crossOrigin = "Anonymous";
     imgWutao.onload = () => errWutao = false;
     imgWutao.onerror = () => errWutao = true;
-    imgWutao.src = 'https://raw.githubusercontent.com/igudesman222/igudesman2012/d1278a5538b420f840b166fe84935837d3909e48/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E8%B3%87%E6%BA%90/04-002-%E5%9C%96%E7%89%87/01-%E6%AD%A6%E9%81%94%E6%82%9F%28%E5%8E%BB%29.png'; 
+    imgWutao.src = 'https://raw.githubusercontent.com/igudesman222/igudesman2012/49111a380bf2be0027cba3a8e50b664d8737abd0/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E8%B3%87%E6%BA%90/04-002-%E5%9C%96%E7%89%87/01-%E6%AD%A6%E9%81%94%E6%82%9F%28%E5%8E%BB%29.png'; 
     
     const imgElder = new Image();
     imgElder.crossOrigin = "Anonymous";
     imgElder.onload = () => errElder = false;
     imgElder.onerror = () => errElder = true;
-    imgElder.src = 'https://raw.githubusercontent.com/igudesman222/igudesman2012/d1278a5538b420f840b166fe84935837d3909e48/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E8%B3%87%E6%BA%90/04-002-%E5%9C%96%E7%89%87/02-%E9%81%94%E6%82%9F%E9%95%B7%E8%80%81%28%E5%8E%BB%29.png';
+    imgElder.src = 'https://raw.githubusercontent.com/igudesman222/igudesman2012/49111a380bf2be0027cba3a8e50b664d8737abd0/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E8%B3%87%E6%BA%90/04-002-%E5%9C%96%E7%89%87/02-%E9%81%94%E6%82%9F%E9%95%B7%E8%80%81%28%E5%8E%BB%29.png';
     
     const imgEnemy = new Image();
     imgEnemy.crossOrigin = "Anonymous";
     imgEnemy.onload = () => errEnemy = false;
     imgEnemy.onerror = () => errEnemy = true;
-    imgEnemy.src = 'https://raw.githubusercontent.com/igudesman222/igudesman2012/d1278a5538b420f840b166fe84935837d3909e48/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E8%B3%87%E6%BA%90/04-002-%E5%9C%96%E7%89%87/03-%E5%9C%8B%E5%AE%B6%E5%85%AC%E5%84%BA%28%E5%8E%BB%29.png';
+    imgEnemy.src = 'https://raw.githubusercontent.com/igudesman222/igudesman2012/49111a380bf2be0027cba3a8e50b664d8737abd0/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E8%B3%87%E6%BA%90/04-002-%E5%9C%96%E7%89%87/03-%E5%9C%8B%E5%AE%B6%E5%85%AC%E5%84%BA%28%E5%8E%BB%29.png';
 
     // 背景音樂：資源擷取自 GitHub 04-第四組資源/04-003-音樂
-    const bgmPart1 = new Audio('https://raw.githubusercontent.com/igudesman222/igudesman2012/d1278a5538b420f840b166fe84935837d3909e48/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E8%B3%87%E6%BA%90/04-003-%E9%9F%B3%E6%A8%82/%E5%85%B1%E7%AE%A1%E4%B9%8B%E6%B5%B7.mp3');       // 第一大段：共管之海.mp3
-    const bgmPart2 = new Audio('https://raw.githubusercontent.com/igudesman222/igudesman2012/d1278a5538b420f840b166fe84935837d3909e48/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E8%B3%87%E6%BA%90/04-003-%E9%9F%B3%E6%A8%82/%E6%B5%B7%E4%B9%8B%E7%9B%9F%E7%B4%84.mp3');      // 第二大段：海之盟約.mp3
-    const bgmPart3 = new Audio('https://raw.githubusercontent.com/igudesman222/igudesman2012/d1278a5538b420f840b166fe84935837d3909e48/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E8%B3%87%E6%BA%90/04-003-%E9%9F%B3%E6%A8%82/%E5%85%B1%E7%AE%A1%E4%B9%8B%E6%B5%B7.mp3');       // 第三大段：共管之海.mp3（重新播放）
+    // 這一段重寫為「手機／平板友善」：使用者點擊後先解鎖 AudioContext 與三條 BGM，之後依時間軸切換。
+    const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/igudesman222/igudesman2012/49111a380bf2be0027cba3a8e50b664d8737abd0/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E8%B3%87%E6%BA%90';
+    const GITHUB_BLOB_BASE = 'https://github.com/igudesman222/igudesman2012/raw/49111a380bf2be0027cba3a8e50b664d8737abd0/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E8%B3%87%E6%BA%90';
+    const INTRO_VIDEO_URL = `${GITHUB_RAW_BASE}/04-001-%E5%BD%B1%E7%89%87/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E4%B8%BB%E8%A6%96%E8%A6%BA%E5%8B%95%E7%95%AB.mp4`;
 
-    [bgmPart1, bgmPart2, bgmPart3].forEach(a => {
-        a.loop = true;
-        a.volume = 0.85;
-        a.preload = 'auto';
-    });
+    const audioState = {
+        ctx: null,
+        unlocked: false,
+        current: null,
+        videoGain: null,
+        videoSource: null,
+        statusTimer: null
+    };
+
+    function showAudioStatus(message, persistent = false) {
+        let el = document.getElementById('audio-status');
+        if (!el) {
+            el = document.createElement('div');
+            el.id = 'audio-status';
+            el.className = 'audio-status';
+            document.getElementById('trailer-container').appendChild(el);
+        }
+        el.textContent = message;
+        el.classList.add('show');
+        clearTimeout(audioState.statusTimer);
+        if (!persistent) {
+            audioState.statusTimer = setTimeout(() => el.classList.remove('show'), 3600);
+        }
+    }
+
+    function showMobileAudioButton(message = '點一下開啟聲音') {
+        let btn = document.getElementById('mobile-audio-btn');
+        if (!btn) {
+            btn = document.createElement('button');
+            btn.id = 'mobile-audio-btn';
+            btn.className = 'mobile-audio-btn';
+            btn.type = 'button';
+            btn.textContent = '🔊 開啟聲音';
+            document.getElementById('trailer-container').appendChild(btn);
+        }
+        showAudioStatus(message, true);
+        btn.classList.add('show');
+        const resume = async () => {
+            btn.classList.remove('show');
+            await unlockAllAudio();
+            if (audioState.current) safePlayTrack(audioState.current, false);
+            const introVideo = document.getElementById('intro-video');
+            if (introVideo) safePlayIntroVideo(introVideo);
+        };
+        btn.onclick = resume;
+        btn.ontouchstart = resume;
+    }
+
+    function normalizeGitHubCandidates(paths) {
+        const out = [];
+        paths.forEach(path => {
+            out.push(`${GITHUB_RAW_BASE}/${path}`);
+            out.push(`${GITHUB_BLOB_BASE}/${path}`);
+        });
+        return [...new Set(out)];
+    }
+
+    function makeGithubAudio(label, candidatePaths, volume = 0.96) {
+        const audio = new Audio();
+        audio.label = label;
+        audio.candidateUrls = normalizeGitHubCandidates(candidatePaths);
+        audio.candidateIndex = 0;
+        audio.preload = 'auto';
+        audio.crossOrigin = 'anonymous';
+        audio.loop = true;
+        audio.initialVolume = volume;
+        audio.volume = volume;
+        audio.muted = false;
+        audio.playsInline = true;
+        audio.setAttribute('playsinline', '');
+        audio.setAttribute('webkit-playsinline', '');
+        audio.src = audio.candidateUrls[0];
+        audio.addEventListener('error', () => {
+            if (audio.dataset.switching === 'true') return;
+            tryNextAudioCandidate(audio);
+        });
+        return audio;
+    }
+
+    function tryNextAudioCandidate(audio) {
+        if (audio.candidateIndex >= audio.candidateUrls.length - 1) {
+            showAudioStatus(`⚠️ ${audio.label} 載入失敗：請確認 GitHub 音檔是否存在且檔名完全相同`, true);
+            showMobileAudioButton('音樂檔讀取失敗；若檔名正確，請再點一次開啟聲音');
+            return false;
+        }
+        audio.dataset.switching = 'true';
+        audio.candidateIndex += 1;
+        audio.src = audio.candidateUrls[audio.candidateIndex];
+        audio.load();
+        setTimeout(() => { audio.dataset.switching = 'false'; }, 80);
+        return true;
+    }
+
+    const bgmPart1 = makeGithubAudio('第一大段：共管之海.mp3 第一段', [
+        // GitHub 實際檔名：共管之海.mp3 第一段.mp3
+        '04-003-%E9%9F%B3%E6%A8%82/%E5%85%B1%E7%AE%A1%E4%B9%8B%E6%B5%B7.mp3%20%E7%AC%AC%E4%B8%80%E6%AE%B5.mp3',
+        '04-003-%E9%9F%B3%E6%A8%82/%E5%85%B1%E7%AE%A1%E4%B9%8B%E6%B5%B7%20%E7%AC%AC%E4%B8%80%E6%AE%B5.mp3',
+        '04-003-%E9%9F%B3%E6%A8%82/%E5%85%B1%E7%AE%A1%E4%B9%8B%E6%B5%B7%28%E7%AC%AC%E4%B8%80%E6%AE%B5%29.mp3',
+        '04-003-%E9%9F%B3%E6%A8%82/%E5%85%B1%E7%AE%A1%E4%B9%8B%E6%B5%B7.mp3'
+    ], 1.0);
+
+    const bgmPart2 = makeGithubAudio('第二大段：海之盟約.mp3 第二段', [
+        // GitHub 實際檔名：海之盟約.mp3 第二段.mp3
+        '04-003-%E9%9F%B3%E6%A8%82/%E6%B5%B7%E4%B9%8B%E7%9B%9F%E7%B4%84.mp3%20%E7%AC%AC%E4%BA%8C%E6%AE%B5.mp3',
+        '04-003-%E9%9F%B3%E6%A8%82/%E6%B5%B7%E4%B9%8B%E7%9B%9F%E7%B4%84%20%E7%AC%AC%E4%BA%8C%E6%AE%B5.mp3',
+        '04-003-%E9%9F%B3%E6%A8%82/%E6%B5%B7%E4%B9%8B%E7%9B%9F%E7%B4%84%28%E7%AC%AC%E4%BA%8C%E6%AE%B5%29.mp3',
+        '04-003-%E9%9F%B3%E6%A8%82/%E6%B5%B7%E4%B9%8B%E7%9B%9F%E7%B4%84.mp3'
+    ], 1.0);
+
+    const bgmPart3 = makeGithubAudio('第三大段：共管之海.mp3', [
+        // 目前此 commit 可見的是「共管之海.mp3 第一段.mp3」，第三大段會重新播放這首。
+        '04-003-%E9%9F%B3%E6%A8%82/%E5%85%B1%E7%AE%A1%E4%B9%8B%E6%B5%B7.mp3%20%E7%AC%AC%E4%B8%80%E6%AE%B5.mp3',
+        '04-003-%E9%9F%B3%E6%A8%82/%E5%85%B1%E7%AE%A1%E4%B9%8B%E6%B5%B7.mp3',
+        '04-003-%E9%9F%B3%E6%A8%82/%E5%85%B1%E7%AE%A1%E4%B9%8B%E6%B5%B7%20%E7%AC%AC%E4%B8%89%E6%AE%B5.mp3',
+        '04-003-%E9%9F%B3%E6%A8%82/%E5%85%B1%E7%AE%A1%E4%B9%8B%E6%B5%B7%28%E7%AC%AC%E4%B8%89%E6%AE%B5%29.mp3'
+    ], 0.96);
+
+    const allBgmTracks = [bgmPart1, bgmPart2, bgmPart3];
+
+    async function unlockAllAudio() {
+        try {
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            if (AudioContextClass && !audioState.ctx) audioState.ctx = new AudioContextClass();
+            if (audioState.ctx && audioState.ctx.state === 'suspended') await audioState.ctx.resume();
+        } catch (e) {}
+
+        const unlockPromises = allBgmTracks.map(async audio => {
+            try {
+                audio.muted = true;
+                audio.volume = 0;
+                audio.load();
+                await audio.play();
+                audio.pause();
+                audio.currentTime = 0;
+                audio.muted = false;
+                audio.volume = audio.initialVolume || 1.0;
+            } catch (e) {
+                audio.muted = false;
+                audio.volume = audio.initialVolume || 1.0;
+            }
+        });
+        await Promise.allSettled(unlockPromises);
+        audioState.unlocked = true;
+    }
 
     function stopAllBgm() {
-        [bgmPart1, bgmPart2, bgmPart3].forEach(a => {
+        allBgmTracks.forEach(a => {
+            a.dataset.shouldPlay = 'false';
             a.pause();
-            a.currentTime = 0;
+            try { a.currentTime = 0; } catch (e) {}
         });
     }
 
-    function playBgm(track) {
+    async function safePlayTrack(track, restart = true) {
+        audioState.current = track;
+        track.dataset.shouldPlay = 'true';
+        track.muted = false;
+        track.volume = track.initialVolume || 1.0;
+        if (restart) {
+            try { track.currentTime = 0; } catch (e) {}
+        }
+        try {
+            await track.play();
+            showAudioStatus(`♪ ${track.label}`);
+            return true;
+        } catch (e) {
+            if (tryNextAudioCandidate(track)) {
+                setTimeout(() => safePlayTrack(track, restart), 180);
+            } else {
+                showMobileAudioButton(`${track.label} 未播放；請點一下重新啟動聲音`);
+            }
+            return false;
+        }
+    }
+
+    function playBgm(track, restart = true) {
         stopAllBgm();
-        track.currentTime = 0;
-        track.play().catch(() => {});
+        safePlayTrack(track, restart);
+    }
+
+    async function amplifyIntroVideo(video, gainValue = 1.65) {
+        video.volume = 1.0;
+        video.muted = false;
+        try {
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContextClass) return;
+            if (!audioState.ctx) audioState.ctx = new AudioContextClass();
+            if (audioState.ctx.state === 'suspended') await audioState.ctx.resume();
+            if (!audioState.videoSource) {
+                audioState.videoSource = audioState.ctx.createMediaElementSource(video);
+                audioState.videoGain = audioState.ctx.createGain();
+                audioState.videoGain.gain.value = gainValue;
+                audioState.videoSource.connect(audioState.videoGain).connect(audioState.ctx.destination);
+            } else if (audioState.videoGain) {
+                audioState.videoGain.gain.value = gainValue;
+            }
+        } catch (e) {
+            // 若瀏覽器不允許跨來源影片接 WebAudio，仍維持 video.volume = 1.0。
+        }
+    }
+
+    async function safePlayIntroVideo(video) {
+        video.muted = false;
+        video.defaultMuted = false;
+        video.volume = 1.0;
+        await amplifyIntroVideo(video, 1.65);
+        try {
+            await video.play();
+            showAudioStatus('♪ 開場主視覺原聲已放大');
+        } catch (e) {
+            video.controls = true;
+            showMobileAudioButton('手機／平板瀏覽器擋下聲音，請點一下開啟聲音');
+        }
     }
 
     let width, height;
@@ -752,54 +990,79 @@
     }
 
     let videoTimer;
-    
+
     // 獨立出啟動 Canvas 動畫的函式
     function beginCanvasAnimation() {
         if(isRunning) return; // 避免重複執行
-        
+
         const videoIntro = document.getElementById('video-intro');
+        const introVideo = document.getElementById('intro-video');
+        if (introVideo) {
+            introVideo.pause();
+            introVideo.muted = true;
+        }
         videoIntro.style.opacity = '0';
-        
+
         setTimeout(() => {
             videoIntro.style.display = 'none';
             videoIntro.innerHTML = '';
-            
-            isRunning = true; 
-            startTime = Date.now(); 
+
+            isRunning = true;
+            startTime = Date.now();
             draw();
-        }, 1000); 
+        }, 650);
     }
 
-    startBtn.addEventListener('click', () => {
-        [bgmPart1, bgmPart2, bgmPart3].forEach(a => { a.load(); });
+    async function startInteractiveTrailer() {
+        await unlockAllAudio();
         document.getElementById('overlay').style.display = 'none';
-        
+
         const videoIntro = document.getElementById('video-intro');
-        
-        // ★ 開場主視覺：改用 GitHub 的 04-第四組主視覺動畫.mp4
+
+        // ★ 開場主視覺：使用 GitHub 的 04-第四組主視覺動畫.mp4；保留完整比例、不裁切，並放大原聲。
         videoIntro.innerHTML = `
-            <video id="intro-video" autoplay muted playsinline preload="auto">
-                <source src="https://raw.githubusercontent.com/igudesman222/igudesman2012/d1278a5538b420f840b166fe84935837d3909e48/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E8%B3%87%E6%BA%90/04-001-%E5%BD%B1%E7%89%87/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E4%B8%BB%E8%A6%96%E8%A6%BA%E5%8B%95%E7%95%AB.mp4" type="video/mp4">
+            <video id="intro-video" autoplay playsinline webkit-playsinline preload="auto" crossorigin="anonymous">
+                <source src="${INTRO_VIDEO_URL}" type="video/mp4">
             </video>
             <button id="skip-btn" class="absolute top-6 right-6 z-[999] px-6 py-2 bg-black/60 text-white border border-white/50 rounded hover:bg-sky-600 transition tracking-widest font-bold">跳過影片 ⏭</button>
         `;
         videoIntro.style.display = 'flex';
+        videoIntro.style.opacity = '1';
+
         const introVideo = document.getElementById('intro-video');
+        await safePlayIntroVideo(introVideo);
         introVideo.addEventListener('ended', () => {
             clearTimeout(videoTimer);
             beginCanvasAnimation();
         });
 
-        // 綁定跳過按鈕事件
+        // 綁定跳過按鈕事件。手機上跳過後，後續三大段音樂仍可播放，因為已在第一次點擊時解鎖。
         document.getElementById('skip-btn').addEventListener('click', () => {
-            clearTimeout(videoTimer); // 停止 10 秒倒數
+            clearTimeout(videoTimer);
             beginCanvasAnimation();
         });
+        document.getElementById('skip-btn').addEventListener('touchstart', () => {
+            clearTimeout(videoTimer);
+            beginCanvasAnimation();
+        }, { passive: true });
 
-        // 10 秒後淡出影片
+        // 若影片 ended 事件沒有觸發，10 秒後進入正式劇情。
         videoTimer = setTimeout(() => {
             beginCanvasAnimation();
-        }, 10000); 
+        }, 10000);
+    }
+
+    startBtn.addEventListener('click', startInteractiveTrailer);
+    startBtn.addEventListener('touchend', (event) => {
+        event.preventDefault();
+        startInteractiveTrailer();
+    }, { passive: false });
+
+    // 任何手機／平板後續點擊，都嘗試恢復 AudioContext，避免切換 App 或鎖屏後靜音。
+    ['click', 'touchstart', 'pointerdown'].forEach(evt => {
+        document.addEventListener(evt, () => {
+            if (audioState.ctx && audioState.ctx.state === 'suspended') audioState.ctx.resume().catch(() => {});
+        }, { passive: true });
     });
 </script>
 </body>
