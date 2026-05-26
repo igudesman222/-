@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>五達悟：海之哀歌 - 官方預告片</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@700;900&display=swap');
+       
+        html, body {
+            width: 100%; height: 100%;
+        }
+
+        body {
+            margin: 0; background: #000; color: #f8fafc;
+            font-family: 'Noto Serif TC', serif; overflow: hidden;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh;
+            min-height: 100svh;
+            min-height: calc(var(--vh, 1vh) * 100);
+        }
+       
+        #trailer-container {
+            position: relative;
+            width: 100vw;
+            width: 100dvw;
+            height: 100vh;
+            height: 100svh;
+            height: calc(var(--vh, 1vh) * 100);
+            background: #000; overflow: hidden;
+        }
+
+        canvas { width: 100%; height: 100%; display: block; filter: contrast(1.2) brightness(1.1); }
+
+        .vignette {
+            position: absolute; inset: 0;
+            background: radial-gradient(circle, transparent 30%, rgba(0,0,0,0.9) 100%);
+            pointer-events: none; z-index: 10;
+        }
+
+        #caption-overlay {
+            position: absolute; bottom: 8%; left: 0; width: 100%;
+            text-align: center; z-index: 100; pointer-events: none;
+            display: flex; justify-content: center;
+        }
+        .caption-text {
+            width: min(92vw, 1180px);
+            max-height: 34vh;
+            overflow: hidden;
+            padding: 0.8rem 1.2rem;
+            border-radius: 1rem;
+            background: linear-gradient(180deg, rgba(2, 6, 23, 0.15), rgba(2, 6, 23, 0.62));
+            font-size: clamp(1.05rem, 2.8vw, 2.1rem); font-weight: 900; color: #fff;
+            text-shadow: 0 0 15px rgba(14, 165, 233, 0.9), 0 0 30px rgba(0,0,0,1);
+            letter-spacing: clamp(0.08rem, 0.5vw, 0.28rem); line-height: 1.55;
+            opacity: 0; transform: translateY(20px);
+            white-space: pre-line;
+            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        #timecode {
+            position: absolute; top: max(14px, env(safe-area-inset-top)); right: max(14px, env(safe-area-inset-right));
+            z-index: 180; padding: 8px 14px; border: 1px solid rgba(125, 211, 252, 0.45);
+            border-radius: 999px; background: rgba(2, 6, 23, 0.72); color: #e0f2fe;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: clamp(0.78rem, 1.8vw, 1rem); letter-spacing: 0.08rem;
+            box-shadow: 0 0 18px rgba(14, 165, 233, 0.25); backdrop-filter: blur(8px);
+            pointer-events: none;
+        }
+
+        #scene-tag {
+            position: absolute; top: max(58px, calc(env(safe-area-inset-top) + 50px)); left: max(18px, env(safe-area-inset-left));
+            z-index: 120; color: rgba(186, 230, 253, 0.9); font-size: clamp(0.8rem, 1.8vw, 1rem);
+            letter-spacing: 0.18rem; text-shadow: 0 0 12px rgba(14,165,233,0.6);
+            pointer-events: none;
+        }
+
+        #title-card {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.95);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 200; opacity: 0; pointer-events: none;
+            transition: opacity 1s ease;
+        }
+
+        #fake-ui {
+            position: absolute; inset: 0; pointer-events: none; z-index: 50;
+            opacity: 0; transition: opacity 1s;
+        }
+
+        .hp-bar-container {
+            position: absolute; bottom: 40px; left: 40px;
+            width: 320px;
+        }
+        .hp-bar { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; }
+        .hp-fill { height: 100%; background: linear-gradient(90deg, #0ea5e9, #38bdf8); width: 100%; box-shadow: 0 0 15px #0ea5e9; transition: width 0.3s; }
+
+        #start-btn {
+            z-index: 300; padding: 18px 48px; border: 1px solid rgba(14, 165, 233, 0.5);
+            background: rgba(14, 165, 233, 0.1); color: #0ea5e9; font-weight: 900;
+            letter-spacing: 0.2rem; border-radius: 4px;
+            cursor: pointer; transition: all 0.4s;
+            backdrop-filter: blur(4px);
+        }
+        #start-btn:hover { background: #0ea5e9; color: #fff; box-shadow: 0 0 40px rgba(14, 165, 233, 0.6); transform: scale(1.05); }
+
+        #domain-flash {
+            position: absolute; inset: 0; z-index: 150;
+            background: #fff; opacity: 0; pointer-events: none;
+        }
+
+        #opening-visual-bg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            max-width: 100vw;
+            max-height: calc(var(--vh, 1vh) * 100);
+            object-fit: contain; /* 完整顯示主視覺，不裁切畫面 */
+            object-position: center center;
+            z-index: 0;
+            pointer-events: none;
+            background: #000;
+        }
+
+        #video-intro {
+            position: absolute;
+            inset: 0;
+            z-index: 400;
+            background: #000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            opacity: 1;
+            transition: opacity 1s ease-in-out;
+        }
+        #video-intro video {
+            width: 100%;
+            height: 100%;
+            max-width: 100vw;
+            max-height: calc(var(--vh, 1vh) * 100);
+            object-fit: contain; /* 桌機、手機、平板都保留完整畫面 */
+            object-position: center center;
+            pointer-events: none;
+            border: none;
+            background: #000;
+        }
+
+
+        .audio-status {
+            position: absolute;
+            left: 50%;
+            bottom: max(18px, env(safe-area-inset-bottom));
+            transform: translateX(-50%);
+            z-index: 1000;
+            padding: 8px 14px;
+            border: 1px solid rgba(56, 189, 248, 0.45);
+            border-radius: 999px;
+            background: rgba(2, 6, 23, 0.72);
+            color: #e0f2fe;
+            font: 700 12px/1.4 system-ui, -apple-system, BlinkMacSystemFont, "Noto Sans TC", sans-serif;
+            letter-spacing: 0.08em;
+            backdrop-filter: blur(8px);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity .35s ease;
+            max-width: min(88vw, 560px);
+            text-align: center;
+        }
+        .audio-status.show { opacity: 1; }
+
+        .mobile-audio-btn {
+            position: absolute;
+            left: 50%;
+            bottom: calc(max(18px, env(safe-area-inset-bottom)) + 42px);
+            transform: translateX(-50%);
+            z-index: 1001;
+            display: none;
+            padding: 12px 20px;
+            border-radius: 999px;
+            border: 1px solid rgba(125, 211, 252, .7);
+            background: rgba(14, 165, 233, .92);
+            color: white;
+            font-weight: 900;
+            letter-spacing: .12em;
+            box-shadow: 0 0 24px rgba(14, 165, 233, .45);
+        }
+        .mobile-audio-btn.show { display: block; }
+
+        @media (orientation: portrait) {
+            #opening-visual-bg,
+            #video-intro video {
+                width: 100vw;
+                height: calc(var(--vh, 1vh) * 100);
+                object-fit: contain;
+            }
+        }
+
+        @media (orientation: landscape) {
+            #opening-visual-bg,
+            #video-intro video {
+                width: 100vw;
+                height: calc(var(--vh, 1vh) * 100);
+                object-fit: contain;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div id="trailer-container">
+    <div class="vignette"></div>
+    <div id="domain-flash"></div>
+    <div id="timecode">00:00</div>
+    <div id="scene-tag">PONGSO NO TAO</div>
+    <canvas id="trailerCanvas"></canvas>
+
+    <div id="caption-overlay">
+        <div id="caption" class="caption-text"></div>
+    </div>
+
+    <div id="fake-ui">
+        <div class="hp-bar-container">
+            <div class="hp-bar"><div id="hp-fill" class="hp-fill"></div></div>
+            <div class="flex justify-between items-center mt-2">
+                <span class="text-[10px] font-bold text-sky-400 tracking-tighter">五達悟 (WUTAO)</span>
+                <span class="text-[10px] font-mono text-sky-500">咒力同步: 120%</span>
+            </div>
+        </div>
+        <div class="absolute top-12 right-12 text-right">
+            <div id="combo-text" class="text-5xl font-black text-white italic tracking-tighter">0 HIT</div>
+            <div id="status-text" class="text-sky-400 text-xs mt-1 font-bold uppercase tracking-widest">穩固中...</div>
+        </div>
+    </div>
+
+    <div id="title-card">
+        <h1 class="text-6xl md:text-8xl font-black text-white mb-4 tracking-[1.5rem] md:tracking-[3rem] drop-shadow-2xl">五達悟</h1>
+        <h2 class="text-xl md:text-3xl text-sky-500 font-bold tracking-[0.5rem] md:tracking-[1rem]">PONGSO NO TAO : 海之哀歌</h2>
+        <div class="h-px w-64 bg-sky-900 my-12"></div>
+        <p class="text-slate-500 font-mono tracking-widest uppercase">Coming Soon 2024.04 / 雅美靈魂</p>
+    </div>
+
+    <div id="overlay" class="absolute inset-0 flex flex-col items-center justify-center z-[500] bg-black">
+        <video id="opening-visual-bg" autoplay muted loop playsinline preload="auto" poster="">
+            <source src="https://raw.githubusercontent.com/igudesman222/igudesman2012/49111a380bf2be0027cba3a8e50b664d8737abd0/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E8%B3%87%E6%BA%90/04-001-%E5%BD%B1%E7%89%87/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E4%B8%BB%E8%A6%96%E8%A6%BA%E5%8B%95%E7%95%AB.mp4" type="video/mp4">
+        </video>
+        <div class="absolute inset-0 bg-black/60 pointer-events-none z-[1]"></div>
+        
+        <div class="relative mb-8 z-10">
+            <div class="w-24 h-24 border-2 border-sky-900 rounded-full animate-ping absolute"></div>
+            <div class="w-24 h-24 border-2 border-sky-500 rounded-full flex items-center justify-center">
+                <div class="w-16 h-16 bg-sky-500/20 rounded-full animate-pulse"></div>
+            </div>
+        </div>
+        <button id="start-btn" class="relative z-10">▶ 觀看互動預告</button>
+    </div>
+
+    <div id="video-intro">
+        <!-- 影片將在此動態載入 -->
+    </div>
+</div>
+
+<script>
+    // 手機／平板瀏覽器網址列會改變 100vh 的實際高度，這裡用 CSS 變數同步真實視窗高度。
+    function syncViewportHeight() {
+        document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+    }
+    syncViewportHeight();
+    window.addEventListener('resize', syncViewportHeight);
+    window.addEventListener('orientationchange', () => setTimeout(syncViewportHeight, 250));
+
+    const canvas = document.getElementById('trailerCanvas');
+    const ctx = canvas.getContext('2d');
+    const caption = document.getElementById('caption');
+    const titleCard = document.getElementById('title-card');
+    const fakeUI = document.getElementById('fake-ui');
+    const startBtn = document.getElementById('start-btn');
+    const hpFill = document.getElementById('hp-fill');
+    const domainFlash = document.getElementById('domain-flash');
+    const timecode = document.getElementById('timecode');
+    const sceneTag = document.getElementById('scene-tag');
+
+    // ★ 直接載入網路圖片 ★
+    let errWutao = false, errElder = false, errEnemy = false;
+    
+    const imgWutao = new Image();
+    imgWutao.crossOrigin = "Anonymous";
+    imgWutao.onload = () => errWutao = false;
+    imgWutao.onerror = () => errWutao = true;
+    imgWutao.src = 'https://raw.githubusercontent.com/igudesman222/igudesman2012/49111a380bf2be0027cba3a8e50b664d8737abd0/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E8%B3%87%E6%BA%90/04-002-%E5%9C%96%E7%89%87/01-%E6%AD%A6%E9%81%94%E6%82%9F%28%E5%8E%BB%29.png'; 
+    
+    const imgElder = new Image();
+    imgElder.crossOrigin = "Anonymous";
+    imgElder.onload = () => errElder = false;
+    imgElder.onerror = () => errElder = true;
+    imgElder.src = 'https://raw.githubusercontent.com/igudesman222/igudesman2012/49111a380bf2be0027cba3a8e50b664d8737abd0/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E8%B3%87%E6%BA%90/04-002-%E5%9C%96%E7%89%87/02-%E9%81%94%E6%82%9F%E9%95%B7%E8%80%81%28%E5%8E%BB%29.png';
+    
+    const imgEnemy = new Image();
+    imgEnemy.crossOrigin = "Anonymous";
+    imgEnemy.onload = () => errEnemy = false;
+    imgEnemy.onerror = () => errEnemy = true;
+    imgEnemy.src = 'https://raw.githubusercontent.com/igudesman222/igudesman2012/49111a380bf2be0027cba3a8e50b664d8737abd0/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E8%B3%87%E6%BA%90/04-002-%E5%9C%96%E7%89%87/03-%E5%9C%8B%E5%AE%B6%E5%85%AC%E5%84%BA%28%E5%8E%BB%29.png';
+
+    // 背景音樂：資源擷取自 GitHub 04-第四組資源/04-003-音樂
+    // 這一段重寫為「手機／平板友善」：使用者點擊後先解鎖 AudioContext 與三條 BGM，之後依時間軸切換。
+    const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/igudesman222/igudesman2012/49111a380bf2be0027cba3a8e50b664d8737abd0/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E8%B3%87%E6%BA%90';
+    const GITHUB_BLOB_BASE = 'https://github.com/igudesman222/igudesman2012/raw/49111a380bf2be0027cba3a8e50b664d8737abd0/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E8%B3%87%E6%BA%90';
+    const INTRO_VIDEO_URL = `${GITHUB_RAW_BASE}/04-001-%E5%BD%B1%E7%89%87/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E4%B8%BB%E8%A6%96%E8%A6%BA%E5%8B%95%E7%95%AB.mp4`;
+
+    const audioState = {
+        ctx: null,
+        unlocked: false,
+        current: null,
+        videoGain: null,
+        videoSource: null,
+        statusTimer: null
+    };
+
+    function showAudioStatus(message, persistent = false) {
+        let el = document.getElementById('audio-status');
+        if (!el) {
+            el = document.createElement('div');
+            el.id = 'audio-status';
+            el.className = 'audio-status';
+            document.getElementById('trailer-container').appendChild(el);
+        }
+        el.textContent = message;
+        el.classList.add('show');
+        clearTimeout(audioState.statusTimer);
+        if (!persistent) {
+            audioState.statusTimer = setTimeout(() => el.classList.remove('show'), 3600);
+        }
+    }
+
+    function showMobileAudioButton(message = '點一下開啟聲音') {
+        let btn = document.getElementById('mobile-audio-btn');
+        if (!btn) {
+            btn = document.createElement('button');
+            btn.id = 'mobile-audio-btn';
+            btn.className = 'mobile-audio-btn';
+            btn.type = 'button';
+            btn.textContent = '🔊 開啟聲音';
+            document.getElementById('trailer-container').appendChild(btn);
+        }
+        showAudioStatus(message, true);
+        btn.classList.add('show');
+        const resume = async () => {
+            btn.classList.remove('show');
+            await unlockAllAudio();
+            if (audioState.current) safePlayTrack(audioState.current, false);
+            const introVideo = document.getElementById('intro-video');
+            if (introVideo) safePlayIntroVideo(introVideo);
+        };
+        btn.onclick = resume;
+        btn.ontouchstart = resume;
+    }
+
+    function normalizeGitHubCandidates(paths) {
+        const out = [];
+        paths.forEach(path => {
+            out.push(`${GITHUB_RAW_BASE}/${path}`);
+            out.push(`${GITHUB_BLOB_BASE}/${path}`);
+        });
+        return [...new Set(out)];
+    }
+
+    function makeGithubAudio(label, candidatePaths, volume = 0.96) {
+        const audio = new Audio();
+        audio.label = label;
+        audio.candidateUrls = normalizeGitHubCandidates(candidatePaths);
+        audio.candidateIndex = 0;
+        audio.preload = 'auto';
+        audio.crossOrigin = 'anonymous';
+        audio.loop = true;
+        audio.initialVolume = volume;
+        audio.volume = volume;
+        audio.muted = false;
+        audio.playsInline = true;
+        audio.setAttribute('playsinline', '');
+        audio.setAttribute('webkit-playsinline', '');
+        audio.src = audio.candidateUrls[0];
+        audio.addEventListener('error', () => {
+            if (audio.dataset.switching === 'true') return;
+            tryNextAudioCandidate(audio);
+        });
+        return audio;
+    }
+
+    function tryNextAudioCandidate(audio) {
+        if (audio.candidateIndex >= audio.candidateUrls.length - 1) {
+            showAudioStatus(`⚠️ ${audio.label} 載入失敗：請確認 GitHub 音檔是否存在且檔名完全相同`, true);
+            showMobileAudioButton('音樂檔讀取失敗；若檔名正確，請再點一次開啟聲音');
+            return false;
+        }
+        audio.dataset.switching = 'true';
+        audio.candidateIndex += 1;
+        audio.src = audio.candidateUrls[audio.candidateIndex];
+        audio.load();
+        setTimeout(() => { audio.dataset.switching = 'false'; }, 80);
+        return true;
+    }
+
+    const bgmPart1 = makeGithubAudio('第一大段：共管之海.mp3 第一段', [
+        // GitHub 實際檔名：共管之海.mp3 第一段.mp3
+        '04-003-%E9%9F%B3%E6%A8%82/%E5%85%B1%E7%AE%A1%E4%B9%8B%E6%B5%B7.mp3%20%E7%AC%AC%E4%B8%80%E6%AE%B5.mp3',
+        '04-003-%E9%9F%B3%E6%A8%82/%E5%85%B1%E7%AE%A1%E4%B9%8B%E6%B5%B7%20%E7%AC%AC%E4%B8%80%E6%AE%B5.mp3',
+        '04-003-%E9%9F%B3%E6%A8%82/%E5%85%B1%E7%AE%A1%E4%B9%8B%E6%B5%B7%28%E7%AC%AC%E4%B8%80%E6%AE%B5%29.mp3',
+        '04-003-%E9%9F%B3%E6%A8%82/%E5%85%B1%E7%AE%A1%E4%B9%8B%E6%B5%B7.mp3'
+    ], 1.0);
+
+    const bgmPart2 = makeGithubAudio('第二大段：海之盟約.mp3 第二段', [
+        // GitHub 實際檔名：海之盟約.mp3 第二段.mp3
+        '04-003-%E9%9F%B3%E6%A8%82/%E6%B5%B7%E4%B9%8B%E7%9B%9F%E7%B4%84.mp3%20%E7%AC%AC%E4%BA%8C%E6%AE%B5.mp3',
+        '04-003-%E9%9F%B3%E6%A8%82/%E6%B5%B7%E4%B9%8B%E7%9B%9F%E7%B4%84%20%E7%AC%AC%E4%BA%8C%E6%AE%B5.mp3',
+        '04-003-%E9%9F%B3%E6%A8%82/%E6%B5%B7%E4%B9%8B%E7%9B%9F%E7%B4%84%28%E7%AC%AC%E4%BA%8C%E6%AE%B5%29.mp3',
+        '04-003-%E9%9F%B3%E6%A8%82/%E6%B5%B7%E4%B9%8B%E7%9B%9F%E7%B4%84.mp3'
+    ], 1.0);
+
+    const bgmPart3 = makeGithubAudio('第三大段：共管之海.mp3', [
+        // 目前此 commit 可見的是「共管之海.mp3 第一段.mp3」，第三大段會重新播放這首。
+        '04-003-%E9%9F%B3%E6%A8%82/%E5%85%B1%E7%AE%A1%E4%B9%8B%E6%B5%B7.mp3%20%E7%AC%AC%E4%B8%80%E6%AE%B5.mp3',
+        '04-003-%E9%9F%B3%E6%A8%82/%E5%85%B1%E7%AE%A1%E4%B9%8B%E6%B5%B7.mp3',
+        '04-003-%E9%9F%B3%E6%A8%82/%E5%85%B1%E7%AE%A1%E4%B9%8B%E6%B5%B7%20%E7%AC%AC%E4%B8%89%E6%AE%B5.mp3',
+        '04-003-%E9%9F%B3%E6%A8%82/%E5%85%B1%E7%AE%A1%E4%B9%8B%E6%B5%B7%28%E7%AC%AC%E4%B8%89%E6%AE%B5%29.mp3'
+    ], 0.96);
+
+    const allBgmTracks = [bgmPart1, bgmPart2, bgmPart3];
+
+    async function unlockAllAudio() {
+        try {
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            if (AudioContextClass && !audioState.ctx) audioState.ctx = new AudioContextClass();
+            if (audioState.ctx && audioState.ctx.state === 'suspended') await audioState.ctx.resume();
+        } catch (e) {}
+
+        const unlockPromises = allBgmTracks.map(async audio => {
+            try {
+                audio.muted = true;
+                audio.volume = 0;
+                audio.load();
+                await audio.play();
+                audio.pause();
+                audio.currentTime = 0;
+                audio.muted = false;
+                audio.volume = audio.initialVolume || 1.0;
+            } catch (e) {
+                audio.muted = false;
+                audio.volume = audio.initialVolume || 1.0;
+            }
+        });
+        await Promise.allSettled(unlockPromises);
+        audioState.unlocked = true;
+    }
+
+    function stopAllBgm() {
+        allBgmTracks.forEach(a => {
+            a.dataset.shouldPlay = 'false';
+            a.pause();
+            try { a.currentTime = 0; } catch (e) {}
+        });
+    }
+
+    async function safePlayTrack(track, restart = true) {
+        audioState.current = track;
+        track.dataset.shouldPlay = 'true';
+        track.muted = false;
+        track.volume = track.initialVolume || 1.0;
+        if (restart) {
+            try { track.currentTime = 0; } catch (e) {}
+        }
+        try {
+            await track.play();
+            showAudioStatus(`♪ ${track.label}`);
+            return true;
+        } catch (e) {
+            if (tryNextAudioCandidate(track)) {
+                setTimeout(() => safePlayTrack(track, restart), 180);
+            } else {
+                showMobileAudioButton(`${track.label} 未播放；請點一下重新啟動聲音`);
+            }
+            return false;
+        }
+    }
+
+    function playBgm(track, restart = true) {
+        stopAllBgm();
+        safePlayTrack(track, restart);
+    }
+
+    async function amplifyIntroVideo(video, gainValue = 1.65) {
+        video.volume = 1.0;
+        video.muted = false;
+        try {
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContextClass) return;
+            if (!audioState.ctx) audioState.ctx = new AudioContextClass();
+            if (audioState.ctx.state === 'suspended') await audioState.ctx.resume();
+            if (!audioState.videoSource) {
+                audioState.videoSource = audioState.ctx.createMediaElementSource(video);
+                audioState.videoGain = audioState.ctx.createGain();
+                audioState.videoGain.gain.value = gainValue;
+                audioState.videoSource.connect(audioState.videoGain).connect(audioState.ctx.destination);
+            } else if (audioState.videoGain) {
+                audioState.videoGain.gain.value = gainValue;
+            }
+        } catch (e) {
+            // 若瀏覽器不允許跨來源影片接 WebAudio，仍維持 video.volume = 1.0。
+        }
+    }
+
+    async function safePlayIntroVideo(video) {
+        video.muted = false;
+        video.defaultMuted = false;
+        video.volume = 1.0;
+        await amplifyIntroVideo(video, 1.65);
+        try {
+            await video.play();
+            showAudioStatus('♪ 開場主視覺原聲已放大');
+        } catch (e) {
+            video.controls = true;
+            showMobileAudioButton('手機／平板瀏覽器擋下聲音，請點一下開啟聲音');
+        }
+    }
+
+    let width, height;
+    let startTime = 0;
+    let isRunning = false;
+    let comboCount = 0;
+    let frame = 0;
+
+    const SCRIPT = [
+        { time: 10, text: "高雄市立瑞祥高中\n海洋探險隊", action: 'teamIntro', tag: '製作團隊' },
+        { time: 20, text: "旁白：四月，當黑潮帶著飛魚回歸。\n對於東部的恆春而言是經濟命脈；但對於離島的蘭嶼來講卻為文化存亡。", action: 'issueOcean', tag: '第一大段｜爭議背景' },
+        { time: 31, text: "旁白：當『六海浬禁令』下達時，衡量兩者的天秤就已然傾斜。\n這場生存與傳承的對決，即將引爆。", action: 'issueBalance', tag: '第一大段｜六海浬禁令' },
+        { time: 43, text: "恆春公儺：五達悟。根據數據顯示，『六海浬禁令』直接阻斷了恆春數百個家庭的經濟命脈。\n此項規範，不符合生存效益最大化。", action: 'enemyArgue', tag: '恆春公儺｜生計演算' },
+        { time: 55, text: "五達悟：公儺，冰冷的數據能衡量文化的重量嗎？\n達悟的飛魚文化必須從永續考量，並非你們漁民短視的斂財！", action: 'wutaoArgue', tag: '五達悟｜文化與永續' },
+        { time: 68, text: "恆春公儺：系統判定：同為中華民國國民，達悟族群不受限制，恆春漁民卻面臨禁捕。\n此『一國兩制』現象違反公平原則，無法通過邏輯審查。", action: 'fairnessScan', tag: '公平原則｜邏輯審查' },
+        { time: 80, text: "五達悟：是這樣嗎？你們漁民在海上大肆捕撈，只是將『貪婪』包裝成了『生計』。\n不懂得敬畏海洋，終將被深淵吞噬。", action: 'wutaoPressure', tag: '五達悟｜海洋威壓' },
+        { time: 92, text: "恆春公儺：現代漁業追求絕對效率。產量不足，將導致船隻停擺、薪資斷鏈。\n警告：交涉失敗。啟動強制排除程序。", action: 'enemyProtocol', tag: '強制排除程序' },
+        { time: 103, text: "五達悟：別說了！\n既然道理講不通，那就開戰吧！", action: 'warStart', tag: '開戰' },
+        { time: 107, text: "五達悟：我們遵守禁忌，是為了讓大海喘息。\n既然你的系統缺乏『生態參數』，我就用領域展開——『無量空間：深淵禁補』親自為你寫入！", action: 'domainOpen', tag: '第二大段｜遊戲玩法' },
+        { time: 121, text: "恆春公儺：警告：遭到領域壓制。戰鬥演算啟動。\n你的基礎防禦處於絕對劣勢，只能透過『蒼潮穿』發動攻擊，逐步累積極限值。", action: 'battleCalc', tag: '戰鬥演算啟動' },
+        { time: 133, text: "五達悟：別忘了『海神障壁』。只要抓準時機格擋你的毀滅程序，就能發動強力反擊！\n就算陷入瀕死，我也會觸發『逆轉盟約』絕地重生！", action: 'guardCounter', tag: '海神障壁｜逆轉盟約' },
+        { time: 146, text: "恆春公儺：系統提示：當我方耐久度降至五千以下，將進入絕對斬殺線。\n通關條件：將我的生命值歸零。", action: 'killLine', tag: '斬殺線｜通關條件' },
+        { time: 156, text: "五達悟：沒錯！只要精準掌控攻防節奏，當條件達成，就是『終焉術式：深淵海禁』的處決時刻！\n放馬過來吧！", action: 'finalSkill', tag: '終焉術式' },
+        { time: 166, text: "達悟長者：停手吧，孩子們。\n傳統的傳承與經濟的脈動，從來都不是零和遊戲。傾聽海的聲音，我們該坐下來談談了。", action: 'elderStop', tag: '第三大段｜議題喚醒' },
+        { time: 181, text: "恆春公儺：運算衝突……\n協商能否實質解決恆春漁民的貸款與生存機率？", action: 'enemyDoubt', tag: '協商可能性' },
+        { time: 188, text: "五達悟：長老……\n妥協，難道不會讓達悟的飛魚文化走向消亡？", action: 'wutaoDoubt', tag: '文化存續的疑問' },
+        { time: 194, text: "達悟長者：兩位都冷靜。\n首先我們可以建議政府修改『飛魚禁捕令』法令，來維護恆春漁民獵捕權益。", action: 'proposalLaw', tag: '提案一｜修法保障' },
+        { time: 206, text: "恆春公儺：參數更新：生計權益獲得初步保障。\n接受提案。", action: 'proposalAccept', tag: '參數更新' },
+        { time: 212, text: "達悟長者：聽我說完！同時必須嚴令禁用破壞性網具，並建立合理的捕撈配額。\n你們雙方，必須共同找出那個為海永續發展的最大公約數！", action: 'proposalQuota', tag: '提案二｜漁具與配額' },
+        { time: 227, text: "恆春公儺：重新計算完畢。\n將絕對的『空間爭議』，修正為『行為與漁具規範』。", action: 'recalculate', tag: '爭議重新定義' },
+        { time: 234, text: "五達悟：長老說得對！\n透過政府協助，建立達悟部落與恆春漁會共同管理機制，讓海洋永續，這才是雙贏的最佳解。", action: 'commonManagement', tag: '共同管理機制' },
+        { time: 245, text: "大海的豐饒，需要我們共同的節制。\n《潮間之秤：無量波光》—— 2026 準備登入。", action: 'finalTitle', tag: 'COMING 2026' },
+        { time: 254, text: "", action: 'end', tag: 'END' }
+    ];
+
+    let sceneState = {
+        shake: 0, flash: 0, domain: 0, particles: [], waves: [], mode: 'teamIntro',
+        wutao: { x: -200, y: 0, opacity: 0, pose: 'stand', energy: 0 },
+        enemy: { x: 0, y: 0, opacity: 0, offset: 0 },
+        elder: { x: 0, y: 0, opacity: 0, scale: 1, isGuardian: false },
+        battle: { active: false, wutaoHp: 10000, enemyHp: 25000, limit: 0, guard: false },
+        titleText: ''
+    };
+
+    function formatTime(totalSeconds) {
+        const safe = Math.max(0, Math.floor(totalSeconds));
+        const m = String(Math.floor(safe / 60)).padStart(2, '0');
+        const s = String(safe % 60).padStart(2, '0');
+        return `${m}:${s}`;
+    }
+
+    function resize() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+        // 角色站位下移一些，讓人物縮小後仍有穩定的落點。
+        sceneState.wutao.y = height * 0.78;
+        sceneState.enemy.x = width + 200;
+        sceneState.enemy.y = height * 0.76;
+        sceneState.elder.y = height * 0.78;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    for(let i=0; i<150; i++) {
+        sceneState.particles.push({
+            x: Math.random() * width, y: Math.random() * height,
+            s: Math.random() * 2 + 0.5, v: Math.random() * 1.5 + 0.5, o: Math.random()
+        });
+    }
+    for(let i=0; i<3; i++) {
+        sceneState.waves.push({ y: height * (0.75 + i * 0.08), length: 0.002, amplitude: 15, speed: 0.02 + i*0.01 });
+    }
+
+    // 依螢幕尺寸自動換算角色寬度，避免人物在桌機、平板、手機上過度放大。
+    function responsiveWidth(vwRatio, maxWidth, minWidth) {
+        return Math.max(minWidth, Math.min(width * vwRatio, maxWidth));
+    }
+
+    function imageHeightByWidth(img, drawWidth) {
+        return drawWidth * (img.naturalHeight / img.naturalWidth);
+    }
+
+    // --- 繪製函式 ---
+    function drawWutao(x, y, scale, opacity, pose) {
+        ctx.save(); ctx.globalAlpha = opacity; ctx.translate(x, y); ctx.scale(scale, scale);
+
+        if (imgWutao.complete && imgWutao.naturalWidth > 0) {
+            const drawWidth = responsiveWidth(0.24, 300, 140);
+            const drawHeight = imageHeightByWidth(imgWutao, drawWidth);
+            
+            if(pose === 'stand') { ctx.shadowBlur = 20; ctx.shadowColor = 'rgba(14, 165, 233, 0.5)'; } 
+            else if (pose === 'attack') {
+                ctx.shadowBlur = 40; ctx.shadowColor = '#38bdf8';
+                ctx.translate(Math.random() * 6 - 3, Math.random() * 6 - 3);
+            } else if (pose === 'domain') {
+                ctx.shadowBlur = 60; ctx.shadowColor = '#fff';
+                ctx.translate(Math.random() * 10 - 5, Math.random() * 10 - 5);
+            }
+            ctx.drawImage(imgWutao, -drawWidth / 2, -drawHeight + 35, drawWidth, drawHeight);
+        } else {
+            drawErrorBox(errWutao, '武達悟 (01.png)');
+        }
+        ctx.restore();
+    }
+
+    function drawElder(x, y, scale, opacity, isGuardian) {
+        ctx.save(); ctx.globalAlpha = opacity; ctx.translate(x, y); ctx.scale(scale, scale);
+
+        if (imgElder.complete && imgElder.naturalWidth > 0) {
+            const drawWidth = isGuardian ? responsiveWidth(0.42, 520, 220) : responsiveWidth(0.22, 280, 130);
+            const drawHeight = imageHeightByWidth(imgElder, drawWidth);
+            
+            if (isGuardian) {
+                ctx.globalCompositeOperation = 'screen';
+                ctx.filter = 'sepia(1) hue-rotate(180deg) saturate(2) opacity(0.6) blur(2px)';
+            }
+            ctx.drawImage(imgElder, -drawWidth / 2, -drawHeight + (isGuardian ? 120 : 35), drawWidth, drawHeight);
+            if (isGuardian) ctx.globalCompositeOperation = 'source-over';
+        } else {
+            drawErrorBox(errElder, '達悟長老 (02.png)');
+        }
+        ctx.restore();
+    }
+
+    function drawEnemy(x, y, opacity) {
+        ctx.save(); ctx.globalAlpha = opacity; ctx.translate(x, y + Math.sin(frame*0.05)*20);
+       
+        if (imgEnemy.complete && imgEnemy.naturalWidth > 0) {
+            const drawWidth = responsiveWidth(0.28, 350, 150);
+            const drawHeight = imageHeightByWidth(imgEnemy, drawWidth);
+            ctx.shadowBlur = 50; ctx.shadowColor = '#9f1239';
+            ctx.drawImage(imgEnemy, -drawWidth / 2, -drawHeight + 50, drawWidth, drawHeight);
+        } else {
+            drawErrorBox(errEnemy, '國家公儺 (03.png)');
+        }
+        ctx.restore();
+    }
+
+    function drawErrorBox(isError, baseName) {
+        ctx.fillStyle = isError ? 'rgba(239, 68, 68, 0.2)' : 'rgba(255, 255, 255, 0.1)';
+        ctx.fillRect(-150, -200, 300, 200);
+        ctx.textAlign = 'center';
+        if (isError) {
+            ctx.fillStyle = '#ef4444'; ctx.font = 'bold 20px sans-serif'; ctx.fillText('❌ 讀取失敗', 0, -150);
+            ctx.fillStyle = '#fff'; ctx.font = '14px sans-serif';
+            ctx.fillText('無法載入網路圖片：', 0, -110);
+            ctx.fillStyle = '#fca5a5'; ctx.font = 'bold 16px sans-serif';
+            ctx.fillText(`${baseName}`, 0, -80);
+            ctx.fillStyle = '#fff'; ctx.font = '12px sans-serif';
+            ctx.fillText('請確認網路連線，或圖片網址是否有效', 0, -40);
+        } else {
+            ctx.fillStyle = '#fff'; ctx.font = '16px sans-serif'; ctx.fillText('⏳ 圖片載入中...', 0, -100);
+        }
+    }
+
+    function drawPanel(x, y, w, h, title, lines, accent = '#38bdf8') {
+        ctx.save();
+        ctx.fillStyle = 'rgba(2, 6, 23, 0.68)';
+        ctx.strokeStyle = accent;
+        ctx.lineWidth = 1.5;
+        ctx.shadowBlur = 18; ctx.shadowColor = 'rgba(14, 165, 233, 0.25)';
+        ctx.beginPath();
+        ctx.roundRect(x, y, w, h, 18);
+        ctx.fill(); ctx.stroke();
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = accent; ctx.font = `bold ${Math.max(14, width * 0.014)}px sans-serif`; ctx.textAlign = 'left';
+        ctx.fillText(title, x + 22, y + 34);
+        ctx.fillStyle = '#e0f2fe'; ctx.font = `${Math.max(13, width * 0.012)}px sans-serif`;
+        lines.forEach((line, i) => ctx.fillText(line, x + 22, y + 68 + i * 28));
+        ctx.restore();
+    }
+
+    function drawBar(x, y, w, h, label, value, max, color) {
+        ctx.save();
+        ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fillRect(x, y, w, h);
+        ctx.fillStyle = color; ctx.fillRect(x, y, w * Math.max(0, Math.min(1, value / max)), h);
+        ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.strokeRect(x, y, w, h);
+        ctx.fillStyle = '#fff'; ctx.font = `bold ${Math.max(12, width * 0.011)}px sans-serif`; ctx.textAlign = 'left';
+        ctx.fillText(`${label} ${value.toLocaleString()} / ${max.toLocaleString()}`, x, y - 8);
+        ctx.restore();
+    }
+
+    function drawSceneOverlays(elapsed) {
+        ctx.save();
+        if (sceneState.mode === 'teamIntro') {
+            ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fillRect(0,0,width,height);
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#e0f2fe'; ctx.font = `900 ${Math.max(30, width * 0.05)}px serif`;
+            ctx.fillText('高雄市立瑞祥高中', width/2, height*0.38);
+            ctx.fillStyle = '#38bdf8'; ctx.font = `900 ${Math.max(36, width * 0.065)}px serif`;
+            ctx.fillText('海洋探險隊', width/2, height*0.52);
+            ctx.fillStyle = 'rgba(186,230,253,0.75)'; ctx.font = `bold ${Math.max(14, width * 0.018)}px sans-serif`;
+            ctx.fillText('第四組遊戲預告片', width/2, height*0.62);
+        }
+        if (sceneState.mode === 'issueOcean' || sceneState.mode === 'issueBalance') {
+            const cx = width * 0.5, cy = height * 0.35;
+            ctx.strokeStyle = 'rgba(125,211,252,0.35)'; ctx.lineWidth = 3;
+            for (let r=80; r<Math.min(width,height)*0.55; r+=46) {
+                ctx.beginPath(); ctx.arc(cx, cy, r + Math.sin(frame*0.03 + r)*8, 0, Math.PI*2); ctx.stroke();
+            }
+            drawPanel(width*0.06, height*0.16, Math.min(420, width*0.38), 135, '黑潮與飛魚', ['四月，飛魚回歸', '文化存續與經濟命脈交會'], '#38bdf8');
+            drawPanel(width*0.58, height*0.18, Math.min(430, width*0.36), 135, '六海浬禁令', ['天秤傾斜', '生存與傳承即將對決'], '#fbbf24');
+        }
+        if (sceneState.mode === 'fairnessScan') {
+            drawPanel(width*0.28, height*0.12, Math.min(560, width*0.48), 150, '系統判定', ['同為國民，限制不同', '公平原則：未通過', '邏輯審查：衝突'], '#f43f5e');
+        }
+        if (sceneState.mode === 'enemyProtocol') {
+            drawPanel(width*0.33, height*0.12, Math.min(600, width*0.52), 160, '強制排除程序', ['產量不足 → 船隻停擺', '薪資斷鏈 → 生存風險', '交涉失敗：警告'], '#fb7185');
+        }
+        if (sceneState.battle.active) {
+            drawBar(width*0.08, height*0.12, Math.min(420,width*0.36), 18, '五達悟 HP', sceneState.battle.wutaoHp, 10000, '#38bdf8');
+            drawBar(width*0.55, height*0.12, Math.min(460,width*0.38), 18, '恆春公儺 HP', sceneState.battle.enemyHp, 25000, '#fb7185');
+            drawBar(width*0.28, height*0.2, Math.min(520,width*0.44), 14, '極限值 LIMIT', sceneState.battle.limit, 100, '#fbbf24');
+            if (sceneState.battle.guard) drawPanel(width*0.34, height*0.28, Math.min(460, width*0.4), 110, '海神障壁', ['抓準時機格擋', '成功後發動強力反擊'], '#67e8f9');
+        }
+        if (sceneState.mode === 'proposalLaw') {
+            drawPanel(width*0.18, height*0.13, Math.min(760, width*0.64), 145, '提案一：修改飛魚禁捕令', ['保障恆春漁民合理獵捕權益', '讓生計問題先被看見'], '#a7f3d0');
+        }
+        if (sceneState.mode === 'proposalQuota') {
+            drawPanel(width*0.13, height*0.12, Math.min(850, width*0.74), 155, '提案二：禁用破壞性網具＋合理捕撈配額', ['從「空間限制」轉向「行為規範」', '共同找出海洋永續的最大公約數'], '#fde68a');
+        }
+        if (sceneState.mode === 'recalculate' || sceneState.mode === 'commonManagement') {
+            drawPanel(width*0.16, height*0.12, Math.min(820, width*0.7), 145, '共同管理機制', ['達悟部落 × 恆春漁會 × 政府協助', '讓海洋永續，也讓生活繼續'], '#93c5fd');
+        }
+        if (sceneState.mode === 'finalTitle') {
+            ctx.fillStyle = 'rgba(0,0,0,0.82)'; ctx.fillRect(0,0,width,height);
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#ffffff'; ctx.font = `900 ${Math.max(24, width * 0.04)}px serif`;
+            ctx.fillText('大海的豐饒，需要我們共同的節制。', width/2, height*0.42);
+            ctx.fillStyle = '#38bdf8'; ctx.font = `900 ${Math.max(28, width * 0.05)}px serif`;
+            ctx.fillText('《潮間之秤：無量波光》', width/2, height*0.56);
+            ctx.fillStyle = '#94a3b8'; ctx.font = `bold ${Math.max(16, width * 0.02)}px sans-serif`;
+            ctx.fillText('2026 準備登入', width/2, height*0.66);
+        }
+        ctx.restore();
+    }
+
+    // --- 動畫主迴圈 ---
+    function draw() {
+        if(!isRunning) return;
+        const elapsed = ((Date.now() - startTime) / 1000) + 10;
+        frame++;
+        timecode.textContent = formatTime(elapsed);
+
+        ctx.clearRect(0, 0, width, height);
+       
+        if(sceneState.shake > 0) {
+            ctx.save();
+            ctx.translate((Math.random()-0.5)*sceneState.shake, (Math.random()-0.5)*sceneState.shake);
+            sceneState.shake *= 0.95;
+        }
+
+        let bg = ctx.createLinearGradient(0, 0, 0, height);
+        if (sceneState.mode === 'finalTitle') {
+            bg.addColorStop(0, '#000'); bg.addColorStop(1, '#020617');
+        } else {
+            bg.addColorStop(0, sceneState.domain > 0.5 ? '#000' : '#020617');
+            bg.addColorStop(1, sceneState.domain > 0.5 ? '#0f172a' : '#0c4a6e');
+        }
+        ctx.fillStyle = bg; ctx.fillRect(0, 0, width, height);
+
+        if(sceneState.elder.isGuardian && sceneState.elder.opacity > 0) {
+            drawElder(width/2, height*0.62, 1.2, sceneState.elder.opacity * 0.34, true);
+        }
+
+        sceneState.waves.forEach((wave, idx) => {
+            ctx.beginPath(); ctx.moveTo(0, height);
+            for(let i=0; i<=width; i+=20) {
+                const yOffset = Math.sin(i * wave.length + (frame * wave.speed)) * wave.amplitude;
+                ctx.lineTo(i, wave.y + yOffset);
+            }
+            ctx.lineTo(width, height);
+            ctx.fillStyle = sceneState.domain > 0.5 ? `rgba(255,255,255,0.05)` : `rgba(14, 165, 233, ${0.15 - idx*0.04})`;
+            ctx.fill();
+        });
+
+        drawSceneOverlays(elapsed);
+
+        if(!sceneState.elder.isGuardian && sceneState.elder.opacity > 0) {
+            drawElder(sceneState.elder.x, sceneState.elder.y, 1, sceneState.elder.opacity, false);
+        }
+        if(sceneState.enemy.opacity > 0) drawEnemy(sceneState.enemy.x, sceneState.enemy.y, sceneState.enemy.opacity);
+        if(sceneState.wutao.opacity > 0) drawWutao(sceneState.wutao.x, sceneState.wutao.y, 1, sceneState.wutao.opacity, sceneState.wutao.pose);
+
+        if(sceneState.domain > 0) {
+            ctx.strokeStyle = `rgba(56, 189, 248, ${sceneState.domain * 0.4})`;
+            ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(width/2, height/2, (frame * 8) % (width * 1.2), 0, Math.PI*2); ctx.stroke();
+           
+            const domainGrad = ctx.createRadialGradient(width/2, height/2, width*0.2, width/2, height/2, width*0.8);
+            domainGrad.addColorStop(0, 'transparent'); domainGrad.addColorStop(1, `rgba(0,0,0,${sceneState.domain * 0.8})`);
+            ctx.fillStyle = domainGrad; ctx.fillRect(0,0,width,height);
+        }
+
+        ctx.fillStyle = '#fff';
+        sceneState.particles.forEach(p => {
+            p.y -= p.v; if(p.y < 0) p.y = height;
+            ctx.globalAlpha = p.o * 0.5; ctx.fillRect(p.x, p.y, p.s, p.s);
+        });
+        ctx.globalAlpha = 1;
+
+        if(sceneState.shake > 0) ctx.restore();
+       
+        updateTimeline(elapsed);
+        requestAnimationFrame(draw);
+    }
+
+    function updateTimeline(elapsed) {
+        const current = SCRIPT.findLast(s => s.time <= elapsed);
+        if (current && caption.dataset.lastTime !== String(current.time)) {
+            caption.dataset.lastTime = current.time;
+            caption.style.opacity = 0;
+            setTimeout(() => {
+                caption.innerText = current.text;
+                if(current.text) caption.style.opacity = 1;
+            }, 200);
+            sceneTag.innerText = current.tag || '';
+            handleAction(current.action);
+        }
+    }
+
+    function setBattle(wutaoHp, enemyHp, limit, guard=false) {
+        sceneState.battle.active = true;
+        sceneState.battle.wutaoHp = wutaoHp;
+        sceneState.battle.enemyHp = enemyHp;
+        sceneState.battle.limit = limit;
+        sceneState.battle.guard = guard;
+    }
+
+    function resetCharacters() {
+        sceneState.wutao.opacity = 0;
+        sceneState.enemy.opacity = 0;
+        sceneState.elder.opacity = 0;
+        sceneState.elder.isGuardian = false;
+        sceneState.domain = 0;
+        sceneState.battle.active = false;
+        fakeUI.style.opacity = 0;
+    }
+
+    function handleAction(action) {
+        sceneState.mode = action;
+        switch(action) {
+            case 'teamIntro':
+                resetCharacters();
+                break;
+            case 'issueOcean':
+                playBgm(bgmPart1);
+                resetCharacters();
+                sceneState.elder.x = width * 0.5; sceneState.elder.opacity = 0.45;
+                break;
+            case 'issueBalance':
+                sceneState.elder.opacity = 0.35;
+                sceneState.enemy.opacity = 0.45; sceneState.enemy.x = width * 0.78;
+                sceneState.wutao.opacity = 0.45; sceneState.wutao.x = width * 0.22;
+                break;
+            case 'enemyArgue':
+                sceneState.enemy.opacity = 0.95; sceneState.enemy.x = width * 0.72;
+                sceneState.wutao.opacity = 0.55; sceneState.wutao.x = width * 0.25;
+                sceneState.elder.opacity = 0; sceneState.shake = 8;
+                break;
+            case 'wutaoArgue':
+                sceneState.wutao.opacity = 1; sceneState.wutao.x = width * 0.25; sceneState.wutao.pose = 'stand';
+                sceneState.enemy.opacity = 0.68; sceneState.enemy.x = width * 0.74;
+                break;
+            case 'fairnessScan':
+                sceneState.enemy.opacity = 1; sceneState.enemy.x = width * 0.7;
+                sceneState.wutao.opacity = 0.72; sceneState.wutao.x = width * 0.25;
+                break;
+            case 'wutaoPressure':
+                sceneState.wutao.opacity = 1; sceneState.wutao.x = width * 0.36; sceneState.wutao.pose = 'attack';
+                sceneState.enemy.opacity = 0.68; sceneState.enemy.x = width * 0.78;
+                sceneState.shake = 18;
+                break;
+            case 'enemyProtocol':
+                sceneState.enemy.opacity = 1; sceneState.enemy.x = width * 0.66;
+                sceneState.wutao.opacity = 0.75; sceneState.wutao.x = width * 0.23;
+                sceneState.shake = 15;
+                break;
+            case 'warStart':
+                sceneState.wutao.opacity = 1; sceneState.wutao.x = width * 0.28; sceneState.wutao.pose = 'attack';
+                sceneState.enemy.opacity = 1; sceneState.enemy.x = width * 0.73;
+                sceneState.shake = 35;
+                break;
+            case 'domainOpen':
+                playBgm(bgmPart2);
+                fakeUI.style.opacity = 1;
+                sceneState.domain = 0.75; sceneState.wutao.pose = 'domain'; sceneState.wutao.x = width * 0.42; sceneState.wutao.opacity = 1;
+                sceneState.enemy.x = width * 0.76; sceneState.enemy.opacity = 0.9;
+                sceneState.elder.isGuardian = true; sceneState.elder.opacity = 0.4;
+                setBattle(10000, 25000, 8, false);
+                document.getElementById('combo-text').innerText = 'DOMAIN';
+                document.getElementById('status-text').innerText = '無量空間：深淵禁補';
+                hpFill.style.width = '100%';
+                break;
+            case 'battleCalc':
+                sceneState.domain = 0.55; sceneState.shake = 18;
+                setBattle(8200, 22000, 22, false);
+                document.getElementById('combo-text').innerText = '蒼潮穿';
+                document.getElementById('status-text').innerText = '極限值累積中';
+                hpFill.style.width = '82%';
+                break;
+            case 'guardCounter':
+                sceneState.wutao.pose = 'attack'; sceneState.shake = 30;
+                setBattle(3600, 16800, 58, true);
+                document.getElementById('combo-text').innerText = 'GUARD';
+                document.getElementById('status-text').innerText = '海神障壁／逆轉盟約';
+                hpFill.style.width = '36%';
+                break;
+            case 'killLine':
+                sceneState.enemy.opacity = 0.85; sceneState.shake = 22;
+                setBattle(5200, 4800, 84, false);
+                document.getElementById('combo-text').innerText = '5000 ↓';
+                document.getElementById('status-text').innerText = '絕對斬殺線';
+                hpFill.style.width = '52%';
+                break;
+            case 'finalSkill':
+                sceneState.domain = 1; sceneState.wutao.pose = 'domain'; sceneState.wutao.x = width * 0.5;
+                sceneState.enemy.opacity = 0.42; sceneState.enemy.x = width * 0.82;
+                sceneState.shake = 80; setBattle(6800, 1200, 100, false);
+                document.getElementById('combo-text').innerText = '終焉術式';
+                document.getElementById('status-text').innerText = '深淵海禁';
+                break;
+            case 'elderStop':
+                playBgm(bgmPart3);
+                sceneState.domain = 0.18; sceneState.battle.active = false; fakeUI.style.opacity = 0;
+                sceneState.elder.isGuardian = false; sceneState.elder.opacity = 1; sceneState.elder.x = width * 0.5;
+                sceneState.wutao.opacity = 0.75; sceneState.wutao.x = width * 0.24; sceneState.wutao.pose = 'stand';
+                sceneState.enemy.opacity = 0.75; sceneState.enemy.x = width * 0.76;
+                break;
+            case 'enemyDoubt':
+                sceneState.elder.opacity = 0.86; sceneState.enemy.opacity = 0.95; sceneState.enemy.x = width * 0.72;
+                sceneState.wutao.opacity = 0.55;
+                break;
+            case 'wutaoDoubt':
+                sceneState.wutao.opacity = 0.95; sceneState.wutao.x = width * 0.25;
+                sceneState.elder.opacity = 0.86; sceneState.enemy.opacity = 0.55;
+                break;
+            case 'proposalLaw':
+                sceneState.elder.opacity = 1; sceneState.elder.x = width * 0.5;
+                sceneState.wutao.opacity = 0.65; sceneState.enemy.opacity = 0.65;
+                break;
+            case 'proposalAccept':
+                sceneState.enemy.opacity = 0.95; sceneState.enemy.x = width * 0.7;
+                sceneState.elder.opacity = 0.8; sceneState.wutao.opacity = 0.55;
+                break;
+            case 'proposalQuota':
+                sceneState.elder.opacity = 1; sceneState.elder.x = width * 0.5; sceneState.shake = 8;
+                sceneState.wutao.opacity = 0.72; sceneState.enemy.opacity = 0.72;
+                break;
+            case 'recalculate':
+                sceneState.enemy.opacity = 0.9; sceneState.wutao.opacity = 0.65; sceneState.elder.opacity = 0.75;
+                break;
+            case 'commonManagement':
+                sceneState.wutao.opacity = 0.95; sceneState.wutao.x = width * 0.28;
+                sceneState.enemy.opacity = 0.75; sceneState.enemy.x = width * 0.72;
+                sceneState.elder.opacity = 0.9; sceneState.elder.x = width * 0.5;
+                break;
+            case 'finalTitle':
+                stopAllBgm();
+                caption.style.opacity = 1;
+                sceneState.wutao.opacity = 0; sceneState.enemy.opacity = 0; sceneState.elder.opacity = 0;
+                sceneState.domain = 0; sceneState.battle.active = false; fakeUI.style.opacity = 0;
+                break;
+            case 'end':
+                caption.style.opacity = 0;
+                break;
+        }
+    }
+
+    let videoTimer;
+
+    // 獨立出啟動 Canvas 動畫的函式
+    function beginCanvasAnimation() {
+        if(isRunning) return; // 避免重複執行
+
+        const videoIntro = document.getElementById('video-intro');
+        const introVideo = document.getElementById('intro-video');
+        if (introVideo) {
+            introVideo.pause();
+            introVideo.muted = true;
+        }
+        videoIntro.style.opacity = '0';
+
+        setTimeout(() => {
+            videoIntro.style.display = 'none';
+            videoIntro.innerHTML = '';
+
+            isRunning = true;
+            startTime = Date.now();
+            draw();
+        }, 650);
+    }
+
+    async function startInteractiveTrailer() {
+        await unlockAllAudio();
+        document.getElementById('overlay').style.display = 'none';
+
+        const videoIntro = document.getElementById('video-intro');
+
+        // ★ 開場主視覺：使用 GitHub 的 04-第四組主視覺動畫.mp4；保留完整比例、不裁切，並放大原聲。
+        videoIntro.innerHTML = `
+            <video id="intro-video" autoplay playsinline webkit-playsinline preload="auto" crossorigin="anonymous">
+                <source src="${INTRO_VIDEO_URL}" type="video/mp4">
+            </video>
+            <button id="skip-btn" class="absolute top-6 right-6 z-[999] px-6 py-2 bg-black/60 text-white border border-white/50 rounded hover:bg-sky-600 transition tracking-widest font-bold">跳過影片 ⏭</button>
+        `;
+        videoIntro.style.display = 'flex';
+        videoIntro.style.opacity = '1';
+
+        const introVideo = document.getElementById('intro-video');
+        await safePlayIntroVideo(introVideo);
+        introVideo.addEventListener('ended', () => {
+            clearTimeout(videoTimer);
+            beginCanvasAnimation();
+        });
+
+        // 綁定跳過按鈕事件。手機上跳過後，後續三大段音樂仍可播放，因為已在第一次點擊時解鎖。
+        document.getElementById('skip-btn').addEventListener('click', () => {
+            clearTimeout(videoTimer);
+            beginCanvasAnimation();
+        });
+        document.getElementById('skip-btn').addEventListener('touchstart', () => {
+            clearTimeout(videoTimer);
+            beginCanvasAnimation();
+        }, { passive: true });
+
+        // 若影片 ended 事件沒有觸發，10 秒後進入正式劇情。
+        videoTimer = setTimeout(() => {
+            beginCanvasAnimation();
+        }, 10000);
+    }
+
+    startBtn.addEventListener('click', startInteractiveTrailer);
+    startBtn.addEventListener('touchend', (event) => {
+        event.preventDefault();
+        startInteractiveTrailer();
+    }, { passive: false });
+
+    // 任何手機／平板後續點擊，都嘗試恢復 AudioContext，避免切換 App 或鎖屏後靜音。
+    ['click', 'touchstart', 'pointerdown'].forEach(evt => {
+        document.addEventListener(evt, () => {
+            if (audioState.ctx && audioState.ctx.state === 'suspended') audioState.ctx.resume().catch(() => {});
+        }, { passive: true });
+    });
+</script>
+</body>
+</html>
