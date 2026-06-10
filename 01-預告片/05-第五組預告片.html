@@ -55,36 +55,46 @@
             bottom: 15%;
             width: 80%;
             max-width: 800px;
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
             border-left: 4px solid #d4af37;
-            padding: 20px;
+            padding: 25px;
             color: #fff;
             opacity: 0;
-            transition: opacity 1s;
+            transition: opacity 1s, transform 0.5s;
+            border-radius: 0 12px 12px 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
 
         .role-name {
             color: #d4af37;
             font-weight: bold;
-            margin-bottom: 5px;
-            font-size: 1.2rem;
+            margin-bottom: 8px;
+            font-size: 1.25rem;
+            letter-spacing: 0.1em;
         }
 
         #start-btn {
             pointer-events: auto;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(5px);
             border: 1px solid #d4af37;
             color: #d4af37;
-            padding: 15px 40px;
+            padding: 18px 50px;
             cursor: pointer;
             font-size: 1.5rem;
-            transition: all 0.3s;
+            letter-spacing: 0.2rem;
+            transition: all 0.4s ease;
             z-index: 100;
+            border-radius: 4px;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
         }
 
         #start-btn:hover {
             background: #d4af37;
             color: #000;
+            box-shadow: 0 0 25px rgba(212, 175, 55, 0.6);
+            transform: scale(1.05);
         }
 
         .fade-black {
@@ -115,6 +125,12 @@
             font-size: 1.5rem;
             opacity: 0;
             transition: opacity 0.5s;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 15px;
+            border-radius: 8px;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(74, 222, 128, 0.2);
+            z-index: 20;
         }
     </style>
 </head>
@@ -129,13 +145,13 @@
         
         <div id="dialogue" class="dialogue-box">
             <div class="role-name" id="role"></div>
-            <div class="text-xl" id="content"></div>
+            <div class="text-xl leading-relaxed" id="content"></div>
         </div>
 
         <div id="title-screen" class="hidden flex flex-col items-center">
             <h1 id="game-title" class="gold-text">海岸綠能大亨</h1>
             <p class="text-white text-lg opacity-0 transition-opacity duration-1000 mb-8" id="sub-title">權衡，是開發者的唯一天職。</p>
-            <a href="#" class="px-8 py-3 bg-white text-black font-bold rounded-full hover:bg-yellow-400 transition-colors opacity-0" id="download-link">立即下載</a>
+            <a href="#" class="px-8 py-3 bg-white text-black font-bold rounded-full hover:bg-yellow-400 transition-all duration-300 transform hover:scale-105 opacity-0" id="download-link">立即下載</a>
         </div>
     </div>
 
@@ -146,9 +162,9 @@
 
     <div id="scene-container"></div>
 
-    <!-- 音效資源 -->
     <audio id="bgm1" src="窗邊雨痕.mp3" loop></audio>
     <audio id="bgm2" src="藍色晶片雨.mp3" loop></audio>
+    <audio id="voiceover" src="https://raw.githubusercontent.com/igudesman222/-/main/03-%E9%A0%90%E5%91%8A%E7%89%87(%E9%85%8D%E9%9F%B3)/01-%E9%85%8D%E9%9F%B3MP3/05-%E7%91%9E%E7%A5%A5%E9%AB%98%E4%B8%AD-%E7%AC%AC%E4%BA%94%E7%B5%84%E9%85%8D%E9%9F%B3(%E4%BF%AE).mp3"></audio>
 
     <script>
         let scene, camera, renderer, ocean, sand, windmill, player;
@@ -157,7 +173,7 @@
 
         function init3D() {
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0xffffff); // 初始純白
+            scene.background = new THREE.Color(0xffffff);
 
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -165,7 +181,6 @@
             renderer.shadowMap.enabled = true;
             document.getElementById('scene-container').appendChild(renderer.domElement);
 
-            // 燈光
             const ambient = new THREE.AmbientLight(0xffffff, 0.7);
             scene.add(ambient);
             const sun = new THREE.DirectionalLight(0xffffff, 1);
@@ -173,7 +188,6 @@
             sun.castShadow = true;
             scene.add(sun);
 
-            // 沙灘
             const sandGeo = new THREE.PlaneGeometry(200, 200);
             const sandMat = new THREE.MeshPhongMaterial({ color: 0xedc9af });
             sand = new THREE.Mesh(sandGeo, sandMat);
@@ -181,7 +195,6 @@
             sand.receiveShadow = true;
             scene.add(sand);
 
-            // 海面
             const oceanGeo = new THREE.PlaneGeometry(200, 100);
             const oceanMat = new THREE.MeshPhongMaterial({ 
                 color: 0x0077be, 
@@ -195,7 +208,6 @@
             ocean.position.z = -50;
             scene.add(ocean);
 
-            // 玩家角色 (簡單示意)
             const playerGeo = new THREE.BoxGeometry(1, 2, 1);
             const playerMat = new THREE.MeshPhongMaterial({ color: 0xffff00 });
             player = new THREE.Mesh(playerGeo, playerMat);
@@ -203,7 +215,6 @@
             player.castShadow = true;
             scene.add(player);
 
-            // 風機 (隱藏直到演出)
             windmill = new THREE.Group();
             const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.4, 10), new THREE.MeshPhongMaterial({color: 0xffffff}));
             pole.position.y = 5;
@@ -238,7 +249,6 @@
             requestAnimationFrame(animate);
             let time = Date.now() * 0.001;
             
-            // 海浪動態
             ocean.position.y = 0.1 + Math.sin(time) * 0.1;
             
             if(windmill.scale.x > 0) {
@@ -267,8 +277,7 @@
             {
                 time: 10000,
                 action: () => {
-                    scene.background = new THREE.Color(0x87ceeb); // 藍天
-                    // 鏡頭拉近對焦
+                    scene.background = new THREE.Color(0x87ceeb);
                     new TWEEN_Simple(camera.position, {z: 25, y: 3}, 5000);
                 }
             },
@@ -279,6 +288,12 @@
             {
                 time: 18000,
                 action: () => { showDialogue("開發者（玩家）", "我明白這份寧靜的價值。但如果我們不利用這份自然的餽贈，村子只能在能源貧乏中逐漸凋零。"); }
+            },
+            {
+                time: 20000,
+                action: () => {
+                    document.getElementById('voiceover').play();
+                }
             },
             {
                 time: 23000,
@@ -292,7 +307,6 @@
                 time: 27000,
                 action: () => {
                     hideDialogue();
-                    // 快速切換鏡頭展示放置
                     camera.position.set(15, 10, 20);
                     camera.lookAt(10, 5, -5);
                     windmill.scale.set(1, 1, 1);
@@ -308,7 +322,6 @@
                 time: 36000,
                 action: () => {
                     hideDialogue();
-                    // 黃昏場景
                     scene.background = new THREE.Color(0xff7f50);
                     new TWEEN_Simple(camera.position, {x: -15, y: 5, z: 30}, 10000);
                 }
@@ -321,14 +334,14 @@
                 time: 48000,
                 action: () => {
                     hideDialogue();
-                    player.rotation.y = Math.PI; // 轉身面對鏡頭
+                    player.rotation.y = Math.PI;
                     camera.position.set(0, 2, 14);
                     camera.lookAt(0, 1.5, 10);
                 }
             },
             {
                 time: 51000,
-                action: () => { showDialogue("開發者（玩家）", "權衡與選擇，是我來到這裡的原因。妳 your 的聲音，我會一直聽著。"); }
+                action: () => { showDialogue("開發者（玩家）", "權衡與選擇，是我來到這裡的原因。妳的聲音，我會一直聽著。"); }
             },
             {
                 time: 56000,
@@ -339,6 +352,7 @@
                 action: () => {
                     document.getElementById('bgm2').pause();
                     document.getElementById('bgm2').currentTime = 0;
+                    document.getElementById('voiceover').pause();
                     document.getElementById('fade-overlay').style.opacity = '1';
                     hideDialogue();
                 }
@@ -361,10 +375,13 @@
             document.getElementById('role').innerText = role;
             document.getElementById('content').innerText = text;
             diag.style.opacity = '1';
+            diag.style.transform = 'translateY(0)';
         }
 
         function hideDialogue() {
-            document.getElementById('dialogue').style.opacity = '0';
+            const diag = document.getElementById('dialogue');
+            diag.style.opacity = '0';
+            diag.style.transform = 'translateY(10px)';
         }
 
         function updateStats() {
@@ -379,7 +396,6 @@
             }, 100);
         }
 
-        // 簡易的補間動畫模擬
         class TWEEN_Simple {
             constructor(obj, target, duration) {
                 const start = { ...obj };
