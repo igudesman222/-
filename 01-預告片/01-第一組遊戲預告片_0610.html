@@ -343,7 +343,7 @@
             transition: opacity 1s ease;
         }
 
-        /* 語音除錯診斷面板 */
+        /* 語音除錯診斷面板：保留 DOM 與狀態更新，但移到畫面背後隱藏，不影響播放診斷邏輯 */
         #audio-debug-panel {
             position: absolute;
             bottom: 15px;
@@ -351,13 +351,15 @@
             font-size: 11px;
             font-family: monospace;
             color: rgba(255, 255, 255, 0.4);
-            z-index: 99;
+            z-index: -10;
             pointer-events: none;
             background: rgba(15, 23, 42, 0.75);
             padding: 6px 12px;
             border-radius: 4px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(4px);
+            opacity: 0;
+            transform: translateY(200vh);
         }
 
 
@@ -551,6 +553,7 @@
                 var kv = document.getElementById('kv-video');
                 var teamScreen = document.getElementById('team-intro-screen');
                 var voice = document.getElementById('voiceover-audio');
+                if (voice) voice.playbackRate = 0.912;
 
                 if (overlay) {
                     overlay.style.opacity = 0;
@@ -581,20 +584,20 @@
                 var start = Date.now() - 14000;
                 var fallbackLines = [
                     { t: 14000, sp: '旁白', tx: '這裡是基隆外木山，海浪依舊拍打著礁岩，但在這片美麗的藍色之下，一場關於「能源轉型」和「生態保育」的拉鋸戰正悄然上演。' },
-                    { t: 84000, sp: '環保團體人士', tx: '巨大的機具陰影已經籠罩海床，清澈的海水被污泥覆蓋，底下的珊瑚礁承受得了嗎？' },
-                    { t: 153000, sp: '海洋科學家', tx: '四接爭議並非只有乾淨發電的問題，而是關係到能不能和基隆海域共存。' },
-                    { t: 184000, sp: '', tx: '究竟我們該如何在綠能發電和海洋生態間取得平衡？' },
-                    { t: 195000, sp: '', tx: '加入「四接疑雲」，讓我們一起守護北海岸的未來。' }
+                    { t: 90000, sp: '環保團體人士', tx: '巨大的機具陰影已經籠罩海床，清澈的海水被污泥覆蓋，底下的珊瑚礁承受得了嗎？' },
+                    { t: 165000, sp: '海洋科學家', tx: '四接爭議並非只有乾淨發電的問題，而是關係到能不能和基隆海域共存。' },
+                    { t: 199000, sp: '', tx: '究竟我們該如何在綠能發電和海洋生態間取得平衡？' },
+                    { t: 212000, sp: '', tx: '加入「四接疑雲」，讓我們一起守護北海岸的未來。' }
                 ];
                 var i = -1;
                 var tick = setInterval(function () {
                     var elapsed = Date.now() - start;
-                    var sec = Math.min(elapsed / 1000, 200);
+                    var sec = Math.min(elapsed / 1000, 218);
                     var mm = String(Math.floor(sec / 60)).padStart(2, '0');
                     var ss = String(Math.floor(sec % 60)).padStart(2, '0');
-                    if (timer) timer.innerText = mm + ':' + ss + ' / 03:20';
+                    if (timer) timer.innerText = mm + ':' + ss + ' / 03:38';
                     var ending = document.getElementById('ending-visual-screen');
-                    if (ending && elapsed >= 184000 && !ending.classList.contains('active')) {
+                    if (ending && elapsed >= 199000 && !ending.classList.contains('active')) {
                         ending.style.display = 'block';
                         setTimeout(function () { ending.classList.add('active'); }, 30);
                     }
@@ -608,7 +611,7 @@
                         if (subBox) subBox.style.opacity = 1;
                         if (i === 2 && voice) playSafely(voice);
                     }
-                    if (elapsed >= 200000) {
+                    if (elapsed >= 218000) {
                         clearInterval(tick);
                         if (timer) timer.style.display = 'none';
                         if (subBox) subBox.style.opacity = 0;
@@ -654,6 +657,9 @@
         let currentSpeakerId = null;
         const FIRST_MAIN_SEGMENT_TIME = 14000; // 團隊介紹後直接進入第一大段（0:14 旁白），跳過計時器 00:01-00:04 等前段畫面。
         const FIRST_MAIN_SEGMENT_EVENT_INDEX = 2; // TIMELINE 中 0:14 旁白事件的索引
+        const ORIGINAL_MAIN_END_TIME = 200000;
+        const SLOWED_MAIN_END_TIME = 218000; // 每個對話與下一段之間增加約 1 秒後的總長度
+        const VOICEOVER_SYNC_RATE = (ORIGINAL_MAIN_END_TIME - FIRST_MAIN_SEGMENT_TIME) / (SLOWED_MAIN_END_TIME - FIRST_MAIN_SEGMENT_TIME); // 約 0.912，讓配音與放慢後字幕同步
         const gameplayVideo = document.getElementById('gameplay-video');
         const kvVideo = document.getElementById('kv-video');
         const voiceoverAudio = document.getElementById('voiceover-audio'); 
@@ -664,19 +670,19 @@
             {
                 name: "海底壓痕.mp3 第一段",
                 start: 14000,      // 0:14
-                end: 85000,        // 1:25 前
+                end: 91000,        // 放慢後約 1:31 前
                 src: "https://raw.githubusercontent.com/igudesman222/igudesman2012/main/01-%E7%AC%AC%E4%B8%80%E7%B5%84%E8%B3%87%E6%BA%90/003-%E8%83%8C%E6%99%AF%E9%9F%B3%E6%A8%82/%E6%B5%B7%E5%BA%95%E5%A3%93%E7%97%95.mp3%20%E7%AC%AC%E4%B8%80%E6%AE%B5.mp3"
             },
             {
                 name: "狹縫奔逃.mp3 第二段",
-                start: 85000,      // 1:25
-                end: 154000,       // 2:34 前
+                start: 91000,      // 放慢後約 1:31
+                end: 166000,       // 放慢後約 2:46 前
                 src: "https://raw.githubusercontent.com/igudesman222/igudesman2012/main/01-%E7%AC%AC%E4%B8%80%E7%B5%84%E8%B3%87%E6%BA%90/003-%E8%83%8C%E6%99%AF%E9%9F%B3%E6%A8%82/%E7%8B%B9%E7%B8%AB%E5%A5%94%E9%80%83.mp3%20%E7%AC%AC%E4%BA%8C%E6%AE%B5.mp3"
             },
             {
                 name: "破曉回聲.mp3 第三段",
-                start: 154000,     // 2:34
-                end: 200000,       // 3:20
+                start: 166000,     // 放慢後約 2:46
+                end: SLOWED_MAIN_END_TIME,       // 放慢後約 3:38
                 src: "https://raw.githubusercontent.com/igudesman222/igudesman2012/main/01-%E7%AC%AC%E4%B8%80%E7%B5%84%E8%B3%87%E6%BA%90/003-%E8%83%8C%E6%99%AF%E9%9F%B3%E6%A8%82/%E7%A0%B4%E6%9B%89%E5%9B%9E%E8%81%B2.mp3%20%E7%AC%AC%E4%B8%89%E6%AE%B5.mp3"
             }
         ];
@@ -766,7 +772,7 @@
         function updateBGMByTime(elapsed) {
             const index = BGM_TRACKS.findIndex(track => elapsed >= track.start && elapsed < track.end);
             if (index >= 0) switchBGM(index);
-            else if (elapsed >= 200000) stopBGM();
+            else if (elapsed >= SLOWED_MAIN_END_TIME) stopBGM();
         }
 
         // --- 圖片基礎路徑 ---
@@ -879,31 +885,31 @@
                 
                 // 在 14 秒時正式播放配音，附帶異常補償與診斷日誌
                 voiceoverAudio.play()
-                    .then(() => updateAudioStatus("配音播放中..."))
+                    .then(() => updateAudioStatus("配音播放中（已放慢約 1 秒節奏）..."))
                     .catch(e => {
                         console.error("14秒播放被瀏覽器阻擋:", e);
                         updateAudioStatus("播放受阻: " + e.message, true);
                     });
             }},
-            { time: 27000, speaker: "台電CEO", text: "增氣減煤是能源轉型關鍵，四接，能確保北部用電穩定並減排。我們已極大化縮小填海，力求發展和環境平衡。", action: () => {
+            { time: 28000, speaker: "台電CEO", text: "增氣減煤是能源轉型關鍵，四接，能確保北部用電穩定並減排。我們已極大化縮小填海，力求發展和環境平衡。", action: () => {
                 focusSpeaker('capital');
                 dirState.bgColor.setHex(0x1e293b);
             }},
-            { time: 40000, speaker: "環保團體人士", text: "我們堅決反對！填海造陸將造成珊瑚滅絕與航安威脅，你知道嗎？不可逆的生態浩劫不應該是能源轉型的代價。", action: () => {
+            { time: 42000, speaker: "環保團體人士", text: "我們堅決反對！填海造陸將造成珊瑚滅絕與航安威脅，你知道嗎？不可逆的生態浩劫不應該是能源轉型的代價。", action: () => {
                 focusSpeaker('eco');
                 dirState.shake = 0.04;
             }},
-            { time: 50000, speaker: "海洋科學家", text: "根據我們的研究，天然氣發電雖然比較環保，但為此填海造陸也會損害海岸線，環境仍要謹慎評估！", action: () => {
+            { time: 53000, speaker: "海洋科學家", text: "根據我們的研究，天然氣發電雖然比較環保，但為此填海造陸也會損害海岸線，環境仍要謹慎評估！", action: () => {
                 dirState.shake = 0;
                 focusSpeaker('shun');
             }},
-            { time: 60000, speaker: "基隆民眾", text: "我們想要乾淨空氣和穩定電力，卻也捨不得這片湛藍大海。在發展和家園之間，我們只求一個透明的雙贏方案。", action: () => {
+            { time: 64000, speaker: "基隆民眾", text: "我們想要乾淨空氣和穩定電力，卻也捨不得這片湛藍大海。在發展和家園之間，我們只求一個透明的雙贏方案。", action: () => {
                 focusSpeaker('min');
             }},
-            { time: 71000, speaker: "台電CEO", text: "我們會持續與科學家合作並進行生態檢測，還會公開所有環境數據。穩定供電和守護基隆的藍天碧海，絕對不是一條單行道。", action: () => {
+            { time: 76000, speaker: "台電CEO", text: "我們會持續與科學家合作並進行生態檢測，還會公開所有環境數據。穩定供電和守護基隆的藍天碧海，絕對不是一條單行道。", action: () => {
                 focusSpeaker('capital');
             }},
-            { time: 84000, speaker: "環保團體人士", text: "（語氣焦急）你們看！你們看！巨大的機具陰影已經籠罩海床，清澈的海水被污泥覆蓋，底下的珊瑚礁承受得了嗎？", action: () => {
+            { time: 90000, speaker: "環保團體人士", text: "（語氣焦急）你們看！你們看！巨大的機具陰影已經籠罩海床，清澈的海水被污泥覆蓋，底下的珊瑚礁承受得了嗎？", action: () => {
                 dirState.hud = 1;
                 dirState.oil = 0.9;
                 dirState.bgColor.setHex(0x1c1917);
@@ -911,57 +917,57 @@
                 dirState.shake = 0.09;
                 // 第二段背景音樂會在 1:25 自動切換。
             }},
-            { time: 94000, speaker: "海洋科學家", text: "（語氣沉重）為了釐清真相，我們需要第一手的環評數據。這必須得仰賴一位勇敢的駕駛員，開著潛艇親自下去一探究竟。", action: () => {
+            { time: 101000, speaker: "海洋科學家", text: "（語氣沉重）為了釐清真相，我們需要第一手的環評數據。這必須得仰賴一位勇敢的駕駛員，開著潛艇親自下去一探究竟。", action: () => {
                 dirState.shake = 0.02;
                 focusSpeaker('shun');
                 dirState.coralC.setHex(0xd1d5db); // 珊瑚白化
                 dirState.coralS = 0.5;
             }},
-            { time: 105000, speaker: "環保團體人士", text: "(語氣無奈)難道我們只能眼睜睜看著這一切發生嗎？海洋科學家，真的沒有別的辦法能拯救這片海洋了嗎？", action: () => {
+            { time: 113000, speaker: "環保團體人士", text: "(語氣無奈)難道我們只能眼睜睜看著這一切發生嗎？海洋科學家，真的沒有別的辦法能拯救這片海洋了嗎？", action: () => {
                 focusSpeaker('eco');
                 dirState.shake = 0.06;
             }},
-            { time: 114000, speaker: "海洋科學家", text: "(猶豫)方法......方法不是沒有但我們需要更詳盡的海底環評數據。這必須得仰賴一位技術高超的勘探員，駕駛潛艇深入海底，才能揭開真相。", action: () => {
+            { time: 123000, speaker: "海洋科學家", text: "(猶豫)方法......方法不是沒有但我們需要更詳盡的海底環評數據。這必須得仰賴一位技術高超的勘探員，駕駛潛艇深入海底，才能揭開真相。", action: () => {
                 dirState.shake = 0;
                 focusSpeaker('shun');
                 flashEffect();
             }},
-            { time: 128000, speaker: "旁白", text: "螢幕前的『勇士』們啊！海洋科學家決定尋求你的幫助，來完成這項艱鉅的任務。", action: () => {
+            { time: 138000, speaker: "旁白", text: "螢幕前的『勇士』們啊！海洋科學家決定尋求你的幫助，來完成這項艱鉅的任務。", action: () => {
                 setCamera(-10, 12, -10, -3, 0.5, -3);
             }},
-            { time: 137000, speaker: "旁白", text: "這是一款關於「四接」爭議的遊戲，將複雜的政策辯論轉化為直觀的潛艇冒險。玩法為玩家駕駛潛艇在海底探索，針對能源開發或環境保育進行兩難決策。", action: () => {
+            { time: 148000, speaker: "旁白", text: "這是一款關於「四接」爭議的遊戲，將複雜的政策辯論轉化為直觀的潛艇冒險。玩法為玩家駕駛潛艇在海底探索，針對能源開發或環境保育進行兩難決策。", action: () => {
                 dirState.hud = 1;
                 setCamera(0, 3, 10, 0, 1.5, -20);
             }},
-            { time: 153000, speaker: "海洋科學家", text: "四接爭議並非只有乾淨發電的問題，而是關係到能不能和基隆海域共存，四接的開發不應該以犧牲海洋環境為代價！", action: () => {
+            { time: 178000, speaker: "海洋科學家", text: "四接爭議並非只有乾淨發電的問題，而是關係到能不能和基隆海域共存，四接的開發不應該以犧牲海洋環境為代價！", action: () => {
                 dirState.hud = 0;
                 focusSpeaker('shun');
                 dirState.bgColor.setHex(0x0f172a);
                 // 第三段背景音樂會在 2:34 自動切換。
             }},
-            { time: 165000, speaker: "基隆民眾", text: "難道人類所追求的未來，真的沒辦法和這片海洋和平共處嗎？", action: () => {
+            { time: 178000, speaker: "基隆民眾", text: "難道人類所追求的未來，真的沒辦法和這片海洋和平共處嗎？", action: () => {
                 focusSpeaker('min');
             }},
-            { time: 171000, speaker: "台電CEO", text: "(為難)我們一再退讓，就是想要找出共存的可能。但是在供電不足的壓力之下，這已經是我們權衡後爭取到的最大平衡了。", action: () => {
+            { time: 185000, speaker: "台電CEO", text: "(為難)我們一再退讓，就是想要找出共存的可能。但是在供電不足的壓力之下，這已經是我們權衡後爭取到的最大平衡了。", action: () => {
                 focusSpeaker('capital');
                 dirState.coralC.setHex(0x4ade80);
                 dirState.coralS = 0.9;
                 dirState.oil = 0.3;
             }},
-            { time: 184000, speaker: "", text: "究竟我們該如何在綠能發電和海洋生態間取得平衡？", action: () => {
+            { time: 199000, speaker: "", text: "究竟我們該如何在綠能發電和海洋生態間取得平衡？", action: () => {
                 dirState.labels = false;
                 dirState.hud = 0;
                 clearSpeakerFocus();
                 setCamera(0, 15, 30, 0, 0, 0);
                 showEndingVisual();
             }},
-            { time: 189000, speaker: "", text: "真相，就藏在深海中。你的選擇，將決定基隆海岸線的未來！", action: () => {
+            { time: 205000, speaker: "", text: "真相，就藏在深海中。你的選擇，將決定基隆海岸線的未來！", action: () => {
                 setCamera(0, 3, 10, 0, 1.5, -20);
             }},
-            { time: 195000, speaker: "", text: "加入「四接疑雲」，讓我們一起守護北海岸的未來。", action: () => {
+            { time: 212000, speaker: "", text: "加入「四接疑雲」，讓我們一起守護北海岸的未來。", action: () => {
                 dirState.hud = 0;
             }},
-            { time: 200000, action: () => returnToMainScreen() } 
+            { time: SLOWED_MAIN_END_TIME, action: () => returnToMainScreen() } 
         ];
 
         // --- STREAMING_CHUNK:Initializing 3D world scene... ---
@@ -1078,7 +1084,7 @@
             updateBGMByTime(elapsed);
 
             // 計時器已刪除，保留時間運算僅供流程內部使用
-            const elapsedSec = Math.min(elapsed / 1000, 200);
+            const elapsedSec = Math.min(elapsed / 1000, SLOWED_MAIN_END_TIME / 1000);
             const mins = Math.floor(elapsedSec / 60);
             const secs = Math.floor(elapsedSec % 60);
             const formattedMins = mins < 10 ? '0' + mins : mins;
@@ -1097,7 +1103,7 @@
             }
 
             // 只有在影片未播放前才更新 3D 運鏡（優化效能）
-            if (elapsed < 199000) {
+            if (elapsed < SLOWED_MAIN_END_TIME) {
                 curState.camPos.lerp(dirState.camPos, dt * 2.3);
                 curState.camLook.lerp(dirState.camLook, dt * 2.3);
                 curState.bgColor.lerp(dirState.bgColor, dt);
@@ -1316,6 +1322,7 @@
             
             voiceoverAudio.pause();
             voiceoverAudio.currentTime = 0;
+            voiceoverAudio.playbackRate = VOICEOVER_SYNC_RATE; // 對話節奏放慢，讓字幕與配音同步
 
             // 啟動 3D 動畫與時間軸：團隊介紹結束後直接跳到第一大段（0:14）。
             isPlaying = true;
