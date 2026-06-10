@@ -32,7 +32,6 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* 掃描線特效 */
         body::after {
             content: " ";
             display: block;
@@ -59,7 +58,6 @@
             perspective: 1200px;
         }
 
-        /* 啟動畫面 */
         #boot-screen {
             position: fixed;
             inset: 0;
@@ -115,7 +113,6 @@
             0% { opacity: 0.85; transform: translate(-50%, -50%) scale(0.4); }
             100% { opacity: 0; transform: translate(-50%, -50%) scale(5); }
         }
-
 
         .boot-kicker {
             color: rgba(45, 212, 191, 0.55);
@@ -234,7 +231,6 @@
             pointer-events: none;
         }
 
-
         .opening-frame {
             position: absolute;
             inset: 34px;
@@ -264,9 +260,9 @@
             padding-left: 0.25em;
             color: #f7ffff;
             text-shadow: 0 0 24px rgba(45, 212, 191, 0.72), 0 0 80px rgba(45, 212, 191, 0.25);
+            white-space: pre-line;
         }
 
-        /* 系統計時器 */
         .system-timer {
             position: absolute;
             top: 40px;
@@ -284,7 +280,6 @@
             font-variant-numeric: tabular-nums;
         }
 
-        /* 3D 網格背景 */
         .grid-3d {
             position: absolute;
             width: 200%;
@@ -306,7 +301,6 @@
             100% { transform: rotateX(75deg) translateY(100px); }
         }
 
-        /* 對話視窗 */
         .dialogue-window {
             width: 85%;
             max-width: 850px;
@@ -328,7 +322,81 @@
             transform: translateY(0) rotateX(0deg);
         }
 
-        /* 章節標題 */
+        .speaker-container {
+            position: absolute;
+            top: -15px;
+            left: 40px;
+            display: flex;
+            align-items: center;
+        }
+
+        .speaker-name {
+            background: var(--sea-glow);
+            color: var(--sea-dark);
+            padding: 6px 20px;
+            font-family: 'JetBrains Mono', 'Noto Sans TC', monospace;
+            font-weight: 700;
+            font-size: 11px;
+            letter-spacing: 0.4em;
+            text-transform: uppercase;
+            transform: skewX(-12deg);
+        }
+
+        .speaker-emotion {
+            background: rgba(45, 212, 191, 0.15);
+            border: 1px solid var(--sea-glow);
+            color: var(--sea-glow);
+            padding: 4px 12px;
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            transform: skewX(-12deg);
+            margin-left: -5px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            box-shadow: 0 0 10px rgba(45, 212, 191, 0.3);
+        }
+        
+        .speaker-emotion.show {
+            opacity: 1;
+        }
+
+        /* ＝＝＝ 情緒字幕特效 CSS ＝＝＝ */
+        .effect-angry { color: #fca5a5 !important; text-shadow: 0 0 15px rgba(239, 68, 68, 0.8); font-weight: 700 !important; font-size: 1.15em !important; animation: text-shake 0.4s infinite; display: inline-block; }
+        .effect-furious { color: #ef4444 !important; text-shadow: 0 0 20px rgba(220, 38, 38, 0.9); font-weight: 700 !important; font-size: 1.25em !important; animation: text-shake-hard 0.2s infinite; display: inline-block; }
+        .effect-arrogant { color: #fde047 !important; text-shadow: 0 0 15px rgba(234, 179, 8, 0.6); font-weight: 700 !important; font-size: 1.1em !important; animation: text-bounce 2s infinite ease-in-out; display: inline-block; }
+        .effect-mocking { color: #d8b4fe !important; font-style: italic; letter-spacing: 0.15em !important; text-shadow: 2px 2px 0 rgba(0,0,0,0.5), -1px -1px 8px rgba(168, 85, 247, 0.6); display: inline-block; }
+        .effect-weak { color: #cbd5e1 !important; font-size: 0.85em !important; opacity: 0.7; animation: text-fade-weak 2s infinite alternate; display: inline-block; }
+        .effect-anxious { color: #5eead4 !important; font-weight: 700 !important; animation: text-pulse-fast 0.6s infinite alternate; display: inline-block; }
+        .effect-firm { color: #6ee7b7 !important; font-weight: 700 !important; text-shadow: 0 0 12px rgba(16, 185, 129, 0.8); font-size: 1.05em !important; display: inline-block; }
+        .effect-normal { color: #f1f5f9 !important; }
+
+        @keyframes text-shake {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(-1px, 1px); }
+            50% { transform: translate(1px, -1px); }
+            75% { transform: translate(1px, 1px); }
+        }
+        @keyframes text-shake-hard {
+            0%, 100% { transform: translate(0, 0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(2px, -2px); }
+            60% { transform: translate(-2px, -1px); }
+            80% { transform: translate(2px, 1px); }
+        }
+        @keyframes text-fade-weak {
+            0% { opacity: 0.3; filter: blur(0.5px); }
+            100% { opacity: 0.8; filter: blur(0px); }
+        }
+        @keyframes text-pulse-fast {
+            0% { text-shadow: 0 0 5px rgba(45,212,191,0.4); transform: scale(1); }
+            100% { text-shadow: 0 0 15px rgba(45,212,191,0.9); transform: scale(1.02); }
+        }
+        @keyframes text-bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+        /* ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝ */
+
         .chapter-title {
             font-family: 'Noto Serif TC', serif;
             font-size: clamp(3rem, 8vw, 6.5rem);
@@ -385,7 +453,6 @@
             100% { transform: scale(4); opacity: 0; }
         }
 
-
         .final-tagline {
             max-width: 1120px;
             font-family: 'Noto Serif TC', serif;
@@ -395,11 +462,9 @@
             padding-left: 0.18em;
             color: #f8ffff;
             text-shadow: 0 0 28px rgba(45, 212, 191, 0.85), 0 0 90px rgba(45, 212, 191, 0.35);
+            white-space: pre-line;
         }
 
-
-
-        /* 遊戲關卡字幕：放大規則說明，避免 sub 太小看不清楚 */
         .gameplay-main {
             font-size: clamp(3.4rem, 8.2vw, 7rem) !important;
             letter-spacing: 0.72em !important;
@@ -469,7 +534,6 @@
             opacity: 1;
         }
 
-        /* 手機與平板響應式調整：比例自適應、特效降載、字幕可讀性提升 */
         @media (max-width: 1024px) {
             body::after { opacity: 0.18; background-size: 100% 5px, 4px 100%; }
             .viewport { perspective: 800px; }
@@ -495,7 +559,11 @@
                 backdrop-filter: blur(12px);
             }
             #text-content { font-size: clamp(1rem, 3.6vw, 1.65rem) !important; line-height: 1.55 !important; letter-spacing: 0.08em !important; }
-            #speaker { left: 24px !important; font-size: 9px !important; letter-spacing: 0.22em !important; padding: 4px 14px !important; }
+            
+            .speaker-container { left: 24px; top: -12px; }
+            .speaker-name { font-size: 9px !important; letter-spacing: 0.22em !important; padding: 4px 14px !important; }
+            .speaker-emotion { font-size: 8px !important; padding: 3px 8px !important; }
+
             .chapter-title { font-size: clamp(2.2rem, 10vw, 5rem); letter-spacing: clamp(0.28rem, 4vw, 1.4rem); padding-left: clamp(0.28rem, 4vw, 1.4rem); }
             .chapter-title.show { letter-spacing: clamp(0.42rem, 5vw, 1.8rem); }
             .team-title { max-width: 92vw; font-size: clamp(1.55rem, 6.6vw, 3.4rem) !important; letter-spacing: 0.16em !important; padding-left: 0.16em; }
@@ -561,13 +629,13 @@
 
 <div class="viewport" id="stage">
     <div id="opening-visual">
-        <video id="opening-video" playsinline preload="auto" crossorigin="anonymous" src="https://raw.githubusercontent.com/igudesman222/igudesman2012/d1278a5538b420f840b166fe84935837d3909e48/07-%E7%AC%AC%E4%B8%83%E7%B5%84%E8%B3%87%E6%BA%90/07-001-%E5%BD%B1%E7%89%87/07-%E7%AC%AC%E4%B8%83%E7%B5%84%E4%B8%BB%E8%A6%96%E8%A6%BA%E5%8B%95%E7%95%AB.mp4"></video>
+        <video id="opening-video" playsinline preload="auto" crossorigin="anonymous" src="https://raw.githubusercontent.com/igudesman222/igudesman2012/d1278a5538b420f840b166fe84935837d3909e48/07-第七組資源/07-001-影片/07-第七組主視覺動畫.mp4"></video>
         <div class="opening-frame"></div>
         <div class="opening-caption">07-第七組主視覺動畫 // Offshore Signal Opening</div>
     </div>
     <div id="gameplay-visual">
         <video id="gameplay-video" playsinline muted preload="auto" crossorigin="anonymous">
-            <source src="https://raw.githubusercontent.com/igudesman222/igudesman2012/d1278a5538b420f840b166fe84935837d3909e48/07-%E7%AC%AC%E4%B8%83%E7%B5%84%E8%B3%87%E6%BA%90/07-001-%E5%BD%B1%E7%89%87/07-%E5%B0%8F%E9%81%8A%E6%88%B2%E9%81%8A%E7%8E%A9%E9%8C%84%E8%A3%BD.mp4" type="video/mp4">
+            <source src="https://raw.githubusercontent.com/igudesman222/igudesman2012/d1278a5538b420f840b166fe84935837d3909e48/07-第七組資源/07-001-影片/07-小遊戲遊玩錄製.mp4" type="video/mp4">
         </video>
         <div class="gameplay-veil"></div>
         <div class="gameplay-corner">07-小遊戲遊玩錄製 // Gameplay Sync</div>
@@ -584,17 +652,18 @@
     <div id="sonar-container" class="absolute inset-0 overflow-hidden pointer-events-none"></div>
     <div id="final-fade" class="final-fade-overlay"></div>
 
-    <!-- 中央內容區 -->
     <div class="absolute inset-0 flex flex-col justify-center items-center z-50 pointer-events-none px-10">
         <h2 id="chapter-label" class="text-teal-400/30 font-mono tracking-[1.5em] text-[11px] mb-8 opacity-0 transition-all duration-1000 uppercase">Signal Lost</h2>
         <div id="big-title" class="chapter-title">海之契約</div>
         <div id="sub-title" class="text-teal-400/40 tracking-[1.2rem] mt-8 opacity-0 transition-all duration-1500 text-xs font-light uppercase">Ocean Contract</div>
     </div>
 
-    <!-- 對話系統 -->
     <div id="dialogue-box" class="dialogue-window">
-        <div id="speaker" class="absolute top-[-15px] left-[40px] bg-teal-400 text-slate-900 px-6 py-1 font-bold text-[11px] tracking-[0.4em] uppercase skew-x-[-12deg]">System</div>
-        <div id="text-content" class="text-xl md:text-2xl leading-relaxed text-slate-100 font-light tracking-widest min-h-[3em]">
+        <div class="speaker-container">
+            <div id="speaker" class="speaker-name">System</div>
+            <div id="emotion-tag" class="speaker-emotion">Normal</div>
+        </div>
+        <div id="text-content" class="text-xl md:text-2xl leading-relaxed text-slate-100 font-light tracking-widest min-h-[3em] transition-all duration-300">
             Connecting...
         </div>
         <div class="absolute bottom-4 right-6 flex space-x-1 opacity-30">
@@ -604,7 +673,6 @@
         </div>
     </div>
 
-    <!-- 進度資訊 -->
     <div class="absolute bottom-10 left-10 right-10 z-50">
         <div class="h-[1px] bg-white/5 w-full mb-4 overflow-hidden">
             <div id="progress-bar" class="h-full bg-gradient-to-r from-teal-900 via-teal-400 to-teal-200 w-0 transition-all duration-500 shadow-[0_0_15px_rgba(45,212,191,0.5)]"></div>
@@ -621,31 +689,31 @@
 </div>
 
 <script>
-
-    // 1:50-3:00 使用 GitHub d1278a5 版本的 07-小遊戲遊玩錄製.mp4 作為背景影片
-    const GAMEPLAY_VIDEO_START = 110;
-    const GAMEPLAY_VIDEO_END = 180;
+    // 遊戲操作畫面只保留在第二大段：進入第三大段時會自動切回一般字幕畫面。
+    const GAMEPLAY_VIDEO_START = 123;
+    const GAMEPLAY_VIDEO_END = 137.8;
     const GAMEPLAY_VIDEO_OFFSET = 0;
+
+    // 配音／字幕同步設定：配音從第一句旁白開始，後續時間軸優先鎖定配音 currentTime，避免音訊載入延遲造成字幕漂移。
+    const VOICEOVER_TIMELINE_START = 15;
+    const SUBTITLE_SYNC_OFFSET = 0.35;
     const gameplayVideoSources = [
-        'https://raw.githubusercontent.com/igudesman222/igudesman2012/d1278a5538b420f840b166fe84935837d3909e48/07-%E7%AC%AC%E4%B8%83%E7%B5%84%E8%B3%87%E6%BA%90/07-001-%E5%BD%B1%E7%89%87/07-%E5%B0%8F%E9%81%8A%E6%88%B2%E9%81%8A%E7%8E%A9%E9%8C%84%E8%A3%BD.mp4',
-        'https://raw.githubusercontent.com/igudesman222/igudesman2012/d1278a5538b420f840b166fe84935837d3909e48/07-%E7%AC%AC%E4%B8%83%E7%B5%84%E8%B3%87%E6%BA%90/07-001-%E5%BD%B1%E7%89%87/07-%E5%B0%8F%E9%81%8A%E6%88%B2%E9%81%8A%E7%8E%A9%E9%8C%84%E8%A3%BD.MP4',
-        'https://raw.githubusercontent.com/igudesman222/igudesman2012/d1278a5538b420f840b166fe84935837d3909e48/07-%E7%AC%AC%E4%B8%83%E7%B5%84%E8%B3%87%E6%BA%90/07-001-%E5%BD%B1%E7%89%87/07-%E5%BD%B1%E7%89%87/07-%E5%B0%8F%E9%81%8A%E6%88%B2%E9%81%8A%E7%8E%A9%E9%8C%84%E8%A3%BD.mp4',
-        'https://raw.githubusercontent.com/igudesman222/igudesman2012/d1278a5538b420f840b166fe84935837d3909e48/07-%E7%AC%AC%E4%B8%83%E7%B5%84%E8%B3%87%E6%BA%90/07-001-%E5%BD%B1%E7%89%87/07-%E5%BD%B1%E7%89%87/07-%E5%B0%8F%E9%81%8A%E6%88%B2%E9%81%8A%E7%8E%A9%E9%8C%84%E8%A3%BD.MP4'
+        'https://raw.githubusercontent.com/igudesman222/igudesman2012/d1278a5538b420f840b166fe84935837d3909e48/07-第七組資源/07-001-影片/07-小遊戲遊玩錄製.mp4',
+        'https://raw.githubusercontent.com/igudesman222/igudesman2012/d1278a5538b420f840b166fe84935837d3909e48/07-第七組資源/07-001-影片/07-小遊戲遊玩錄製.MP4'
     ];
     let gameplaySourceIndex = 0;
     let gameplaySourceLoaded = false;
 
-    // 資源設定：三段背景音樂依講稿指定區間切換
     const audioAssets = {
-        part1: new Audio('https://raw.githubusercontent.com/igudesman222/igudesman2012/d1278a5538b420f840b166fe84935837d3909e48/07-%E7%AC%AC%E4%B8%83%E7%B5%84%E8%B3%87%E6%BA%90/07-003-%E9%9F%B3%E6%A8%82/01-%E6%B5%B7%E9%9D%88%E7%9A%84%E6%8A%95%E5%BD%B1(%E7%AC%AC%E4%B8%80%E5%A4%A7%E6%AE%B5).mp3'),
-        part2: new Audio('https://raw.githubusercontent.com/igudesman222/igudesman2012/d1278a5538b420f840b166fe84935837d3909e48/07-%E7%AC%AC%E4%B8%83%E7%B5%84%E8%B3%87%E6%BA%90/07-003-%E9%9F%B3%E6%A8%82/02-%E7%8F%8A%E7%91%9A%E5%9B%9E%E9%9F%B3%E7%A5%AD(%E7%AC%AC%E4%BA%8C%E5%A4%A7%E6%AE%B5).mp3'),
-        part3: new Audio('https://raw.githubusercontent.com/igudesman222/igudesman2012/d1278a5538b420f840b166fe84935837d3909e48/07-%E7%AC%AC%E4%B8%83%E7%B5%84%E8%B3%87%E6%BA%90/07-003-%E9%9F%B3%E6%A8%82/03-%E7%8F%8A%E7%91%9A%E5%9B%9E%E9%9F%B3%E7%A5%AD(%E7%B5%82)(%E7%AC%AC%E4%B8%89%E5%A4%A7%E6%AE%B5).mp3')
+        part1: new Audio('https://raw.githubusercontent.com/igudesman222/igudesman2012/d1278a5538b420f840b166fe84935837d3909e48/07-第七組資源/07-003-音樂/01-海靈的投影(第一大段).mp3'),
+        part2: new Audio('https://raw.githubusercontent.com/igudesman222/igudesman2012/d1278a5538b420f840b166fe84935837d3909e48/07-第七組資源/07-003-音樂/02-珊瑚回音祭(第二大段).mp3'),
+        part3: new Audio('https://raw.githubusercontent.com/igudesman222/igudesman2012/d1278a5538b420f840b166fe84935837d3909e48/07-第七組資源/07-003-音樂/03-珊瑚回音祭(終)(第三大段).mp3')
     };
 
     const audioSchedule = [
-        { start: 12, end: 71, key: 'part1', label: '第一大段｜海靈的投影' },
-        { start: 72, end: 142, key: 'part2', label: '第二大段｜珊瑚回音祭' },
-        { start: 143, end: 182, key: 'part3', label: '第三大段｜珊瑚回音祭(終)' }
+        { start: 15, end: 117, key: 'part1', label: '第一大段｜海靈的投影' },
+        { start: 118, end: 137, key: 'part2', label: '第二大段｜珊瑚回音祭' },
+        { start: 138, end: 190, key: 'part3', label: '第三大段｜珊瑚回音祭(終)' }
     ];
 
     Object.values(audioAssets).forEach(audio => {
@@ -653,6 +721,11 @@
         audio.crossOrigin = 'anonymous';
         audio.playsInline = true;
     });
+
+    const voiceoverAudio = new Audio('https://raw.githubusercontent.com/igudesman222/-/main/03-預告片(配音)/01-配音MP3/07-瑞祥高中-第七組配音(修).mp3');
+    voiceoverAudio.preload = 'auto';
+    voiceoverAudio.crossOrigin = 'anonymous';
+    let voiceoverPlayed = false;
 
     let currentAudio = null;
     let activeBgmKey = null;
@@ -681,7 +754,6 @@
 
     setAppHeight();
 
-    // 按鍵觸及音效：以 Web Audio 生成短促的「海洋聲納／水滴」回饋音，不需額外素材檔。
     let audioContext = null;
     let openingVideoGainReady = false;
 
@@ -719,43 +791,6 @@
         osc.stop(now + 0.2);
     }
 
-    function playGameplaySfx(kind = 'stage') {
-        const ac = getAudioContext();
-        if (!ac) return;
-        const now = ac.currentTime;
-
-        const base = kind === 'clear' ? 392 : 523.25;
-        const oscA = ac.createOscillator();
-        const oscB = ac.createOscillator();
-        const gain = ac.createGain();
-        const filter = ac.createBiquadFilter();
-
-        oscA.type = 'triangle';
-        oscB.type = 'sine';
-        oscA.frequency.setValueAtTime(base, now);
-        oscA.frequency.exponentialRampToValueAtTime(base * 1.5, now + 0.18);
-        oscB.frequency.setValueAtTime(base * 2, now + 0.035);
-        oscB.frequency.exponentialRampToValueAtTime(base * 3, now + 0.22);
-
-        filter.type = 'bandpass';
-        filter.frequency.setValueAtTime(kind === 'clear' ? 1100 : 1550, now);
-        filter.frequency.exponentialRampToValueAtTime(kind === 'clear' ? 2600 : 3300, now + 0.24);
-        filter.Q.setValueAtTime(5.5, now);
-
-        gain.gain.setValueAtTime(0.0001, now);
-        gain.gain.exponentialRampToValueAtTime(kind === 'clear' ? 0.28 : 0.22, now + 0.025);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.42);
-
-        oscA.connect(filter);
-        oscB.connect(filter);
-        filter.connect(gain);
-        gain.connect(ac.destination);
-        oscA.start(now);
-        oscB.start(now + 0.035);
-        oscA.stop(now + 0.45);
-        oscB.stop(now + 0.45);
-    }
-
     function spawnTouchRipple(x, y) {
         const ripple = document.createElement('div');
         ripple.className = 'touch-ripple';
@@ -782,8 +817,6 @@
             console.warn('Opening video gain boost unavailable; using maximum native video volume.', e);
         }
     }
-
-
 
     function prepareGameplayVideo() {
         const gameplayVideo = document.getElementById('gameplay-video');
@@ -832,36 +865,28 @@
         }
     }
 
-    // 劇情腳本：依最新版講稿秒數修正字幕
     const script = [
-        { t: 0,   type: 'video',   main: '07-第七組主視覺動畫', sub: '開場主視覺', label: '00:00-00:08 MAIN VISUAL' },
-        { t: 9,   type: 'team',    main: '雄市立瑞祥高中  海洋探險隊宇晴、潤豪、湘庭', sub: '', label: '00:09-00:13 PRODUCTION TEAM' },
-
-        { t: 14,  type: 'talk',    who: '00:14-00:21｜旁白', msg: '能源轉型，是當今的重要課題。為了減少燃煤，我們建造了離岸風電廠。但這座巨大的「海上風車」，真的有想像中美好嗎？' },
-        { t: 22,  type: 'talk',    who: '00:22-00:29｜阿建', msg: '（得意大笑）我的海上電廠終於完工了！既有乾淨能源，又能讓我大賺一筆，簡直是一舉兩得！' },
-        { t: 30,  type: 'talk',    who: '00:30-00:37｜遠德', msg: '（憤怒）綠能立意雖好，但施工噪音卻嚴重傷害了白海豚！這些唯利是圖的商人，根本不在乎牠們的死活！' },
-        { t: 38,  type: 'talk',    who: '00:38-00:47｜白海豚', msg: '（虛弱）遠德……打樁噪音太大了，干擾了我們的聲波，大家無法溝通跟覓食，棲息地也被工程船汙染了……' },
-        { t: 48,  type: 'talk',    who: '00:48-00:53｜遠德', msg: '（急切）白海豚，你們撐住！我現在就去找廠長理論，一定替你們討回公道！' },
-        { t: 54,  type: 'talk',    who: '00:54-01:01｜遠德', msg: '（拍桌怒吼）阿建，你給我出來面對！只要我遠德還在，就絕不讓你這個黑心商人得逞！' },
-        { t: 62,  type: 'talk',    who: '01:02-01:11｜阿建', msg: '（冷笑）愚蠢！我可是政府核准的合法供電商。這案子不僅大撈一筆，還能提供綠電，好處多到滿出來，你能拿我怎樣？' },
-
-        { t: 72,  type: 'talk',    who: '01:12-01:17｜遠德', msg: '（咬牙）為了你的私利，犧牲這麼多白海豚的命，真的值得嗎？' },
-        { t: 78,  type: 'talk',    who: '01:18-01:27｜阿建', msg: '（狂妄）幾條海豚的命，換我一輩子財富自由，傻子才不選！你這麼拚命，難道以為海豚會把你當英雄嗎？真是太可笑了！' },
-        { t: 88,  type: 'talk',    who: '01:28-01:34｜阿建', msg: '（嘲諷）說得好聽，你憑什麼阻止我？等電廠正式啟用，我才是全國媒體爭相報導的「綠能英雄」！' },
-        { t: 95,  type: 'talk',    who: '01:35-01:43｜遠德', msg: '（堅定）我才不稀罕當什麼英雄！這裡是我的家，白海豚是我的家人，保護牠們是我的責任！' },
-        { t: 104, type: 'talk',    who: '01:44-01:49｜阿建', msg: '（嘲諷）說得好聽，你憑什麼阻止我？等電廠正式啟用，我才是全國媒體爭相報導的「綠能英雄」！' },
-        { t: 110, type: 'talk',    who: '01:50-01:55｜旁白', msg: '遠德會遇到重重難關，幫助遠德完成這次的任務吧！' },
-        { t: 116, type: 'montage', main: '第一關', sub: '當圓圈進入虛線區域時，點擊空白鍵', label: '01:56-02:02 GAMEPLAY 01' },
-        { t: 122, type: 'montage', main: '第二關', sub: '請運用滑鼠將聲波的頻率對齊，共三次', label: '02:02-02:07 GAMEPLAY 02' },
-        { t: 127, type: 'montage', main: '第三關', sub: '請將畫面上呈現的單字在有限時間內運用鍵盤拼出，共三個', label: '02:07-02:12 GAMEPLAY 03' },
-        { t: 132, type: 'montage', main: '第四關', sub: '請利用空白鍵，當魚叉（紅色線條）移動到左方紅線後，點擊空白鍵消除魚叉，共累積 15 艘', label: '02:12-02:17 GAMEPLAY 04' },
-        { t: 137, type: 'visual',  main: '通關條件', sub: '完成上述任務，才能成功守護了白海豚', label: '02:17-02:22 CLEAR CONDITION' },
-
-        { t: 143, type: 'talk',    who: '02:23-02:30｜遠德', msg: '（自信）看到了吧？只要我在這片土地上，誰都別想傷害白海豚！' },
-        { t: 151, type: 'talk',    who: '02:31-02:39｜阿建', msg: '（氣急敗壞）你這可惡的死小孩，竟敢壞我好事！你給我等著，下一次我絕對不會放過你！' },
-        { t: 160, type: 'talk',    who: '02:40-02:48｜遠德', msg: '（語氣和緩但堅定）不只是我，這片土地上的每一個人都會挺身而出。這裡是我們的家，現在是，未來也是！' },
-        { t: 168, type: 'talk',    who: '02:48-02:57｜旁白', msg: '（沉穩呼籲）綠能轉型是未來的光，但不該讓生態蒙上陰影。利益之外，我們更該學會與海洋共存。' },
-        { t: 177, type: 'final',   main: '《海之契約：遠德章節》——\n白海豚的安危，需要大家來守護！', sub: '', label: '02:57-03:02 FINAL MESSAGE' }
+        { t: 0,   type: 'video',  main: '07-第七組主視覺動畫', sub: '開場主視覺', label: '00:00-00:07 MAIN VISUAL' },
+        { t: 8,   type: 'team',   main: '高雄市立瑞祥高中  海洋探險隊\n宇晴、潤豪、湘庭', sub: '', label: '00:08-00:14 PRODUCTION TEAM' },
+        { t: 15,  type: 'talk',   who: '旁白', emotion: '陳述', msg: '能源轉型，是當今的重要課題。為了減少燃煤，我們建造了離岸風電廠。但這座巨大的「海上風車」，真的有想像中的美好嗎？' },
+        { t: 27,  type: 'talk',   who: '阿建', emotion: '得意大笑', msg: '我的海上供電廠終於完工了！既有乾淨的能源，又能讓我大賺一筆，簡直是一舉兩得！' },
+        { t: 37,  type: 'talk',   who: '遠德', emotion: '憤怒', msg: '綠能立意雖好，但施工噪音卻嚴重傷害了白海豚！這些只在乎自己利益的商人，根本不在乎生態死活！' },
+        { t: 45,  type: 'talk',   who: '白海豚', emotion: '虛弱', msg: '遠德……打樁噪音太大了，干擾了我們的聲波，大家無法溝通跟覓食，棲息地也被工程船污染了……' },
+        { t: 58,  type: 'talk',   who: '遠德', emotion: '急切', msg: '白海豚，你們撐住！我現在就去找廠長理論，一定替你們討回公道！' },
+        { t: 64,  type: 'talk',   who: '遠德', emotion: '拍桌怒吼', msg: '阿建！你給我出來面對！只要我遠德還在，就不可能讓你這個奸商得逞！' },
+        { t: 73,  type: 'talk',   who: '阿建', emotion: '冷笑', msg: '愚蠢！我可是政府核准的合法供電商。這案子不僅能大撈一筆，還能提供綠電，好處多到滿出來，你能拿我怎樣？' },
+        
+        { t: 85,  type: 'talk',   who: '遠德', emotion: '質問', msg: '為了你那可悲的利益，犧牲這麼多白海豚的命，值得嗎？' },
+        { t: 89,  type: 'talk',   who: '阿建', emotion: '狂妄', msg: '幾條海豚的命，換我一輩子財富自由，傻子才不選！你這麼拼命，難道以為海豚會把你當英雄嗎？真是太可笑了！' },
+        { t: 101, type: 'talk',   who: '遠德', emotion: '堅定', msg: '我才不稀罕當什麼英雄！這裡是我的家，白海豚是我的家人，保護他們是我的責任！' },
+        { t: 109, type: 'talk',   who: '阿建', emotion: '嘲諷', msg: '說得好聽，你憑什麼阻止我？等電廠正式啟用，我就是全國媒體爭相報導的「綠能英雄」！' },
+        { t: 119, type: 'talk',   who: '旁白', emotion: '引導', msg: '遠德會遇到重重難關，幫助遠德完成這次的任務吧！' },
+        
+        { t: 124, type: 'talk',   who: '遠德', emotion: '宣示', msg: '看到了吧？只要我在這片土地上，誰都別想傷害白海豚！' },
+        { t: 130, type: 'talk',   who: '阿建', emotion: '氣急敗壞', msg: '你這可惡的死小孩，竟敢壞我的好事！你給我等著，下一次我絕對不會放過你！' },
+        { t: 137, type: 'talk',   who: '遠德', emotion: '守護', msg: '下一次？哼，你放心，就算我不破壞你的詭計，這片土地的任何一個人都不可能讓你得逞！這是我們的家，現在是，以後也是。' },
+        { t: 146, type: 'talk',   who: '旁白', emotion: '沉思', msg: '綠能轉型是未來的光，但不該讓生態蒙上陰影。利益之外，我們更該學會如何與海洋共存。' },
+        { t: 155, type: 'final',  main: '《海之契約：遠德章節》\n白海豚的安危，需要大家來守護！', sub: '', label: '02:35-02:50 FINAL MESSAGE' }
     ];
 
     function switchAudio(key) {
@@ -909,7 +934,6 @@
         else if (activeBgmKey) stopCurrentAudio();
     }
 
-    // 粒子背景
     const canvas = document.getElementById('sea-canvas');
     const ctx = canvas.getContext('2d');
     let bubbles = [];
@@ -964,26 +988,92 @@
     }
 
     let typeInterval = null;
-    async function typeWriter(text) {
+    let typeWriterPromise = null;
+    let currentTypeResolve = null;
+
+    const emotionColors = {
+        '憤怒': 'rgba(239, 68, 68, 0.3)',
+        '拍桌怒吼': 'rgba(239, 68, 68, 0.4)',
+        '氣急敗壞': 'rgba(249, 115, 22, 0.3)',
+        '得意大笑': 'rgba(234, 179, 8, 0.3)',
+        '狂妄': 'rgba(234, 179, 8, 0.25)', 
+        '冷笑': 'rgba(56, 189, 248, 0.2)',
+        '嘲諷': 'rgba(168, 85, 247, 0.2)',
+        '虛弱': 'rgba(148, 163, 184, 0.3)',
+        '急切': 'rgba(20, 184, 166, 0.3)',
+        '宣示': 'rgba(20, 184, 166, 0.3)',
+        '堅定': 'rgba(16, 185, 129, 0.25)',
+        '守護': 'rgba(16, 185, 129, 0.25)',
+        '質問': 'rgba(99, 102, 241, 0.25)',
+        '陳述': 'rgba(255, 255, 255, 0.1)',
+        '引導': 'rgba(255, 255, 255, 0.15)',
+        '沉思': 'rgba(255, 255, 255, 0.1)',
+    };
+
+    // 建立字幕文字情緒特效對照表
+    const textEmotionClasses = {
+        '憤怒': 'effect-angry',
+        '拍桌怒吼': 'effect-furious',
+        '氣急敗壞': 'effect-angry',
+        '得意大笑': 'effect-arrogant',
+        '狂妄': 'effect-arrogant',
+        '冷笑': 'effect-mocking',
+        '嘲諷': 'effect-mocking',
+        '虛弱': 'effect-weak',
+        '急切': 'effect-anxious',
+        '質問': 'effect-anxious',
+        '宣示': 'effect-firm',
+        '堅定': 'effect-firm',
+        '守護': 'effect-firm',
+        '陳述': 'effect-normal',
+        '引導': 'effect-normal',
+        '沉思': 'effect-normal'
+    };
+
+    function updateEmotionUI(emotion) {
+        const emotionTag = document.getElementById('emotion-tag');
+        if (emotion) {
+            emotionTag.innerText = emotion;
+            const bg = emotionColors[emotion] || 'rgba(45, 212, 191, 0.15)';
+            emotionTag.style.backgroundColor = bg;
+            emotionTag.classList.add('show');
+        } else {
+            emotionTag.classList.remove('show');
+        }
+    }
+
+    async function typeWriter(text, durationInSeconds) {
         if (typeInterval) clearInterval(typeInterval);
+        if (currentTypeResolve) currentTypeResolve();
+
         const el = document.getElementById('text-content');
         el.innerHTML = '';
         let i = 0;
-        return new Promise(resolve => {
+        
+        // 字幕以配音同步為優先：保留打字效果，但縮短打字時間，避免聲音已唸完字幕才出現。
+        const availableTime = Math.max(0.35, Math.min(durationInSeconds * 0.45, 2.4)) * 1000; 
+        let speed = availableTime / Math.max(1, text.length);
+        speed = Math.max(8, Math.min(speed, 38));
+
+        typeWriterPromise = new Promise(resolve => {
+            currentTypeResolve = resolve;
             typeInterval = setInterval(() => {
                 if (i < text.length) {
                     el.innerHTML += text[i];
                     i++;
                 } else {
                     clearInterval(typeInterval);
+                    currentTypeResolve = null;
                     resolve();
                 }
-            }, 44);
+            }, speed);
         });
+
+        return typeWriterPromise;
     }
 
     function updateUI(step) {
-        const total = 182;
+        const total = 170;
         const percent = Math.min(100, Math.floor((step.t / total) * 100));
         document.getElementById('progress-bar').style.width = percent + '%';
         document.getElementById('progress-val').innerText = `SYNC ${percent.toString().padStart(2, '0')}%`;
@@ -995,6 +1085,7 @@
         const statusTag = document.getElementById('status-tag');
         const openingVisual = document.getElementById('opening-visual');
         const openingVideo = document.getElementById('opening-video');
+        const textContent = document.getElementById('text-content');
 
         bigTitle.classList.remove('team-title', 'final-tagline', 'gameplay-main', 'title-pop');
         subTitle.classList.remove('gameplay-subtitle', 'subtitle-pop');
@@ -1059,7 +1150,6 @@
                 subTitle.classList.remove('subtitle-pop');
                 void bigTitle.offsetWidth;
                 void subTitle.offsetWidth;
-                playGameplaySfx(step.label.includes('CLEAR CONDITION') ? 'clear' : 'stage');
             }
 
             setTimeout(() => {
@@ -1085,9 +1175,24 @@
             chapterLabel.style.opacity = '0';
             setTimeout(() => {
                 document.getElementById('speaker').innerText = step.who;
+                updateEmotionUI(step.emotion); 
+                
+                // --- 重置字幕基礎樣式並套用情緒特效 ---
+                textContent.className = 'text-xl md:text-2xl leading-relaxed font-light tracking-widest min-h-[3em] transition-all duration-300';
+                if (step.emotion && textEmotionClasses[step.emotion]) {
+                    textContent.classList.add(textEmotionClasses[step.emotion]);
+                } else {
+                    textContent.classList.add('text-slate-100'); // 預設白灰色
+                }
+
                 dialogueBox.classList.add('active');
-                typeWriter(step.msg);
-            }, 450);
+                
+                const currentIndex = script.indexOf(step);
+                const nextStep = script[currentIndex + 1];
+                const duration = nextStep ? nextStep.t - step.t : 5; 
+                
+                typeWriter(step.msg, duration);
+            }, 80);
         }
     }
 
@@ -1102,6 +1207,11 @@
 
     function resetToBootScreen() {
         stopCurrentAudio();
+        
+        voiceoverPlayed = false;
+        voiceoverAudio.pause();
+        voiceoverAudio.currentTime = 0;
+
         const openingVideo = document.getElementById('opening-video');
         openingVideo.pause();
         openingVideo.currentTime = 0;
@@ -1115,6 +1225,8 @@
         document.getElementById('progress-bar').style.width = '0%';
         document.getElementById('progress-val').innerText = 'SYNC 00%';
         document.getElementById('status-tag').innerText = 'IDLE';
+        updateEmotionUI(null); 
+        
         const fade = document.getElementById('final-fade');
         const boot = document.getElementById('boot-screen');
         boot.style.display = 'flex';
@@ -1135,6 +1247,13 @@
         setTimeout(resetToBootScreen, 4300);
     }
 
+    function getSyncedElapsed(rawElapsed) {
+        if (voiceoverPlayed && !voiceoverAudio.paused && Number.isFinite(voiceoverAudio.currentTime)) {
+            return VOICEOVER_TIMELINE_START + voiceoverAudio.currentTime;
+        }
+        return rawElapsed;
+    }
+
     function startTrailer() {
         const startTime = Date.now();
         initSea();
@@ -1148,16 +1267,25 @@
         }, deviceProfile.smallScreen ? 5200 : 3000);
         if (trailerLoop) clearInterval(trailerLoop);
         trailerLoop = setInterval(() => {
-            const elapsed = (Date.now() - startTime) / 1000;
+            const rawElapsed = (Date.now() - startTime) / 1000;
+
+            if (rawElapsed >= VOICEOVER_TIMELINE_START && !voiceoverPlayed) {
+                voiceoverPlayed = true;
+                voiceoverAudio.currentTime = 0;
+                voiceoverAudio.play().catch(e => console.warn('Voiceover blocked or unavailable.'));
+            }
+
+            const elapsed = getSyncedElapsed(rawElapsed);
             document.getElementById('runtime-clock').innerText = formatTime(elapsed);
             handleAudioSchedule(elapsed);
             handleGameplayVideo(elapsed);
-            const idx = script.findLastIndex(s => s.t <= elapsed);
+
+            const idx = script.findLastIndex(s => s.t <= elapsed + SUBTITLE_SYNC_OFFSET);
             if (idx !== currentIdx && idx !== -1) {
                 currentIdx = idx;
                 updateUI(script[idx]);
             }
-            if (elapsed >= 183) {
+            if (elapsed >= 170) {
                 clearInterval(trailerLoop);
                 trailerLoop = null;
                 beginEndingSequence();
