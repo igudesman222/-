@@ -182,9 +182,8 @@
 <div id="subtitle-container"><div id="subtitle-text"></div></div>
 
 <div id="title-card">
-    <h2>《漁民的抉擇》即刻體驗。</h2>
-    <h4>了解真相，是改變的開始。</h4>
-    <h4>請和我們一起，守護七股的海！<h4>
+    <h1>漁民的抉擇</h1>
+    <p>了解真相，是改變的開始。</p>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -707,4 +706,8 @@
             camera.lookAt(0, 0, 0);
         }
         
-        if (renderer && scene && camera) renderer.render(sc
+        if (renderer && scene && camera) renderer.render(scene, camera);
+    }
+</script>
+</body>
+</html>
