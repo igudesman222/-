@@ -242,7 +242,7 @@
 
     <div id="overlay" class="absolute inset-0 flex flex-col items-center justify-center z-[500] bg-black">
         <video id="opening-visual-bg" autoplay muted loop playsinline preload="auto">
-            <source src="https://raw.githubusercontent.com/igudesman222/igudesman2012/49111a380bf2be0027cba3a8e50b664d8737abd0/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E8%B3%87%E6%BA%90/04-001-%E5%BD%B1%E7%89%87/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E4%B8%BB%E8%A6%96%E8%A6%BA%E5%8B%95%E7%95%AB.mp4" type="video/mp4">
+            <source src="https://raw.githubusercontent.com/igudesman222/igudesman2012/main/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E8%B3%87%E6%BA%90/04-001-%E5%BD%B1%E7%89%87/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E4%B8%BB%E8%A6%96%E8%A6%BA%E5%8B%95%E7%95%AB%28new%29.mp4" type="video/mp4">
         </video>
         <div class="absolute inset-0 bg-black/60 pointer-events-none z-[1]"></div>
         
@@ -303,7 +303,8 @@
     // 資源庫基礎位址
     const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/igudesman222/igudesman2012/49111a380bf2be0027cba3a8e50b664d8737abd0/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E8%B3%87%E6%BA%90';
     const GITHUB_BLOB_BASE = 'https://github.com/igudesman222/igudesman2012/raw/49111a380bf2be0027cba3a8e50b664d8737abd0/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E8%B3%87%E6%BA%90';
-    const INTRO_VIDEO_URL = `${GITHUB_RAW_BASE}/04-001-%E5%BD%B1%E7%89%87/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E4%B8%BB%E8%A6%96%E8%A6%BA%E5%8B%95%E7%95%AB.mp4`;
+    // 開場主視覺影片來源：GitHub raw 直連播放位址
+    const INTRO_VIDEO_URL = 'https://raw.githubusercontent.com/igudesman222/igudesman2012/main/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E8%B3%87%E6%BA%90/04-001-%E5%BD%B1%E7%89%87/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E4%B8%BB%E8%A6%96%E8%A6%BA%E5%8B%95%E7%95%AB%28new%29.mp4';
 
     const audioState = {
         ctx: null,
@@ -414,8 +415,10 @@
     voiceOver.setAttribute('playsinline', '');
     voiceOver.setAttribute('webkit-playsinline', '');
     
-    // 設定已上傳的配音檔
-    voiceOver.src = '03-預告片(配音)_01-配音MP3_04-瑞祥高中-第四組配音(修) (1).mp3';
+    // 設定旁白音檔：第 16 秒由 draw() 主動觸發播放
+    const VOICE_OVER_URL = 'https://raw.githubusercontent.com/igudesman222/igudesman2012/main/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E8%B3%87%E6%BA%90/04-003-%E9%9F%B3%E6%A8%82/04-%E7%91%9E%E7%A5%A5%E9%AB%98%E4%B8%AD-%E7%AC%AC%E5%9B%9B%E7%B5%84%E9%85%8D%E9%9F%B3%28%E4%BF%AE%29.mp3';
+    voiceOver.crossOrigin = 'anonymous';
+    voiceOver.src = VOICE_OVER_URL;
 
     async function unlockAllAudio() {
         try {
