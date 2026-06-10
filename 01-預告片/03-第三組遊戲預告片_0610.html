@@ -1,0 +1,1739 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>七股風雲 - 互動敘事體驗</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght=400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://igudesman222.github.io" crossorigin>
+    <link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin>
+    <link rel="preconnect" href="https://media.githubusercontent.com" crossorigin>
+    
+    <style>
+        /* Apps Script / iframe / Tailwind CDN fallback: keep the core layout working even if Tailwind is delayed or blocked. */
+        .hidden { display: none !important; }
+        .fixed { position: fixed !important; }
+        .absolute { position: absolute !important; }
+        .relative { position: relative !important; }
+        .inset-0 { top: 0 !important; right: 0 !important; bottom: 0 !important; left: 0 !important; }
+        .flex { display: flex !important; }
+        .flex-col { flex-direction: column !important; }
+        .items-center { align-items: center !important; }
+        .justify-center { justify-content: center !important; }
+        .justify-between { justify-content: space-between !important; }
+        .text-center { text-align: center !important; }
+        .w-full { width: 100% !important; }
+        .h-full { height: 100% !important; }
+        /* Critical override: Tailwind fallback .flex/.absolute must never beat .hidden.
+           Several stage elements are class="absolute ... flex ... hidden"; if .flex wins, outro/team layers cover every scene. */
+        .hidden,
+        .hidden.flex,
+        .hidden.absolute,
+        .hidden.fixed,
+        .hidden.inset-0,
+        .flex.hidden,
+        .absolute.hidden,
+        .fixed.hidden {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+
+        :root {
+            --char-wen: #60a5fa;
+            --char-mei: #f87171;
+            --char-hui: #34d399;
+            --char-nar: #e2e8f0;
+        }
+        body { 
+            font-family: 'Noto Serif TC', serif; 
+            background: #020617; 
+            color: white; 
+            margin: 0; 
+            overflow: hidden; 
+            user-select: none;
+        }
+        
+        .trailer-overlay { position: fixed; inset: 0; z-index: 1000; background: #000; display: none; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 1s ease-in-out; } 
+        .trailer-overlay.active { opacity: 1; } 
+        /* 平台安全模式：若託管平台阻擋 JavaScript 點擊事件，仍可用網址錨點打開預告層。 */
+        #trailer-mode:target {
+            display: flex !important;
+            opacity: 1 !important;
+        }
+        #trailer-mode:target ~ #intro-screen {
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
+        #trailer-mode:target #video-container {
+            display: flex !important;
+            opacity: 1 !important;
+        }
+        .js-diagnostic {
+            position: fixed;
+            left: 50%;
+            bottom: 1rem;
+            transform: translateX(-50%);
+            z-index: 3000;
+            padding: 0.55rem 0.9rem;
+            border-radius: 999px;
+            border: 1px solid rgba(248,113,113,0.35);
+            background: rgba(15,23,42,0.82);
+            color: #fecaca;
+            font-size: 0.78rem;
+            letter-spacing: 0.08em;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            pointer-events: none;
+        }
+        .js-enabled .js-diagnostic { display: none; }
+        .fallback-hint {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1100;
+            color: rgba(226,232,240,0.72);
+            font-size: 0.9rem;
+            background: rgba(0,0,0,0.42);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 999px;
+            padding: 0.5rem 1rem;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        .js-enabled .fallback-hint { display: none; }
+
+        .top-bar { position: absolute; top: 0; left: 0; width: 100%; padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center; z-index: 1010; background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); } 
+        .trailer-timer { font-family: 'Courier New', Courier, monospace; font-size: 1.25rem; color: #ef4444; font-weight: bold; letter-spacing: 2px; text-shadow: 0 0 10px rgba(239, 68, 68, 0.5); } 
+        .progress-container { position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: rgba(255,255,255,0.1); z-index: 1020; } 
+        .progress-bar { height: 100%; width: 0%; background: #ef4444; transition: width 1s linear; box-shadow: 0 0 10px #ef4444; }
+        
+        #video-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: stretch;
+            justify-content: stretch;
+            position: relative;
+            overflow: hidden;
+            background: #000;
+        }
+        
+        /* 前 10 秒主視覺影片：全螢幕滿版呈現 */
+        .yt-wrapper {
+            position: absolute;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            max-width: none;
+            aspect-ratio: auto;
+            overflow: hidden;
+            border-radius: 0;
+            box-shadow: none;
+            background: #000;
+        }
+        
+        .yt-wrapper video {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            max-width: none;
+            /* 開場主視覺：滿版顯示容器，但完整保留影片畫面，不裁切上下左右內容 */
+            object-fit: contain;
+            object-position: center center;
+            border: none;
+            background: #000;
+        }
+
+        .video-fallback { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle at center, #1e293b, #000); text-align: center; }
+
+        .scene-sim {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            inset: 0;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 1.5s ease-in-out;
+            opacity: 0;
+            overflow: hidden; 
+        }
+        .scene-sim.active {
+            opacity: 1;
+        }
+
+        .subtitle-box {
+            position: absolute;
+            left: 50%;
+            bottom: 4%;
+            width: min(92vw, 1120px);
+            max-height: 20vh;
+            box-sizing: border-box;
+            background: rgba(10, 15, 30, 0.82);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-left: 6px solid transparent; 
+            padding: clamp(0.75rem, 1.4vw, 1.15rem) clamp(1rem, 2.2vw, 2rem);
+            border-radius: 1rem;
+            z-index: 1005;
+            transform: translate(-50%, 24px) scale(0.96);
+            opacity: 0;
+            transition: all 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 18px 42px -12px rgba(0, 0, 0, 0.78), inset 0 0 16px rgba(255,255,255,0.045);
+            overflow: visible;
+        }
+        .subtitle-box.visible {
+            transform: translate(-50%, 0) scale(1);
+            opacity: 1;
+        }
+        .subtitle-content {
+            display: flex;
+            align-items: center;
+            gap: clamp(0.8rem, 1.6vw, 1.5rem);
+            min-height: 0;
+        }
+        .subtitle-avatar-wrap {
+            flex: 0 0 clamp(92px, 12vw, 165px);
+            height: clamp(105px, 15vw, 190px);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            margin: -3.3rem 0 -0.8rem -1.15rem;
+            pointer-events: none;
+            transition: all 0.3s ease-in-out;
+        }
+        .subtitle-avatar-wrap.hidden { display: none; }
+        .subtitle-avatar {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 18px 24px rgba(0,0,0,0.75));
+        }
+        .subtitle-copy {
+            flex: 1 1 auto;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: left;
+            max-height: calc(20vh - 1.6rem);
+            overflow: hidden;
+        }
+
+        /* 對話人物去背樣式 */
+        .subtitle-avatar.is-processing {
+            opacity: 0.88;
+        }
+        .subtitle-avatar.cutout-ready {
+            mix-blend-mode: normal;
+            background: transparent;
+        }
+        .subtitle-avatar.soft-key {
+            mix-blend-mode: multiply;
+            filter: contrast(1.12) saturate(1.08) drop-shadow(0 18px 24px rgba(0,0,0,0.75));
+        }
+
+        .char-label { font-weight: 900; font-size: clamp(0.88rem, 1.35vw, 1.15rem); margin-bottom: 0.35rem; display: block; letter-spacing: 0.1em; text-transform: uppercase; } 
+        .sub-text { font-size: clamp(1.08rem, 2.05vw, 1.62rem); line-height: 1.38; font-weight: 500; text-shadow: 0 4px 8px rgba(0,0,0,0.9); transition: color 0.3s; } 
+        .action { opacity: 0.72; font-size: 0.74em; }
+        .eff-sad { animation: breath 3s infinite alternate; } 
+        .eff-sad .hl { color: #cbd5e1; text-shadow: 0 0 15px rgba(255,255,255,0.4); } 
+        .eff-angry { animation: slight-shake 0.5s cubic-bezier(.36,.07,.19,.97) both; font-weight: 700; } 
+        .eff-angry .hl { color: #fca5a5; text-shadow: 0 0 20px rgba(248, 113, 113, 0.6); } 
+        .eff-tech { letter-spacing: 0.05em; } 
+        .eff-tech .hl { color: #6ee7b7; font-family: monospace; text-shadow: 0 0 10px rgba(52, 211, 153, 0.8); animation: glitch 2s infinite; } 
+        .eff-firm { letter-spacing: 0.08em; font-weight: 700; } 
+        .eff-firm .hl { color: #fde047; text-shadow: 0 0 25px rgba(250, 204, 21, 0.5); }
+
+        .sub-text .action { color: rgba(226,232,240,0.78); font-size: 0.74em; letter-spacing: 0.03em; }
+        .sub-text .hl,
+        .sub-text .emotion-word,
+        .sub-text .danger-word,
+        .sub-text .memory-word,
+        .sub-text .hope-word,
+        .sub-text .tech-word,
+        .sub-text .impact-word {
+            display: inline-block;
+            position: relative;
+            padding: 0 0.05em;
+            transform-origin: center;
+        }
+        .sub-text .impact-word { font-size: 1.2em; font-weight: 900; color: #fff7ed; text-shadow: 0 0 18px rgba(251,146,60,0.72); animation: impactPop 0.75s ease-in-out infinite alternate; }
+        .sub-text .danger-word { font-size: 1.16em; font-weight: 900; color: #fb7185; text-shadow: 0 0 18px rgba(244,63,94,0.72); animation: alarmShake 0.42s steps(2, end) infinite; }
+        .sub-text .memory-word { font-size: 1.15em; font-weight: 900; color: #bae6fd; text-shadow: 0 0 18px rgba(56,189,248,0.7); animation: memoryFloat 2.25s ease-in-out infinite; }
+        .sub-text .hope-word { font-size: 1.13em; font-weight: 900; color: #fef08a; text-shadow: 0 0 22px rgba(250,204,21,0.75); animation: hopeGlow 1.6s ease-in-out infinite alternate; }
+        .sub-text .tech-word { font-size: 1.12em; font-weight: 900; color: #86efac; font-family: 'Courier New', monospace; text-shadow: 0 0 14px rgba(74,222,128,0.85); animation: techFlicker 1.1s linear infinite; }
+        .sub-text .whisper-word { transform: scale(0.92); opacity: 0.86; color: #cbd5e1; animation: whisperBreath 2.4s ease-in-out infinite alternate; }
+        .sub-text .cry-word { color: #bfdbfe; text-shadow: 0 0 18px rgba(147,197,253,0.62); animation: tearDrop 1.8s ease-in-out infinite; }
+        .sub-text .big-word { font-size: 1.25em; font-weight: 950; }
+
+        .eff-sad .hl { color: #bfdbfe; font-size: 1.13em; text-shadow: 0 0 15px rgba(147,197,253,0.65); animation: whisperBreath 2s ease-in-out infinite alternate; } 
+        .eff-angry { animation: slight-shake 0.5s cubic-bezier(.36,.07,.19,.97) both; font-weight: 800; } 
+        .eff-angry .hl { color: #fca5a5; font-size: 1.18em; text-shadow: 0 0 20px rgba(248, 113, 113, 0.78); animation: alarmShake 0.36s steps(2, end) infinite; } 
+        .eff-tech { letter-spacing: 0.05em; } 
+        .eff-tech .hl { color: #6ee7b7; font-size: 1.14em; font-family: monospace; text-shadow: 0 0 10px rgba(52, 211, 153, 0.8); animation: glitch 2s infinite, techFlicker 1.2s linear infinite; } 
+        .eff-firm .hl { color: #fde047; font-size: 1.18em; text-shadow: 0 0 25px rgba(250, 204, 21, 0.6); animation: hopeGlow 1.45s ease-in-out infinite alternate; } 
+        
+        @keyframes breath { 0% { opacity: 0.85; filter: blur(0px); } 100% { opacity: 1; filter: blur(0.5px); text-shadow: 0 0 20px rgba(255,255,255,0.2); } } 
+        @keyframes slight-shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-3px, 0, 0); } 40%, 60% { transform: translate3d(3px, 0, 0); } } 
+        @keyframes glitch { 0%, 100% { opacity: 1; } 95% { opacity: 0.5; } 98% { opacity: 1; text-shadow: 0 0 20px #6ee7b7; } }
+        @keyframes impactPop { 0% { transform: scale(0.98) translateY(0); } 100% { transform: scale(1.16) translateY(-2px); } }
+        @keyframes alarmShake { 0%,100% { transform: translate(0,0) rotate(0deg) scale(1.06); } 25% { transform: translate(-2px,1px) rotate(-1deg) scale(1.1); } 50% { transform: translate(2px,-1px) rotate(1deg) scale(1.08); } 75% { transform: translate(-1px,-1px) rotate(-0.6deg) scale(1.12); } }
+        @keyframes memoryFloat { 0%,100% { transform: translateY(0) scale(1); filter: brightness(1); } 50% { transform: translateY(-4px) scale(1.08); filter: brightness(1.24); } }
+        @keyframes hopeGlow { 0% { transform: scale(1); filter: brightness(1); } 100% { transform: scale(1.12); filter: brightness(1.35); } }
+        @keyframes techFlicker { 0%, 100% { opacity: 1; } 32% { opacity: 0.76; } 33% { opacity: 1; } 64% { transform: skewX(0deg); } 65% { transform: skewX(-7deg); } 66% { transform: skewX(0deg); } }
+        @keyframes whisperBreath { 0% { transform: scale(0.98); opacity: 0.82; } 100% { transform: scale(1.06); opacity: 1; } }
+        @keyframes tearDrop { 0%,100% { transform: translateY(0); } 50% { transform: translateY(3px); } }
+
+        .v-tech { background: radial-gradient(circle at center, #064e3b 0%, #020617 70%); }
+        .v-dark { background: #000; }
+
+        .scripted-stage {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            background: #020617;
+            overflow: hidden;
+        }
+        .scripted-stage:not(.hidden), .scripted-stage.is-active { display: block !important; visibility: visible !important; opacity: 1 !important; }
+        #scripted-bg { opacity: 1 !important; display: block !important; visibility: visible !important; }
+        .scripted-bg {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center center;
+            opacity: 1;
+            transform: scale(1.04);
+            transition: background-image 0.45s ease-in-out, opacity 0.45s ease-in-out, transform 5s ease-out;
+            filter: saturate(0.95) contrast(1.04);
+        }
+        .scripted-bg.bg-pulse { transform: scale(1.1); }
+        .scripted-vignette {
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(to top, rgba(2, 6, 23, 0.88) 0%, rgba(2, 6, 23, 0.25) 42%, rgba(2, 6, 23, 0.15) 100%),
+                radial-gradient(circle at 50% 40%, rgba(0,0,0,0.05), rgba(0,0,0,0.62));
+            z-index: 1;
+        }
+        .scene-caption {
+            display: none !important;
+            position: absolute;
+            top: 6rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+            color: rgba(226,232,240,0.92);
+            background: rgba(0, 0, 0, 0.42);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 999px;
+            padding: 0.65rem 1.4rem;
+            font-size: clamp(0.9rem, 1.4vw, 1.15rem);
+            letter-spacing: 0.18em;
+            font-weight: 700;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            white-space: nowrap;
+            box-shadow: 0 18px 36px rgba(0,0,0,0.36);
+        }
+        
+        .gameplay-full {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .gameplay-full video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: #000;
+        }
+        .gameplay-film-overlay {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: linear-gradient(to top, rgba(0,0,0,0.42), transparent 36%, rgba(0,0,0,0.28));
+            z-index: 1;
+        }
+        .gameplay-title-badge {
+            position: absolute;
+            top: 6rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+            padding: 0.65rem 1.35rem;
+            border-radius: 999px;
+            background: rgba(2, 6, 23, 0.62);
+            border: 1px solid rgba(125, 211, 252, 0.32);
+            color: #e0f2fe;
+            font-weight: 900;
+            letter-spacing: 0.2em;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 0 32px rgba(14, 165, 233, 0.18);
+        }
+        .gameplay-fallback {
+            position: absolute;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+            background: radial-gradient(circle at center, rgba(14, 165, 233, 0.16), rgba(0,0,0,0.94));
+            z-index: 3;
+        }
+        /* 影片失敗時改用 scripted-stage 背景圖，不再讓黑色影片層遮住背景。 */
+        .gameplay-full.video-error {
+            background: transparent !important;
+            pointer-events: none;
+        }
+        .gameplay-full.video-error video,
+        .gameplay-full.video-error .gameplay-film-overlay {
+            display: none !important;
+        }
+        .gameplay-full.video-error .gameplay-fallback {
+            display: none !important;
+        }
+        .gameplay-full.video-error .gameplay-title-badge {
+            background: rgba(2, 6, 23, 0.74);
+            border-color: rgba(251, 191, 36, 0.45);
+            color: #fde68a;
+        }
+
+        .blue-glow-ext {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, rgba(14, 165, 233, 0.5) 0%, transparent 60%);
+            z-index: 1015;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: opacity 1s ease-out, transform 1.5s ease-out;
+            pointer-events: none;
+            mix-blend-mode: screen;
+        }
+        .blue-glow-ext.active { opacity: 1; transform: scale(1.3); }
+        .black-transition { position: absolute; inset: 0; background: #000; z-index: 1016; opacity: 0; transition: opacity 1s ease-in-out; pointer-events: none; } 
+        .black-transition.active { opacity: 1; }
+        
+        @media (max-width: 768px) {
+            .subtitle-box { padding: 0.72rem 0.95rem; bottom: 6%; width: 92%; max-height: 22vh; border-radius: 0.9rem; }
+            .subtitle-content { align-items: center; gap: 0.65rem; }
+            .subtitle-avatar-wrap {
+                flex-basis: clamp(62px, 19vw, 92px);
+                height: clamp(74px, 23vw, 108px);
+                margin: -1.9rem 0 -0.55rem -0.55rem;
+            }
+            .subtitle-copy { max-height: calc(22vh - 1.1rem); justify-content: center; text-align: left; }
+            .sub-text { font-size: clamp(1rem, 4.5vw, 1.32rem); line-height: 1.34; }
+            .char-label { font-size: clamp(0.82rem, 3.6vw, 1rem); margin-bottom: 0.25rem; }
+            .sub-text .impact-word, .sub-text .danger-word, .sub-text .memory-word, .sub-text .hope-word, .sub-text .tech-word, .sub-text .big-word { font-size: 1.04em; }
+        }
+    </style>
+</head>
+<body class="antialiased">
+<script>document.documentElement.classList.add("js-enabled");</script>
+
+<audio id="bgm-act1" preload="metadata" loop crossorigin="anonymous"></audio>
+<audio id="bgm-act2" preload="metadata" loop crossorigin="anonymous"></audio>
+<audio id="bgm-act3" preload="metadata" loop crossorigin="anonymous"></audio>
+<audio id="bgm-act4" preload="metadata" loop crossorigin="anonymous"></audio>
+<audio id="voiceover" preload="auto" crossorigin="anonymous"></audio>
+
+<div id="trailer-mode" class="trailer-overlay">
+    
+    <div class="progress-container"><div id="progress-bar" class="progress-bar"></div></div>
+
+    <div class="top-bar">
+        <div class="text-slate-400 text-sm tracking-widest font-bold">七股風雲 PROLOGUE</div>
+        <a id="skip-trailer-btn" href="#intro-screen" role="button" class="text-white hover:text-red-400 transition-colors text-sm font-bold tracking-widest px-4 py-2 rounded-full border border-white/30 hover:border-red-400 backdrop-blur-sm bg-black/30">
+            跳過預告 SKIP
+        </a>
+    </div>
+    
+    <div id="video-container">
+        <div class="yt-wrapper" id="yt-wrapper">
+            <video id="main-video" playsinline preload="metadata" crossorigin="anonymous"></video>
+            <div class="fallback-hint">若畫面沒有自動播放，請點影片上的播放鍵；若按鈕無效，代表平台正在阻擋 JavaScript。</div>
+        </div>
+        <div id="video-fallback" class="video-fallback hidden">
+            <h2 class="text-5xl md:text-7xl font-black italic text-slate-200 tracking-widest mb-6 animate-pulse">七股風雲</h2>
+            <p class="text-xl text-slate-400 tracking-[0.5em]">正在載入視覺畫面...</p>
+        </div>
+    </div>
+
+    <div id="scene-sim" class="scene-sim">
+        <!-- 1. 背景靜態劇本層 -->
+        <div id="scripted-stage" class="scripted-stage hidden">
+            <div id="scripted-bg" class="scripted-bg"></div>
+            <div class="scripted-vignette"></div>
+            <div id="scene-caption" class="scene-caption"></div>
+        </div>
+
+        <!-- 2. 小遊戲演示層 -->
+        <div id="gameplay-stage" class="gameplay-full hidden">
+            <video id="gameplay-video" playsinline muted preload="metadata" crossorigin="anonymous"></video>
+            <div class="gameplay-film-overlay"></div>
+            <div id="gameplay-title-badge" class="gameplay-title-badge">互動模擬系統</div>
+            <div id="gameplay-fallback" class="gameplay-fallback">
+                <div class="p-6 max-w-lg bg-slate-900/90 rounded-2xl border border-sky-500/30 shadow-2xl">
+                    <h3 class="text-2xl font-bold text-sky-400 mb-2">試玩畫面載入中...</h3>
+                    <p class="text-sm text-slate-400">正在重試影像來源，或請確認您的瀏覽器允許播放 mp4 素材。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. 團隊介紹簡報層 -->
+        <div id="team-stage" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 text-center p-6 hidden">
+            <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(circle, #3b82f6 1px, transparent 1px); background-size: 24px 24px;"></div>
+            <div class="w-16 h-1 bg-sky-500 mb-6 rounded-full animate-pulse"></div>
+            <h3 class="text-sm tracking-[0.4em] text-sky-400 font-bold mb-3">七股風雲 ‧ 製作團隊</h3>
+            <h2 class="text-3xl md:text-5xl font-black tracking-widest text-slate-100 mb-8 leading-snug">
+                高雄市立瑞祥高中 海洋探險隊<br>
+                <span class="text-slate-400 text-2xl md:text-3xl font-medium">芊聿、綵宸、冠誼</span>
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-2xl text-left border border-white/10 rounded-xl p-6 bg-slate-900/40 backdrop-blur-sm">
+                <div>
+                    <h4 class="text-sky-300 font-bold mb-1">陳芊聿 (20813)</h4>
+                    <p class="text-xs text-slate-400">飾演：阿文伯 / 小慧</p>
+                </div>
+                <div>
+                    <h4 class="text-sky-300 font-bold mb-1">謝綵宸 (20821)</h4>
+                    <p class="text-xs text-slate-400">飾演：阿美 / 旁白</p>
+                </div>
+                <div>
+                    <h4 class="text-sky-300 font-bold mb-1">冠誼</h4>
+                    <p class="text-xs text-slate-400">職責：劇組研發、後勤</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. 結束尾章畫面 -->
+        <div id="outro-stage" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 text-center p-6 hidden">
+            <div class="w-24 h-1 bg-red-600 mb-8 rounded-full"></div>
+            <h2 class="text-5xl md:text-8xl font-black italic tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-slate-100 to-slate-400 drop-shadow-2xl mb-4">七股風雲</h2>
+            <p class="text-xl md:text-2xl text-slate-400 font-medium tracking-[0.4em] mb-12">故事未完 ‧ 敬請期待</p>
+            <div class="flex flex-col sm:flex-row gap-4">
+                <a id="home-trailer-btn" href="#intro-screen" role="button" class="px-8 py-3 bg-slate-700 hover:bg-slate-600 text-white font-bold tracking-widest rounded-full transition-all hover:scale-105 border border-white/20">
+                    回到主畫面 HOME
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div id="blue-glow-ext" class="blue-glow-ext hidden"></div>
+    <div id="black-transition" class="black-transition hidden"></div>
+
+    <div id="sub-display" class="subtitle-box">
+        <div class="subtitle-content">
+            <div id="sub-avatar-wrap" class="subtitle-avatar-wrap hidden">
+                <img id="sub-avatar" class="subtitle-avatar" alt="" loading="eager" crossorigin="anonymous">
+            </div>
+            <div class="subtitle-copy">
+                <span id="sub-char" class="char-label"></span>
+                <p id="sub-text" class="sub-text"></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="intro-screen" class="fixed inset-0 z-[200] bg-slate-950 flex flex-col items-center justify-center p-6 text-center transition-opacity duration-1000" style="background-image: radial-gradient(circle at 15% 50%, rgba(56, 189, 248, 0.05), transparent 25%), radial-gradient(circle at 85% 30%, rgba(248, 113, 113, 0.05), transparent 25%);">
+    <div class="max-w-3xl mx-auto flex flex-col items-center">
+        <div class="w-24 h-1 bg-red-600 mb-8 rounded-full"></div>
+        <h1 class="text-6xl md:text-8xl font-black mb-4 italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-slate-100 to-slate-500 drop-shadow-2xl">七股風雲</h1>
+        <p class="text-xl md:text-2xl text-slate-400 mb-12 font-medium tracking-widest">互動敘事體驗</p>
+        
+        <div class="flex flex-col sm:flex-row gap-6 w-full justify-center">
+            <a id="start-trailer-btn" href="#trailer-mode" role="button" class="group relative bg-red-600 hover:bg-red-500 text-white px-12 py-5 rounded-full font-black text-xl tracking-widest transition-all duration-300 shadow-[0_0_20px_rgba(220,38,38,0.4)] hover:shadow-[0_0_40px_rgba(220,38,38,0.6)] transform hover:-translate-y-1 overflow-hidden">
+                <span class="relative z-10">進入體驗</span>
+                <div class="absolute inset-0 h-full w-full bg-white/20 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300"></div>
+            </a>
+        </div>
+        <p class="mt-12 text-sm text-slate-600 font-mono">建議開啟音效以獲得最佳體驗</p>
+    </div>
+</div>
+
+<div class="js-diagnostic">平台可能已停用 JavaScript；已啟用備援開啟模式，但完整互動需允許腳本執行。</div>
+
+<script>
+const COMMIT_ID = "11e779ccbe2e1567b7b194b4aa1c47634652bcb7";
+const GAME_REF = "main"; 
+const ROOT_DIR = "03-第三組資源";
+const RAW_BASE_URL = `https://raw.githubusercontent.com/igudesman222/igudesman2012/${COMMIT_ID}/`;
+const MEDIA_BASE_URL = `https://media.githubusercontent.com/media/igudesman222/igudesman2012/${COMMIT_ID}/`;
+const RAW_GAME_BASE_URL = `https://raw.githubusercontent.com/igudesman222/igudesman2012/${GAME_REF}/`;
+const MEDIA_GAME_BASE_URL = `https://media.githubusercontent.com/media/igudesman222/igudesman2012/${GAME_REF}/`;
+const PAGES_BASE_URL = "https://igudesman222.github.io/igudesman2012/";
+
+const encodePath = (...parts) => parts.map(part => encodeURIComponent(part)).join('/');
+const asset = (...parts) => RAW_BASE_URL + encodePath(ROOT_DIR, ...parts);
+const mediaAsset = (...parts) => MEDIA_BASE_URL + encodePath(ROOT_DIR, ...parts);
+const gameAsset = (...parts) => RAW_GAME_BASE_URL + encodePath(ROOT_DIR, ...parts);
+const mediaGameAsset = (...parts) => MEDIA_GAME_BASE_URL + encodePath(ROOT_DIR, ...parts);
+const pagesAsset = (...parts) => PAGES_BASE_URL + encodePath(ROOT_DIR, ...parts);
+
+function characterAssetSources(baseName, fallbackExt = "jpg") {
+    // 角色圖優先使用資料夾中標示「去背」的檔名。
+    // 先讀 GitHub Pages / main 分支，避免舊 commit 沒有去背檔而退回白底圖。
+    const extList = ["png", "jpg", "jpeg", "webp"];
+    const transparentBases = [
+        `${baseName}(去背)`,
+        `${baseName}（去背）`,
+        `${baseName}-去背`,
+        `${baseName}_去背`,
+        `${baseName} 去背`,
+        `${baseName}去背`
+    ];
+
+    // 若原檔名最後有括號情緒，例如「角色01-阿文伯(喜)」，也嘗試「角色01-阿文伯(喜去背)」。
+    if (/\)$/.test(baseName)) {
+        transparentBases.push(
+            baseName.replace(/\)$/, "去背)"),
+            baseName.replace(/\)$/, " 去背)"),
+            baseName.replace(/\)$/, "-去背)")
+        );
+    }
+
+    const transparentNames = [...new Set(
+        transparentBases.flatMap(name => extList.map(ext => `${name}.${ext}`))
+    )];
+    const fallbackName = `${baseName}.${fallbackExt}`;
+
+    const preferredSources = fileName => [
+        pagesAsset("002-背景圖片", fileName),
+        mediaGameAsset("002-背景圖片", fileName),
+        gameAsset("002-背景圖片", fileName)
+    ];
+    const legacySources = fileName => [
+        mediaAsset("002-背景圖片", fileName),
+        asset("002-背景圖片", fileName)
+    ];
+
+    return [
+        ...transparentNames.flatMap(preferredSources),
+        ...transparentNames.flatMap(legacySources),
+        // 最後才回退一般原圖，確保只在去背檔真的不存在時使用。
+        ...preferredSources(fallbackName),
+        ...legacySources(fallbackName)
+    ];
+}
+
+function backgroundAssetSources(fileName) {
+    // 背景圖改用多來源 fallback：GitHub Pages 優先，其次 media/raw。
+    // Apps Script iframe 對 raw.githubusercontent 圖片偶爾會延遲或失敗，改成逐一探測可避免整段背景消失。
+    return [
+        pagesAsset("002-背景圖片", fileName),
+        mediaGameAsset("002-背景圖片", fileName),
+        gameAsset("002-背景圖片", fileName),
+        mediaAsset("002-背景圖片", fileName),
+        asset("002-背景圖片", fileName)
+    ];
+}
+
+const MAIN_VIDEO_PARTS = ["001-影片主視覺", "03-第三組主視覺動畫(new).mp4"];
+const GAMEPLAY_CLIP_PARTS = [
+    { label: "第一關｜回憶拼圖", parts: ["001-影片主視覺", "第一關.mp4"], startAt: 8, endAt: 22 },
+    { label: "第二關｜病變之水", parts: ["001-影片主視覺", "第二關.mp4"], startAt: 0, endAt: 17 },
+    { label: "第三關｜極限校準", parts: ["001-影片主視覺", "第三關.mp4"], startAt: 0, endAt: 19 },
+    { label: "第四關｜通關成果", parts: ["001-影片主視覺", "第四關.mp4"], startAt: 1, endAt: 8 }
+];
+const VO_PARTS = ["03-預告片(配音)", "01-配音MP3", "03-瑞祥高中-第三組配音(修).mp3"];
+
+// CRITICAL FIX: Prioritize GitHub Pages (pagesAsset) first to support Byte-Range Requests (HTTP 206) in Safari/iOS/Chrome.
+const ASSETS = {
+    mainVideo: pagesAsset(...MAIN_VIDEO_PARTS),
+    mainVideoSources: [pagesAsset(...MAIN_VIDEO_PARTS), mediaAsset(...MAIN_VIDEO_PARTS), asset(...MAIN_VIDEO_PARTS)],
+    gameplayClips: GAMEPLAY_CLIP_PARTS.map(clip => ({
+        label: clip.label,
+        startAt: clip.startAt,
+        endAt: clip.endAt,
+        sources: [pagesAsset(...clip.parts), mediaGameAsset(...clip.parts), gameAsset(...clip.parts)]
+    })),
+    bgmAct1: asset("003-背景音樂", "01-海潮微光（第一幕）.mp3"),
+    bgmAct2: asset("003-背景音樂", "02-遮天板（第二幕）.mp3"),
+    bgmAct3: asset("003-背景音樂", "03-未知樣本（第三幕）.mp3"),
+    bgmAct4: asset("003-背景音樂", "04-霧海天亮（第四幕）.mp3"),
+    voiceoverSources: [
+        `https://igudesman222.github.io/-/${encodePath(...VO_PARTS)}`,
+        `https://raw.githubusercontent.com/igudesman222/-/main/${encodePath(...VO_PARTS)}`,
+        `https://media.githubusercontent.com/media/igudesman222/-/main/${encodePath(...VO_PARTS)}`
+    ],
+    backgrounds: {
+        solar01: backgroundAssetSources("01-太陽能板.jpg"),
+        solar02: backgroundAssetSources("02-太陽能板.jpg"),
+        fisher03: backgroundAssetSources("03-魚電共生漁民.jpg"),
+        fry04: backgroundAssetSources("04-魚苗.jpg"),
+        fisher05: backgroundAssetSources("05-魚電共生漁民.png"),
+        fisher06: backgroundAssetSources("06-魚電共生漁民.png"),
+        fisher07: backgroundAssetSources("07-魚電共生漁民.jpg"),
+        lagoon08: backgroundAssetSources("08-七股潟湖生態.jpg"),
+        spoonbill09: backgroundAssetSources("09-飛翔中的黑面琵鷺.png"),
+        spoonbill10: backgroundAssetSources("10-黑面琵鷺 繁殖羽1 台南七股 台南鳥會郭東輝攝.jpg"),
+        brokenSolar11: backgroundAssetSources("11-被破壞的太陽能板.jpg"),
+        dryPond12: backgroundAssetSources("12-魚塭抽乾.jpg")
+    },
+    characters: {
+        wenPoint: characterAssetSources("角色01-阿文伯(右手指)"),
+        wenHappy: characterAssetSources("角色01-阿文伯(喜)"),
+        wenStand: characterAssetSources("角色01-阿文伯(站)"),
+        wenBlank: characterAssetSources("角色01-阿文伯(茫然)"),
+        meiSad: characterAssetSources("角色02-阿美(哀)"),
+        meiAngry: characterAssetSources("角色02-阿美(怒)"),
+        meiNormal: characterAssetSources("角色02-阿美"),
+        meiSupport: characterAssetSources("阿美扶著阿文伯", "png"),
+        huiNormal: characterAssetSources("角色03-小慧")
+    }
+};
+
+// 第二大段「遊戲試玩影片」如果載入失敗，依關卡切回照片背景。
+// 0 回憶拼圖、1 病變之水、2 極限校準、3 通關成果。
+const GAMEPLAY_FALLBACK_BG_BY_CLIP = ['lagoon08', 'dryPond12', 'solar02', 'fisher05'];
+const gameplayClipFailed = {};
+
+function getGameplayFallbackBgKey(clipIndex) {
+    return GAMEPLAY_FALLBACK_BG_BY_CLIP[Number(clipIndex) || 0] || 'lagoon08';
+}
+
+function isGameplayClipFailed(clipIndex) {
+    return !!gameplayClipFailed[String(Number(clipIndex) || 0)];
+}
+
+function markGameplayClipFailed(clipIndex) {
+    gameplayClipFailed[String(Number(clipIndex) || 0)] = true;
+}
+
+function clearGameplayClipFailed(clipIndex) {
+    delete gameplayClipFailed[String(Number(clipIndex) || 0)];
+}
+
+function resetGameplayFallbackState() {
+    Object.keys(gameplayClipFailed).forEach(key => delete gameplayClipFailed[key]);
+}
+
+const trailerScript = [
+    { start: 0, end: 10, type: 'video' },
+    { start: 11, end: 15, type: 'team' },
+
+    // 【第一大段：議題交代爭議與故事背景】依使用者指定秒數重排
+    { start: 16, end: 19, char: '阿文伯', effect: 'eff-sad', bg: 'solar01', avatar: 'wenBlank', sceneLabel: '01-太陽能板', text: '<span class="action">（眼神渙散，望著漆黑的水面喃喃自語）</span> 阿美啊…<span class="hl">魚呢？</span>怎麼攏無半隻？' },
+    { start: 20, end: 21, char: '阿美', effect: 'eff-sad', bg: 'solar01', avatar: 'meiSupport', sceneLabel: '01-太陽能板', text: '<span class="action">（輕拍阿文伯的背，強顏歡笑）</span> 爺爺，那些魚…' },
+    { start: 22, end: 28, char: '阿文伯', effect: 'eff-sad', bg: 'dryPond12', avatar: 'wenPoint', sceneLabel: '12-魚塭抽乾', text: '<span class="action">（突然打斷阿美的話，茫然指著乾涸的埤塘）</span> 以前水面會閃閃發光的，怎麼現在烏鴉鴉的一片啊？' },
+    { start: 30, end: 36, char: '阿文伯', effect: 'eff-sad', bg: 'solar02', avatar: 'wenBlank', sceneLabel: '02-太陽能板', text: '<span class="action">（眉頭緊皺，用力敲著自己的腦袋）</span> 是誰拿黑布把我們的魚塭蓋起來了？疑？我的魚苗勒？' },
+    { start: 37, end: 41, char: '阿美', effect: 'eff-angry', bg: 'brokenSolar11', avatar: 'meiAngry', sceneLabel: '11-被破壞的太陽能板', text: '<span class="action">（轉頭看向玩家，語氣轉為憤怒）</span> 你看到了嗎？這難道就是政府口中的「進步」？' },
+    { start: 42, end: 47, char: '阿美', effect: 'eff-angry', bg: 'brokenSolar11', avatar: 'meiSad', sceneLabel: '11-被破壞的太陽能板', text: '<span class="action">（指著水面上的太陽能板）</span> 硬生生把我們的家鄉，塞滿這些冷冰冰的黑色玻璃！' },
+    { start: 48, end: 52, char: '阿美', effect: 'eff-sad', bg: 'dryPond12', avatar: 'meiSad', sceneLabel: '12-魚塭抽乾', text: '<span class="action">（聲音開始顫抖，帶有哭腔）</span> 這些東西不僅讓魚活不了……還快把我爺爺逼瘋了！' },
+    { start: 53, end: 66, char: '阿美', effect: 'eff-sad', bg: 'lagoon08', avatar: 'meiSad', sceneLabel: '08-七股潟湖生態', text: '<span class="action">（淚水滑落，再次看向玩家）</span> 他以前最愛這片魚塭了。我不能眼睜睜看著他，連自己是誰、連我們以前美好的生活的記憶都「忘記了」！拜託你……你一定有辦法幫我們，對不對？' },
+
+    // 【第二大段：介紹遊戲玩法與敘事推進】
+    { start: 68, end: 76, char: '旁白', effect: 'eff-tech', type: 'gameplay', clip: 0, text: '進入「回憶拼圖」關卡。點擊專屬七股的文字，避開冰冷的工程詞彙，幫阿文伯找回 <span class="hl">3 塊</span> 珍貴的土地記憶！' },
+    { start: 77, end: 83, char: '阿美', effect: 'eff-sad', type: 'gameplay', clip: 0, avatar: 'meiNormal', text: '<span class="action">（指向前方的關卡/遞出道具）</span> 請你幫我找回阿公那些散落的記憶碎片，幫助他重新拼回來，好嗎？' },
+    { start: 84, end: 87, char: '小慧', effect: 'eff-tech', type: 'gameplay', clip: 1, avatar: 'huiNormal', text: '<span class="action">（看著螢幕閃爍紅光，語氣急促）</span> 糟糕！工程廢料正在嚴重污染魚塭。' },
+    { start: 88, end: 98, char: '旁白', effect: 'eff-angry', type: 'gameplay', clip: 1, text: '<span class="action">（系統提示音）</span> 啟動「病變之水」！考驗你的極限反應力，請在 <span class="hl">20 秒內</span> 避開有毒垃圾，點擊滑鼠搶救 <span class="hl">7 尾</span> 驚慌的魚苗！' },
+    { start: 99, end: 102, char: '阿美', effect: 'eff-sad', type: 'gameplay', clip: 1, avatar: 'meiSad', text: '<span class="action">（乞求眼神）</span> 拜託你們救救魚塭中生病的魚！' },
+    { start: 103, end: 115, char: '旁白', effect: 'eff-tech', type: 'gameplay', clip: 2, text: '進入「極限校準」。化身數據監測員，動態點擊注入純氧與強化輸出，將水質與發電效率維持在黃金比例 <span class="hl">3 秒鐘</span> ，達成雙贏！' },
+    { start: 116, end: 121, char: '小慧', effect: 'eff-tech', type: 'gameplay', clip: 2, avatar: 'huiNormal', text: '<span class="action">（冷靜）</span> 別驚慌！在指定時間內拯救完成就好，偏離的數據也會校正回來！' },
+    { start: 122, end: 127, char: '旁白', effect: 'eff-firm', type: 'gameplay', clip: 3, text: '恭喜過關！你的努力將帶給這片土地不同的色彩！' },
+
+    // 【第三大段：議題喚醒與遊戲宣傳語】
+    { start: 128, end: 137, char: '小慧', effect: 'eff-firm', bg: 'spoonbill09', avatar: 'huiNormal', sceneLabel: '09-飛翔中的黑面琵鷺', text: '<span class="action">（看著遠處飛過的黑面琵鷺）</span> 雖然七股的樣貌正在改變，但請相信我們的把關，我們一定能在經濟與生態之間找到出路。' },
+    { start: 138, end: 150, char: '阿文伯', effect: 'eff-firm', bg: 'fisher05', avatar: 'wenHappy', sceneLabel: '05-魚電共生漁民', text: '<span class="action">（拍拍阿美的手，語氣欣慰）</span> 對啦！希望政府的「規矩」也能說到做到。讓這些烏板阿，不只可以發電，也能為底下的魚仔遮風擋雨。' },
+    { start: 151, end: 157, char: '小慧', effect: 'eff-tech', bg: 'lagoon08', avatar: 'huiNormal', sceneLabel: '08-七股潟湖生態', text: '<span class="action">（記錄數據）</span> 短期收益不應該是唯一標準，我們正在寫一段，讓未來不會後悔的故事。' },
+    { start: 158, end: 166, char: '阿美', effect: 'eff-firm', bg: 'lagoon08', avatar: 'meiNormal', sceneLabel: '08-七股潟湖生態', text: '<span class="action">（充滿希望）</span> 沒錯！雖然魚塭的樣子變了，但希望這塊土地更好的心——永遠不會變！' },
+    { start: 167, end: 173, type: 'logo' }
+];
+const TOTAL_DURATION = 172; 
+let timerInterval;
+let currentSeconds = 0;
+let currentMainScene = ''; 
+let carouselInterval;
+let trailerStarting = false;
+let trailerPlaying = false;
+let lastButtonRun = 0;
+
+
+const introScreen = document.getElementById('intro-screen');
+const trailerOverlay = document.getElementById('trailer-mode');
+const timerUI = document.getElementById('t-timer');
+const progressBar = document.getElementById('progress-bar');
+const videoContainer = document.getElementById('video-container');
+const videoFallback = document.getElementById('video-fallback');
+const sceneSim = document.getElementById('scene-sim');
+const subUI = document.getElementById('sub-display');
+const charUI = document.getElementById('sub-char');
+const textUI = document.getElementById('sub-text');
+const avatarWrap = document.getElementById('sub-avatar-wrap');
+const avatarImg = document.getElementById('sub-avatar');
+
+const mainVideo = document.getElementById('main-video');
+const gameplayVideo = document.getElementById('gameplay-video');
+const voiceoverAudio = document.getElementById('voiceover');
+
+const bgmAct1 = document.getElementById('bgm-act1');
+const bgmAct2 = document.getElementById('bgm-act2');
+const bgmAct3 = document.getElementById('bgm-act3');
+const bgmAct4 = document.getElementById('bgm-act4');
+const allBgms = [bgmAct1, bgmAct2, bgmAct3, bgmAct4];
+
+let mainVideoSourceIndex = 0;
+let mainVideoAutoplayRequested = false;
+let mainVideoShutdownRequested = false;
+
+let activeGameplayClipIndex = null;
+let gameVideoSourceIndex = 0;
+let gameVideoAutoplayRequested = false;
+
+let voiceoverSourceIndex = 0;
+
+function setVideoFallbackMessage(message) {
+    if (!videoFallback) return;
+    const msg = videoFallback.querySelector('p');
+    if (msg) msg.textContent = message;
+    videoFallback.classList.remove('hidden');
+}
+
+function loadMainVideoSource(index = 0, autoplay = false) {
+    if (!mainVideo) return;
+    const sources = ASSETS.mainVideoSources || [ASSETS.mainVideo];
+    if (index >= sources.length) {
+        setVideoFallbackMessage('主視覺影片載入失敗，請確認網路連線。');
+        return;
+    }
+    mainVideoShutdownRequested = false;
+    mainVideoSourceIndex = index;
+    mainVideoAutoplayRequested = autoplay;
+    videoFallback.classList.add('hidden');
+    mainVideo.dataset.sourceIndex = String(index);
+    mainVideo.src = sources[index];
+    mainVideo.load();
+    if (autoplay) {
+        setTimeout(() => playMainVisual(), 80);
+    }
+}
+
+function tryNextMainVideoSource() {
+    if (mainVideoShutdownRequested) return;
+    const nextIndex = mainVideoSourceIndex + 1;
+    const sources = ASSETS.mainVideoSources || [ASSETS.mainVideo];
+    if (nextIndex < sources.length) {
+        loadMainVideoSource(nextIndex, mainVideoAutoplayRequested);
+    } else {
+        setVideoFallbackMessage('主視覺影片無法顯示，將自動切換為備份靜態簡報。');
+    }
+}
+
+async function playMainVisual() {
+    if (!mainVideo) return;
+    mainVideoAutoplayRequested = true;
+    videoFallback.classList.add('hidden');
+    if (!mainVideo.getAttribute('src')) loadMainVideoSource(0, false);
+    try { mainVideo.currentTime = 0; } catch (e) {}
+    mainVideo.volume = 0.85; // Opening main visual audio raised for stronger impact
+    mainVideo.muted = false;
+    try {
+        await mainVideo.play();
+    } catch (e) {
+        console.log('主視覺影片有聲播放受阻，改用靜音備援播放...', e);
+        try {
+            mainVideo.muted = true;
+            mainVideo.volume = 0;
+            await mainVideo.play();
+        } catch (fallbackError) {
+            console.log('主視覺影片播放失敗，嘗試備用來源...', fallbackError);
+            tryNextMainVideoSource();
+        }
+    }
+}
+
+function loadVoiceoverSource(index = 0) {
+    if (!voiceoverAudio) return;
+    const sources = ASSETS.voiceoverSources;
+    if (index >= sources.length) {
+        console.error("所有配音來源均載入失敗。");
+        return;
+    }
+    voiceoverSourceIndex = index;
+    voiceoverAudio.src = sources[index];
+    voiceoverAudio.load();
+}
+
+function getActiveGameplayClip() {
+    if (activeGameplayClipIndex === null) return null;
+    return (ASSETS.gameplayClips || [])[activeGameplayClipIndex] || null;
+}
+
+function updateGameplayBadge(clip) {
+    const badge = document.getElementById('gameplay-title-badge');
+    if (badge) badge.textContent = clip?.label || '互動模擬系統';
+}
+
+function loadGameVideoSource(clipIndex = 0, sourceIndex = 0, autoplay = false) {
+    if (!gameplayVideo) return;
+    const clips = ASSETS.gameplayClips || [];
+    const clip = clips[clipIndex];
+    if (!clip) return;
+    const sources = clip.sources || [];
+    if (sourceIndex >= sources.length) {
+        activateGameplayImageFallback(clipIndex, '試玩影片來源無法載入，已切換為照片背景。');
+        return;
+    }
+    if (sourceIndex === 0) clearGameplayClipFailed(clipIndex);
+    activeGameplayClipIndex = clipIndex;
+    gameVideoSourceIndex = sourceIndex;
+    gameVideoAutoplayRequested = autoplay;
+    updateGameplayBadge(clip);
+    const stage = document.getElementById('gameplay-stage');
+    if (stage) stage.classList.remove('video-error');
+    gameplayVideo.dataset.clipIndex = String(clipIndex);
+    gameplayVideo.src = sources[sourceIndex];
+    gameplayVideo.load();
+    if (autoplay) {
+        setTimeout(() => playGameplayVideo(), 80);
+    }
+}
+
+function tryNextGameVideoSource() {
+    const clip = getActiveGameplayClip();
+    const nextIndex = gameVideoSourceIndex + 1;
+    const sources = clip?.sources || [];
+    if (nextIndex < sources.length) {
+        loadGameVideoSource(activeGameplayClipIndex, nextIndex, gameVideoAutoplayRequested);
+    } else {
+        activateGameplayImageFallback(activeGameplayClipIndex, '試玩影片載入失敗，已切換為照片背景。');
+    }
+}
+
+function activateGameplayImageFallback(clipIndex = 0, reason = '') {
+    const safeClipIndex = Number.isInteger(clipIndex) ? clipIndex : Number(clipIndex) || 0;
+    markGameplayClipFailed(safeClipIndex);
+
+    const bgKey = getGameplayFallbackBgKey(safeClipIndex);
+    if (ASSETS.backgrounds?.[bgKey]) {
+        setScriptedBackground(bgKey);
+    } else {
+        forceShowScriptedStage();
+    }
+
+    const stage = document.getElementById('gameplay-stage');
+    if (stage) {
+        stage.classList.add('video-error');
+    }
+    showGameplayFallbackScene(safeClipIndex);
+
+    if (gameplayVideo) {
+        try { gameplayVideo.pause(); } catch (e) {}
+        gameplayVideo.removeAttribute('src');
+        try { gameplayVideo.load(); } catch (e) {}
+    }
+
+    const captionEl = document.getElementById('scene-caption');
+    if (captionEl) {
+        const clip = (ASSETS.gameplayClips || [])[safeClipIndex];
+        captionEl.innerText = reason || `${clip?.label || '試玩影片'} 無法載入，已改用照片背景`;
+        captionEl.classList.remove('hidden');
+    }
+}
+
+function setGameplayClip(clipIndex = 0) {
+    if (isGameplayClipFailed(clipIndex)) {
+        activateGameplayImageFallback(clipIndex, '試玩影片無法載入，已改用照片背景。');
+        return;
+    }
+    if (!gameplayVideo) {
+        activateGameplayImageFallback(clipIndex, '瀏覽器不支援試玩影片，已改用照片背景。');
+        return;
+    }
+    if (activeGameplayClipIndex !== clipIndex || !gameplayVideo.getAttribute('src')) {
+        loadGameVideoSource(clipIndex, 0, true);
+    } else if (gameplayVideo.paused) {
+        playGameplayVideo();
+    }
+}
+
+function enforceGameplaySegment() {
+    const clip = getActiveGameplayClip();
+    if (!clip || !gameplayVideo || isGameplayClipFailed(activeGameplayClipIndex)) return;
+    const startAt = Number(clip.startAt || 0);
+    const endAt = Number(clip.endAt || 0);
+    if (endAt > startAt && gameplayVideo.currentTime >= endAt) {
+        gameplayVideo.currentTime = startAt;
+        gameplayVideo.play().catch(e => console.log('試玩片段循環播放受阻:', e));
+    }
+}
+
+async function playGameplayVideo() {
+    if (!gameplayVideo) return;
+    const clip = getActiveGameplayClip() || (ASSETS.gameplayClips || [])[0];
+    gameVideoAutoplayRequested = true;
+    try {
+        gameplayVideo.currentTime = Number(clip?.startAt || 0);
+        gameplayVideo.volume = 0; 
+        gameplayVideo.muted = true;
+        await gameplayVideo.play();
+    } catch (e) {
+        console.log('試玩影片播放失敗', e);
+        tryNextGameVideoSource();
+    }
+}
+
+function processAvatarCutout(imgElement, srcCandidates) {
+    if (!srcCandidates) return;
+
+    const sources = Array.isArray(srcCandidates) ? srcCandidates : [srcCandidates];
+    let index = 0;
+
+    imgElement.classList.remove('is-processing', 'soft-key');
+    imgElement.classList.add('cutout-ready');
+    imgElement.style.backgroundColor = 'transparent';
+
+    const tryLoad = () => {
+        if (index >= sources.length) {
+            imgElement.removeAttribute('src');
+            imgElement.classList.add('soft-key');
+            return;
+        }
+
+        const candidate = sources[index++];
+        const probe = new Image();
+        probe.crossOrigin = 'anonymous';
+        probe.onload = () => {
+            imgElement.src = candidate;
+            imgElement.classList.remove('is-processing', 'soft-key');
+            imgElement.classList.add('cutout-ready');
+        };
+        probe.onerror = tryLoad;
+        probe.src = candidate;
+    };
+
+    tryLoad();
+}
+
+function safelyRunControl(handler, fallbackHash) {
+    try {
+        handler();
+    } catch (err) {
+        console.error('預告片控制流程失敗，改用備援入口：', err);
+        if (fallbackHash) location.hash = fallbackHash;
+    }
+}
+
+function bindRobustButton(buttonId, handler) {
+    const button = document.getElementById(buttonId);
+    if (!button) return;
+
+    const run = event => {
+        const now = Date.now();
+        // 防止 Apps Script iframe / 行動裝置一次觸發 pointerup + touchend + click，導致流程重置。
+        if (now - lastButtonRun < 600) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                event.stopImmediatePropagation?.();
+            }
+            return false;
+        }
+        lastButtonRun = now;
+
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation?.();
+        }
+
+        const fallbackHash = buttonId === 'start-trailer-btn' ? 'trailer-mode' : 'intro-screen';
+        safelyRunControl(handler, fallbackHash);
+        return false;
+    };
+
+    // 只使用 click + keyboard，避免 pointerup/touchend/click 三重觸發。
+    button.addEventListener('click', run, { passive: false, capture: true });
+    button.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') run(event);
+    }, { passive: false, capture: true });
+}
+
+
+// 最後保險：按鈕若被平台包裝，使用事件委派；同樣套用防重複啟動。
+document.addEventListener('click', event => {
+    const startBtn = event.target.closest?.('#start-trailer-btn, [href="#trailer-mode"]');
+    const skipBtn = event.target.closest?.('#skip-trailer-btn');
+    const homeBtn = event.target.closest?.('#home-trailer-btn');
+    const replayBtn = event.target.closest?.('#replay-trailer-btn');
+    if (!startBtn && !skipBtn && !homeBtn && !replayBtn) return;
+
+    const now = Date.now();
+    if (now - lastButtonRun < 600) {
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation?.();
+        return;
+    }
+    lastButtonRun = now;
+
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation?.();
+
+    if (startBtn) safelyRunControl(startTrailer, 'trailer-mode');
+    else if (skipBtn) safelyRunControl(endTrailer, 'intro-screen');
+    else if (homeBtn) safelyRunControl(returnToHome, 'intro-screen');
+    else if (replayBtn) safelyRunControl(restartTrailer, 'trailer-mode');
+}, { capture: true, passive: false });
+
+
+function addResourceHint(rel, href, asType) {
+    if (!href || document.querySelector(`link[rel="${rel}"][href="${href}"]`)) return;
+    const link = document.createElement('link');
+    link.rel = rel;
+    link.href = href;
+    if (asType) link.as = asType;
+    link.crossOrigin = 'anonymous';
+    document.head.appendChild(link);
+}
+
+function preloadImageQuietly(urlOrUrls) {
+    if (!urlOrUrls) return;
+    const urls = Array.isArray(urlOrUrls) ? urlOrUrls : [urlOrUrls];
+    urls.slice(0, 2).forEach(url => {
+        if (!url) return;
+        const img = new Image();
+        img.decoding = 'async';
+        img.loading = 'eager';
+        img.crossOrigin = 'anonymous';
+        img.src = url;
+    });
+}
+
+function firstSource(value) {
+    return Array.isArray(value) ? value[0] : value;
+}
+
+const backgroundLoadState = {};
+
+function cssUrl(url) {
+    return `url("${String(url).replace(/"/g, '%22')}")`;
+}
+
+function forceShowScriptedStage() {
+    const scriptedStage = document.getElementById('scripted-stage');
+    const bgEl = document.getElementById('scripted-bg');
+    if (scriptedStage) {
+        scriptedStage.classList.remove('hidden');
+        scriptedStage.classList.add('is-active');
+        scriptedStage.style.display = 'block';
+        scriptedStage.style.visibility = 'visible';
+        scriptedStage.style.opacity = '1';
+        scriptedStage.style.position = 'absolute';
+        scriptedStage.style.top = '0';
+        scriptedStage.style.right = '0';
+        scriptedStage.style.bottom = '0';
+        scriptedStage.style.left = '0';
+        scriptedStage.style.width = '100%';
+        scriptedStage.style.height = '100%';
+        scriptedStage.style.zIndex = '0';
+    }
+    if (bgEl) {
+        bgEl.style.display = 'block';
+        bgEl.style.visibility = 'visible';
+        bgEl.style.opacity = '1';
+        bgEl.style.position = 'absolute';
+        bgEl.style.top = '0';
+        bgEl.style.right = '0';
+        bgEl.style.bottom = '0';
+        bgEl.style.left = '0';
+        bgEl.style.width = '100%';
+        bgEl.style.height = '100%';
+        bgEl.style.backgroundSize = 'cover';
+        bgEl.style.backgroundPosition = 'center center';
+        bgEl.style.backgroundRepeat = 'no-repeat';
+    }
+}
+
+function hideScriptedStage() {
+    const scriptedStage = document.getElementById('scripted-stage');
+    if (!scriptedStage) return;
+    scriptedStage.classList.remove('is-active');
+    scriptedStage.classList.add('hidden');
+    scriptedStage.style.display = 'none';
+}
+
+
+// --- Stable visual layer controller ---
+// Apps Script iframe + Tailwind fallback needs explicit layer control.
+// Do not rely only on classList.add('hidden'), because utility classes such as .flex can otherwise override it.
+const VISUAL_STAGE_IDS = ['video-container', 'scripted-stage', 'gameplay-stage', 'team-stage', 'outro-stage'];
+
+function setStageHidden(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove('is-active', 'active');
+    el.classList.add('hidden');
+    el.style.display = 'none';
+    el.style.visibility = 'hidden';
+    el.style.opacity = '0';
+    el.style.pointerEvents = 'none';
+}
+
+function setStageVisible(id, displayType = 'block', zIndex = '') {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove('hidden');
+    if (id === 'scripted-stage') el.classList.add('is-active');
+    el.style.display = displayType;
+    el.style.visibility = 'visible';
+    el.style.opacity = '1';
+    el.style.pointerEvents = id === 'video-container' ? 'auto' : 'none';
+    if (zIndex !== '') el.style.zIndex = String(zIndex);
+}
+
+function hideAllVisualStages(options = {}) {
+    const keep = new Set(options.keep || []);
+    VISUAL_STAGE_IDS.forEach(id => {
+        if (!keep.has(id)) setStageHidden(id);
+    });
+}
+
+function prepareSceneSim() {
+    sceneSim.style.display = 'flex';
+    sceneSim.style.opacity = '1';
+    sceneSim.style.visibility = 'visible';
+    sceneSim.classList.add('active');
+}
+
+function showOpeningVideoScene() {
+    hideAllVisualStages({ keep: ['video-container'] });
+    sceneSim.style.display = 'none';
+    sceneSim.classList.remove('active');
+    setStageVisible('video-container', 'flex', '0');
+}
+
+function showTeamScene() {
+    prepareSceneSim();
+    hideAllVisualStages({ keep: ['team-stage'] });
+    setStageVisible('team-stage', 'flex', '2');
+}
+
+function showScriptedScene() {
+    prepareSceneSim();
+    hideAllVisualStages({ keep: ['scripted-stage'] });
+    setStageVisible('scripted-stage', 'block', '0');
+}
+
+function showGameplayScene(clipIndex = 0) {
+    prepareSceneSim();
+    // Keep scripted-stage under gameplay-stage as the image fallback background.
+    hideAllVisualStages({ keep: ['scripted-stage', 'gameplay-stage'] });
+    const fallbackBgKey = getGameplayFallbackBgKey(clipIndex);
+    if (ASSETS.backgrounds?.[fallbackBgKey]) setScriptedBackground(fallbackBgKey);
+    else forceShowScriptedStage();
+    setStageVisible('scripted-stage', 'block', '0');
+    setStageVisible('gameplay-stage', 'flex', '1');
+}
+
+function showGameplayFallbackScene(clipIndex = 0) {
+    prepareSceneSim();
+    hideAllVisualStages({ keep: ['scripted-stage'] });
+    const fallbackBgKey = getGameplayFallbackBgKey(clipIndex);
+    if (ASSETS.backgrounds?.[fallbackBgKey]) setScriptedBackground(fallbackBgKey);
+    else forceShowScriptedStage();
+    setStageVisible('scripted-stage', 'block', '0');
+}
+
+function showOutroScene() {
+    prepareSceneSim();
+    hideAllVisualStages({ keep: ['outro-stage'] });
+    setStageVisible('outro-stage', 'flex', '2');
+}
+
+function setScriptedBackground(bgKey) {
+    const bgEl = document.getElementById('scripted-bg');
+    if (!bgEl || !bgKey || !ASSETS.backgrounds?.[bgKey]) return;
+
+    forceShowScriptedStage();
+
+    const sources = Array.isArray(ASSETS.backgrounds[bgKey])
+        ? ASSETS.backgrounds[bgKey].filter(Boolean)
+        : [ASSETS.backgrounds[bgKey]].filter(Boolean);
+
+    if (!sources.length) {
+        bgEl.style.backgroundImage = 'radial-gradient(circle at center, rgba(14,165,233,0.18), rgba(2,6,23,1) 70%)';
+        return;
+    }
+
+    // 重要修正：不要再用 new Image() 先探測。
+    // Apps Script iframe + GitHub 圖片有時會因 CORS/快取探測失敗，但 CSS background 實際可正常載入。
+    // 因此直接把多個來源寫進 CSS background-image，瀏覽器會自動顯示第一個能載入的背景。
+    const layeredImages = sources.map(cssUrl).join(', ');
+    const safeFallback = 'radial-gradient(circle at center, rgba(14,165,233,0.18), rgba(2,6,23,1) 72%)';
+    const nextImage = `${layeredImages}, ${safeFallback}`;
+
+    if (backgroundLoadState[bgKey] === nextImage && bgEl.style.backgroundImage) return;
+    backgroundLoadState[bgKey] = nextImage;
+
+    bgEl.classList.remove('bg-pulse');
+    bgEl.style.backgroundImage = nextImage;
+    bgEl.style.backgroundColor = '#020617';
+    bgEl.style.filter = 'saturate(0.95) contrast(1.04)';
+    void bgEl.offsetWidth;
+    setTimeout(() => bgEl.classList.add('bg-pulse'), 50);
+}
+
+function applyScriptedBackground(url) {
+    // 保留舊函式名稱，避免其他位置呼叫；實際改由 setScriptedBackground 統一處理。
+    const bgEl = document.getElementById('scripted-bg');
+    if (!bgEl || !url) return;
+    forceShowScriptedStage();
+    bgEl.classList.remove('bg-pulse');
+    bgEl.style.backgroundImage = `${cssUrl(url)}, radial-gradient(circle at center, rgba(14,165,233,0.18), rgba(2,6,23,1) 72%)`;
+    bgEl.style.backgroundColor = '#020617';
+    void bgEl.offsetWidth;
+    setTimeout(() => bgEl.classList.add('bg-pulse'), 50);
+}
+
+function runWhenIdle(fn, timeout = 900) {
+    if ('requestIdleCallback' in window) {
+        window.requestIdleCallback(fn, { timeout });
+    } else {
+        setTimeout(fn, Math.min(timeout, 600));
+    }
+}
+
+function warmupCriticalAssets() {
+    // 先暖機開場影片與配音，避免第一次點擊後才建立連線。
+    addResourceHint('preload', ASSETS.mainVideoSources?.[0] || ASSETS.mainVideo, 'video');
+    addResourceHint('preload', ASSETS.voiceoverSources?.[0], 'audio');
+
+    // 首批 20 秒會用到的背景與角色圖先讀；其他素材稍後分批，不搶開場頻寬。
+    const earlyEntries = trailerScript.filter(entry => entry.start <= 24);
+    earlyEntries.forEach(entry => {
+        if (entry.bg) preloadImageQuietly(ASSETS.backgrounds?.[entry.bg]);
+        if (entry.avatar) preloadImageQuietly(firstSource(ASSETS.characters?.[entry.avatar]));
+    });
+}
+
+function warmupSecondaryAssets() {
+    const imageUrls = new Set();
+    trailerScript.forEach(entry => {
+        if (entry.bg && ASSETS.backgrounds?.[entry.bg]) {
+            const bgSources = Array.isArray(ASSETS.backgrounds[entry.bg]) ? ASSETS.backgrounds[entry.bg] : [ASSETS.backgrounds[entry.bg]];
+            bgSources.slice(0, 2).forEach(url => imageUrls.add(url));
+        }
+        if (entry.avatar && ASSETS.characters?.[entry.avatar]) imageUrls.add(firstSource(ASSETS.characters[entry.avatar]));
+    });
+
+    const urls = [...imageUrls];
+    let i = 0;
+    const batch = () => {
+        urls.slice(i, i + 3).forEach(preloadImageQuietly);
+        i += 3;
+        if (i < urls.length) setTimeout(batch, 450);
+    };
+    runWhenIdle(batch, 1200);
+
+    // 小遊戲影片與後段背景音樂延後暖機，減少開場卡頓。
+    runWhenIdle(() => {
+        (ASSETS.gameplayClips || []).slice(0, 2).forEach(clip => addResourceHint('prefetch', clip.sources?.[0], 'video'));
+        [ASSETS.bgmAct1, ASSETS.bgmAct2, ASSETS.bgmAct3, ASSETS.bgmAct4].forEach(url => addResourceHint('prefetch', url, 'audio'));
+    }, 1800);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    warmupCriticalAssets();
+    bindRobustButton('start-trailer-btn', startTrailer);
+    bindRobustButton('skip-trailer-btn', endTrailer);
+    bindRobustButton('home-trailer-btn', returnToHome);
+    bindRobustButton('replay-trailer-btn', restartTrailer);
+
+    if (mainVideo) {
+        mainVideo.addEventListener('loadeddata', () => videoFallback.classList.add('hidden'));
+        mainVideo.addEventListener('canplay', () => videoFallback.classList.add('hidden'));
+        mainVideo.addEventListener('error', () => tryNextMainVideoSource());
+        loadMainVideoSource(0, false);
+    }
+    if (gameplayVideo) {
+        gameplayVideo.addEventListener('error', () => tryNextGameVideoSource());
+        gameplayVideo.addEventListener('timeupdate', () => enforceGameplaySegment());
+        loadGameVideoSource(0, 0, false);
+    }
+    if (voiceoverAudio) {
+        voiceoverAudio.addEventListener('error', () => {
+            loadVoiceoverSource(voiceoverSourceIndex + 1);
+        });
+        loadVoiceoverSource(0);
+    }
+    
+    bgmAct1.src = ASSETS.bgmAct1;
+    bgmAct2.src = ASSETS.bgmAct2;
+    bgmAct3.src = ASSETS.bgmAct3;
+    bgmAct4.src = ASSETS.bgmAct4;
+    runWhenIdle(() => {
+        bgmAct1.load();
+        bgmAct2.load();
+    }, 1500);
+});
+
+function playBGM(audioElement) {
+    if(!audioElement) return;
+    audioElement.volume = 0;
+    audioElement.play().catch(e => console.log('BGM 播放受阻:', e));
+    let vol = 0;
+    const fadeIn = setInterval(() => {
+        vol += 0.02; 
+        if (vol >= 0.2) { 
+            audioElement.volume = 0.2; // Background music volume kept lower (20%) to highlight voiceover
+            clearInterval(fadeIn);
+        } else {
+            audioElement.volume = vol;
+        }
+    }, 100);
+}
+
+function stopBGM(audioElement) {
+    if(!audioElement) return;
+    let vol = audioElement.volume;
+    const fadeOut = setInterval(() => {
+        vol -= 0.05;
+        if (vol <= 0) {
+            audioElement.volume = 0;
+            audioElement.pause();
+            clearInterval(fadeOut);
+        } else {
+            audioElement.volume = vol;
+        }
+    }, 100);
+}
+
+function startTrailer() {
+    // 防重入：避免一次點擊、iframe 重送事件或 hash 委派造成多個計時器/媒體流程同時跑。
+    if (trailerStarting || trailerPlaying) return;
+    resetGameplayFallbackState();
+    trailerStarting = true;
+    trailerPlaying = true;
+
+    clearInterval(timerInterval);
+    if (carouselInterval) { clearInterval(carouselInterval); carouselInterval = null; }
+    warmupSecondaryAssets();
+
+    introScreen.style.opacity = '0';
+    trailerOverlay.style.display = 'flex';
+    trailerOverlay.classList.add('active');
+    
+    // Explicit layer reset: show opening video only; hide team/scripted/gameplay/outro.
+    showOpeningVideoScene();
+    subUI.classList.remove('visible');
+    progressBar.style.width = '0%';
+
+    if (mainVideo) {
+        mainVideo.removeAttribute('controls'); // JS 正常時隱藏備援控制列
+        // Safe asynchronous autoplay trigger on user action
+        loadMainVideoSource(0, true);
+    }
+
+    // 只暖機載入，不預先 play()。避免瀏覽器延遲解析播放承諾，造成開場影片結束後 BGM 誤播。
+    allBgms.forEach(bgm => {
+        bgm.pause();
+        bgm.currentTime = 0;
+        bgm.volume = 0;
+        try { bgm.load(); } catch (e) { console.log('音訊載入初始化:', e); }
+    });
+
+    if (voiceoverAudio) {
+        voiceoverAudio.pause();
+        voiceoverAudio.currentTime = 0;
+    }
+
+    setTimeout(() => {
+        introScreen.style.display = 'none';
+        trailerStarting = false;
+    }, 650);
+
+    startTimeline();
+}
+
+function startTimeline() {
+    currentSeconds = 0;
+    currentMainScene = '';
+    updateUI(); 
+    timerInterval = setInterval(() => {
+        currentSeconds++;
+        updateUI();
+        if (currentSeconds >= TOTAL_DURATION) endTrailer();
+    }, 1000);
+}
+
+function restartTrailer() {
+    currentSeconds = 0;
+    setStageHidden('outro-stage');
+    allBgms.forEach(bgm => { bgm.pause(); bgm.currentTime = 0; });
+    
+    if (voiceoverAudio) {
+        voiceoverAudio.pause();
+        voiceoverAudio.currentTime = 0;
+    }
+
+    trailerStarting = false;
+    trailerPlaying = false;
+    startTrailer();
+}
+
+function returnToHome() {
+    trailerStarting = false;
+    trailerPlaying = false;
+    clearInterval(timerInterval);
+    if (carouselInterval) { clearInterval(carouselInterval); carouselInterval = null; }
+    currentSeconds = 0;
+    currentMainScene = '';
+
+    allBgms.forEach(bgm => {
+        bgm.pause();
+        bgm.currentTime = 0;
+        bgm.volume = 0;
+    });
+
+    if (mainVideo) {
+        mainVideoShutdownRequested = false;
+        mainVideoAutoplayRequested = false;
+        mainVideo.pause();
+        mainVideo.currentTime = 0;
+    }
+    if (gameplayVideo) {
+        gameplayVideo.pause();
+        gameplayVideo.currentTime = 0;
+        activeGameplayClipIndex = null;
+    }
+    if (voiceoverAudio) {
+        voiceoverAudio.pause();
+        voiceoverAudio.currentTime = 0;
+    }
+
+    const glow = document.getElementById('blue-glow-ext');
+    const blackScreen = document.getElementById('black-transition');
+    if (glow) glow.classList.add('hidden');
+    if (blackScreen) blackScreen.classList.add('hidden');
+
+    hideAllVisualStages({ keep: ['video-container'] });
+    subUI?.classList.remove('visible');
+
+    sceneSim.style.display = 'none';
+    sceneSim.classList.remove('active');
+    setStageVisible('video-container', 'flex', '0');
+    progressBar.style.width = '0%';
+
+    trailerOverlay.classList.remove('active');
+    trailerOverlay.style.display = 'none';
+    introScreen.style.display = 'flex';
+    requestAnimationFrame(() => {
+        introScreen.style.opacity = '1';
+    });
+
+    if (location.hash === '#trailer-mode') {
+        history.replaceState(null, '', location.pathname + location.search + '#intro-screen');
+    } else {
+        location.hash = 'intro-screen';
+    }
+}
+
+function updateUI() {
+    const mins = Math.floor(currentSeconds / 60);
+    const secs = currentSeconds % 60;
+    if (timerUI) timerUI.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    progressBar.style.width = `${(currentSeconds / TOTAL_DURATION) * 100}%`;
+
+    const entry = trailerScript.find(e => currentSeconds >= e.start && currentSeconds <= e.end);
+
+    // Fade out main cinematic visual audio so it ends at 10s
+    if (currentSeconds === 9 && mainVideo) {
+        let vol = mainVideo.volume || 0.85;
+        const fadeOut = setInterval(() => {
+            vol -= 0.1;
+            if (vol <= 0) { 
+                mainVideo.volume = 0; 
+                clearInterval(fadeOut); 
+            } else { 
+                mainVideo.volume = vol; 
+            }
+        }, 100);
+    }
+
+    // CRITICAL: Voiceover plays with maximum audio quality synchronized perfectly at 17s
+    if (currentSeconds === 16) {
+        if (voiceoverAudio) {
+            voiceoverAudio.currentTime = 0;
+            voiceoverAudio.volume = 1.0; // Voiceover set to 100% full volume
+            voiceoverAudio.play().catch(e => console.log('配音自動播放阻擋:', e));
+        }
+        playBGM(bgmAct1);
+    }
+    
+    if (currentSeconds === 66) { stopBGM(bgmAct1); playBGM(bgmAct2); }
+    if (currentSeconds === 102) { stopBGM(bgmAct2); playBGM(bgmAct3); }
+    if (currentSeconds === 127) { stopBGM(bgmAct3); playBGM(bgmAct4); }
+
+    // Visual transition from opening cinematic into team slide.
+    if (currentSeconds === 10) {
+        const glow = document.getElementById('blue-glow-ext');
+        glow.classList.remove('hidden');
+        setTimeout(() => glow.classList.add('active'), 50);
+    }
+    if (currentSeconds === 11) {
+        setStageHidden('video-container');
+        prepareSceneSim();
+        const blackScreen = document.getElementById('black-transition');
+        blackScreen.classList.remove('active');
+        blackScreen.classList.add('hidden');
+        const glow = document.getElementById('blue-glow-ext');
+        glow.classList.remove('active');
+        glow.classList.add('hidden');
+        if (mainVideo) {
+            mainVideoShutdownRequested = true;
+            mainVideoAutoplayRequested = false;
+            mainVideo.pause();
+            mainVideo.removeAttribute('src');
+            mainVideo.load();
+        }
+    }
+
+    if (entry) {
+        if (entry.type === 'video') {
+            showOpeningVideoScene();
+            subUI.classList.remove('visible');
+        }
+        else if (entry.type === 'team') {
+            showTeamScene();
+            subUI.classList.remove('visible');
+        }
+        else if (entry.type === 'gameplay') {
+            const clipIndex = Number.isInteger(entry.clip) ? entry.clip : 0;
+
+            if (isGameplayClipFailed(clipIndex)) {
+                showGameplayFallbackScene(clipIndex);
+                activateGameplayImageFallback(clipIndex, '試玩影片無法載入，已改用照片背景。');
+            } else {
+                showGameplayScene(clipIndex);
+                const gameplayStage = document.getElementById('gameplay-stage');
+                if (gameplayStage) gameplayStage.classList.remove('video-error');
+                setGameplayClip(clipIndex);
+
+                // If video exists but never becomes ready, reveal background image instead of keeping a black layer.
+                const expectedClipIndex = clipIndex;
+                setTimeout(() => {
+                    if (currentSeconds >= entry.start && currentSeconds <= entry.end && activeGameplayClipIndex === expectedClipIndex) {
+                        const ready = gameplayVideo && gameplayVideo.readyState >= 2 && !gameplayVideo.error;
+                        if (!ready) activateGameplayImageFallback(expectedClipIndex, '試玩影片載入逾時，已改用照片背景。');
+                    }
+                }, 4200);
+            }
+
+            renderNarrative(entry);
+        }
+        else if (entry.type === 'logo') {
+            showOutroScene();
+            subUI.classList.remove('visible');
+            if (gameplayVideo) gameplayVideo.pause();
+        }
+        else {
+            showScriptedScene();
+
+            if (gameplayVideo && !gameplayVideo.paused) {
+                gameplayVideo.pause();
+            }
+
+            if (entry.bg && ASSETS.backgrounds[entry.bg]) {
+                setScriptedBackground(entry.bg);
+            }
+
+            const captionEl = document.getElementById('scene-caption');
+            if (captionEl) {
+                if (entry.sceneLabel) {
+                    captionEl.innerText = entry.sceneLabel;
+                    captionEl.classList.remove('hidden');
+                    captionEl.style.display = 'block';
+                    captionEl.style.visibility = 'visible';
+                    captionEl.style.opacity = '1';
+                } else {
+                    captionEl.classList.add('hidden');
+                    captionEl.style.display = 'none';
+                }
+            }
+
+            renderNarrative(entry);
+        }
+    } else {
+        subUI.classList.remove('visible');
+    }
+}
+
+function renderNarrative(entry) {
+    subUI.className = 'subtitle-box visible';
+    
+    if (entry.char === '阿文伯') {
+        subUI.style.borderLeftColor = 'var(--char-wen)';
+        charUI.style.color = 'var(--char-wen)';
+    } else if (entry.char === '阿美') {
+        subUI.style.borderLeftColor = 'var(--char-mei)';
+        charUI.style.color = 'var(--char-mei)';
+    } else if (entry.char === '小慧') {
+        subUI.style.borderLeftColor = 'var(--char-hui)';
+        charUI.style.color = 'var(--char-hui)';
+    } else {
+        subUI.style.borderLeftColor = 'var(--char-nar)';
+        charUI.style.color = 'var(--char-nar)';
+    }
+
+    charUI.innerText = entry.char || '';
+    textUI.className = `sub-text ${entry.effect || ''}`;
+    textUI.innerHTML = entry.text || '';
+
+    if (entry.avatar && ASSETS.characters[entry.avatar]) {
+        avatarWrap.classList.remove('hidden');
+        const originalUrl = ASSETS.characters[entry.avatar];
+        processAvatarCutout(avatarImg, originalUrl);
+    } else {
+        avatarWrap.classList.add('hidden');
+    }
+}
+
+function endTrailer() {
+    trailerStarting = false;
+    trailerPlaying = false;
+    clearInterval(timerInterval);
+    if (carouselInterval) { clearInterval(carouselInterval); carouselInterval = null; }
+    
+    allBgms.forEach(bgm => {
+        bgm.pause();
+        bgm.currentTime = 0;
+    });
+    if (mainVideo) {
+        mainVideoAutoplayRequested = false;
+        mainVideo.pause();
+    }
+    if (gameplayVideo) {
+        gameplayVideo.pause();
+        activeGameplayClipIndex = null;
+    }
+    if (voiceoverAudio) {
+        voiceoverAudio.pause();
+        voiceoverAudio.currentTime = 0;
+    }
+
+    document.getElementById('blue-glow-ext').classList.add('hidden');
+    document.getElementById('black-transition').classList.add('hidden');
+
+    showOutroScene();
+    subUI.classList.remove('visible');
+}
+</script>
+</body>
+</html>

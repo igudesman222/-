@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>北海岸的抉擇：四接疑雲 - 預告片上線</title>
+    <style>
+        :root {
+            --ui-bg: rgba(15, 23, 42, 0.9);
+            --text-main: #f1f5f9;
+            --accent: #38bdf8;
+            --science: #10b981;
+            --citizen: #f59e0b;
+            --eco: #ef4444;
+            --capital: #3b82f6;
+            --narrator: #cbd5e1;
+        }
+
+        html, body {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000;
+            font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
+            color: var(--text-main);
+            user-select: none;
+        }
+
+        * { box-sizing: border-box; }
+
+        /* 電影黑邊 */
+        .letterbox {
+            display: none;
+        }
+        #letterbox-top { top: 0; }
+        #letterbox-bottom { bottom: 0; }
+
+        /* 計時器已刪除：保留節點避免舊版 JS 取值錯誤，但永久隱藏 */
+        #timer-display {
+            display: none !important;
+            position: absolute;
+            top: 4%;
+            right: 5%;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--accent);
+            background: rgba(15, 23, 42, 0.8);
+            padding: 8px 18px;
+            border-radius: 6px;
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            z-index: 75;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            letter-spacing: 1.5px;
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
+            backdrop-filter: blur(4px);
+        }
+
+        /* 字幕區 */
+        #subtitle-container {
+            position: absolute;
+            bottom: 5%;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            z-index: 95;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        #speaker-name {
+            font-size: 14px;
+            color: var(--accent);
+            margin-bottom: 8px;
+            font-weight: bold;
+            background: rgba(15, 23, 42, 0.9);
+            padding: 4px 14px;
+            border-radius: 4px;
+            border-left: 4px solid var(--accent);
+            letter-spacing: 1px;
+        }
+
+        #subtitle {
+            font-size: clamp(17px, 1.25vw, 21px);
+            line-height: 1.55;
+            color: white;
+            text-shadow: 0 2px 5px rgba(0,0,0,1);
+            max-width: 80%;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 14px 28px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            letter-spacing: 1.5px;
+            white-space: pre-wrap;
+        }
+
+        /* 角色名牌 */
+        #labels-container {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 40;
+        }
+
+        .name-label {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            background: rgba(15, 23, 42, 0.85);
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--accent);
+            opacity: 0;
+            white-space: nowrap;
+            transition: opacity 0.3s;
+        }
+
+        /* UI 覆蓋層：懸疑開頭 */
+        #overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background:
+                radial-gradient(circle at 50% 42%, rgba(56, 189, 248, 0.18) 0%, rgba(15, 23, 42, 0.38) 24%, rgba(2, 6, 23, 0.92) 58%, #000 100%),
+                linear-gradient(180deg, rgba(0, 0, 0, 0.15) 0%, rgba(0, 19, 33, 0.6) 46%, #000 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: opacity 1.5s ease;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        #overlay::before {
+            content: "";
+            position: absolute;
+            inset: -20%;
+            background:
+                radial-gradient(circle at 18% 25%, rgba(56, 189, 248, 0.09), transparent 18%),
+                radial-gradient(circle at 78% 72%, rgba(16, 185, 129, 0.08), transparent 22%),
+                repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 9px);
+            opacity: 0.42;
+            filter: blur(1px);
+            animation: abyssDrift 12s ease-in-out infinite alternate;
+            pointer-events: none;
+        }
+
+        #overlay::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(transparent 0%, rgba(56, 189, 248, 0.08) 50%, transparent 100%),
+                repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.045) 0 1px, transparent 1px 5px);
+            opacity: 0.2;
+            mix-blend-mode: screen;
+            animation: scanLine 4.5s linear infinite;
+            pointer-events: none;
+        }
+
+        .title {
+            position: relative;
+            z-index: 2;
+            font-size: 46px;
+            font-weight: bold;
+            color: var(--accent);
+            letter-spacing: 10px;
+            margin-bottom: 16px;
+            text-shadow: 0 0 14px rgba(56, 189, 248, 0.9), 0 0 36px rgba(14, 165, 233, 0.55), 0 0 80px rgba(14, 165, 233, 0.35);
+            animation: titlePulse 3.2s ease-in-out infinite, subtleGlitch 7s steps(1, end) infinite;
+        }
+
+        .opening-tagline {
+            position: relative;
+            z-index: 2;
+            margin-bottom: 34px;
+            color: #94a3b8;
+            font-size: 16px;
+            letter-spacing: 5px;
+            text-shadow: 0 0 18px rgba(148, 163, 184, 0.35);
+            animation: taglineFade 4s ease-in-out infinite alternate;
+        }
+
+        #play-btn {
+            position: relative;
+            z-index: 2;
+            padding: 18px 50px;
+            font-size: 20px;
+            background: rgba(2, 6, 23, 0.48);
+            color: var(--accent);
+            border: 2px solid rgba(56, 189, 248, 0.9);
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: inset 0 0 22px rgba(56, 189, 248, 0.08), 0 0 22px rgba(56, 189, 248, 0.25);
+            backdrop-filter: blur(6px);
+        }
+
+        #play-btn:hover {
+            background: rgba(56, 189, 248, 0.92);
+            color: #0f172a;
+            box-shadow: 0 0 35px var(--accent), 0 0 80px rgba(56, 189, 248, 0.35);
+            transform: translateY(-2px) scale(1.02);
+        }
+
+        @keyframes abyssDrift {
+            from { transform: translate3d(-2%, -1%, 0) scale(1.02) rotate(-1deg); }
+            to { transform: translate3d(2%, 1.5%, 0) scale(1.08) rotate(1deg); }
+        }
+
+        @keyframes scanLine {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(100%); }
+        }
+
+        @keyframes titlePulse {
+            0%, 100% { opacity: 0.88; filter: brightness(0.95); }
+            50% { opacity: 1; filter: brightness(1.25); }
+        }
+
+        @keyframes subtleGlitch {
+            0%, 92%, 100% { transform: translateX(0); }
+            93% { transform: translateX(-2px); }
+            94% { transform: translateX(2px); }
+            95% { transform: translateX(-1px); }
+            96% { transform: translateX(0); }
+        }
+
+        @keyframes taglineFade {
+            from { opacity: 0.45; }
+            to { opacity: 0.95; }
+        }
+
+        /* 主視覺後的第二畫面：團隊介紹 */
+        #team-intro-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(15, 23, 42, 0.96) 0%, #000 100%);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 95;
+            opacity: 0;
+            transition: opacity 0.8s ease;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        #team-intro-screen .team-kicker {
+            color: var(--accent);
+            font-size: 18px;
+            letter-spacing: 6px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 18px rgba(56, 189, 248, 0.45);
+        }
+
+        #team-intro-screen .team-main {
+            color: #f8fafc;
+            font-size: 30px;
+            line-height: 1.9;
+            letter-spacing: 4px;
+            font-weight: bold;
+        }
+
+        #team-intro-screen .team-sub {
+            color: #94a3b8;
+            margin-top: 24px;
+            font-size: 18px;
+            letter-spacing: 3px;
+        }
+
+        /* 電影特效層 */
+        #flash-fx {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: white;
+            opacity: 0;
+            z-index: 90;
+            pointer-events: none;
+        }
+
+        #sub-hud {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            border: 35px solid rgba(56, 189, 248, 0.15);
+            box-sizing: border-box;
+            opacity: 0;
+            transition: opacity 1s;
+            z-index: 45;
+        }
+        
+        .hud-line {
+            position: absolute;
+            width: 100%; height: 1px;
+            background: rgba(56, 189, 248, 0.3);
+            top: 50%;
+        }
+
+        /* 試玩影片元素 */
+        #gameplay-video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 30;
+            display: none;
+            opacity: 0;
+            transition: opacity 1.5s ease;
+        }
+
+        /* 主視覺影片 */
+        #kv-video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* 使用 contain 讓 8 秒主視覺完整呈現，不再被裁切。 */
+            object-fit: contain;
+            object-position: center center;
+            background: #000;
+            z-index: 80;
+            display: none;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        /* 語音除錯診斷面板 */
+        #audio-debug-panel {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            font-size: 11px;
+            font-family: monospace;
+            color: rgba(255, 255, 255, 0.4);
+            z-index: 99;
+            pointer-events: none;
+            background: rgba(15, 23, 42, 0.75);
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(4px);
+        }
+
+
+        /* 3:04-3:20 結尾主視覺：基隆潮境海灣背景 + 珊瑚礁點綴，不遮字幕 */
+        #ending-visual-screen {
+            position: absolute;
+            inset: 0;
+            display: none;
+            opacity: 0;
+            z-index: 55;
+            pointer-events: none;
+            overflow: hidden;
+            background: #000;
+            transition: opacity 1.8s ease;
+        }
+
+        #ending-visual-screen.active {
+            display: block;
+            opacity: 1;
+        }
+
+        #ending-visual-screen .ending-bg {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,22,40,0.18) 45%, rgba(0,0,0,0.35) 100%),
+                url("https://cdn.jsdelivr.net/gh/igudesman222/igudesman2012@main/01-%E7%AC%AC%E4%B8%80%E7%B5%84%E8%B3%87%E6%BA%90/001-%E5%9C%96%E7%89%87/07-%E5%9F%BA%E9%9A%86-%E6%9C%9B%E6%B5%B7%E6%B8%AF%E6%BD%AE%E5%A2%83%E6%B5%B7%E7%81%A3%E8%B3%87%E6%BA%90%E4%BF%9D%E8%82%B2%E5%8D%80.jpg");
+            background-size: cover;
+            background-position: center center;
+            transform: scale(0.9);
+            filter: saturate(1.08) contrast(1.04) brightness(0.78);
+            animation: endingPushIn 16s ease-out forwards;
+        }
+
+        #ending-visual-screen .ending-vignette {
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 50% 45%, rgba(56,189,248,0.12) 0%, rgba(0,0,0,0) 34%, rgba(0,0,0,0.46) 100%),
+                linear-gradient(90deg, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0) 18%, rgba(0,0,0,0) 82%, rgba(0,0,0,0.45) 100%);
+        }
+
+        #ending-visual-screen .coral-deco {
+            position: absolute;
+            bottom: -2%;
+            width: 25vw;
+            height: 34vh;
+            opacity: 0.72;
+            filter: drop-shadow(0 0 18px rgba(56, 189, 248, 0.35));
+            background:
+                radial-gradient(ellipse at 50% 100%, rgba(16,185,129,0.55) 0%, rgba(16,185,129,0.12) 46%, transparent 70%),
+                repeating-conic-gradient(from 0deg at 50% 100%, rgba(74,222,128,0.65) 0deg 5deg, transparent 5deg 15deg);
+            clip-path: polygon(45% 100%, 50% 18%, 55% 100%, 63% 100%, 59% 42%, 77% 8%, 66% 51%, 74% 100%, 100% 100%, 100% 0, 0 0, 0 100%);
+            animation: coralFloat 5s ease-in-out infinite alternate;
+        }
+
+        #ending-visual-screen .coral-left {
+            left: -4vw;
+            transform: rotate(-8deg);
+        }
+
+        #ending-visual-screen .coral-right {
+            right: -4vw;
+            transform: scaleX(-1) rotate(-8deg);
+            animation-delay: 0.8s;
+        }
+
+        @keyframes endingPushIn {
+            0% { transform: scale(0.88); opacity: 0; }
+            14% { opacity: 1; }
+            100% { transform: scale(1.03); opacity: 1; }
+        }
+
+        @keyframes coralFloat {
+            from { bottom: -3%; opacity: 0.58; }
+            to { bottom: 0%; opacity: 0.82; }
+        }
+
+
+        canvas {
+            position: fixed;
+            inset: 0;
+            width: 100vw !important;
+            height: 100vh !important;
+            display: block;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="overlay">
+        <div class="title">北海岸的抉擇：四接疑雲</div>
+        <div class="opening-tagline">海面之下，真相正在靠近</div>
+        <button id="play-btn">點擊開始，懸疑上線</button>
+    </div>
+
+    <div id="team-intro-screen">
+        <div class="team-kicker">製作團隊介紹</div>
+        <div class="team-main">高雄市立瑞祥高中 海洋探險隊</div>
+        <div class="team-sub">安翊、子晴、舜丞、威仁 作品</div>
+    </div>
+
+    <div id="timer-display">00:00 / 03:20</div>
+    <div id="flash-fx"></div>
+    <div id="sub-hud"><div class="hud-line"></div></div>
+
+    <div id="ending-visual-screen" aria-hidden="true">
+        <div class="ending-bg"></div>
+        <div class="coral-deco coral-left"></div>
+        <div class="coral-deco coral-right"></div>
+        <div class="ending-vignette"></div>
+    </div>
+
+    <!-- 載入 Github 的最新配音檔（提供三種常見的 URL 編碼格式 fallback，防範瀏覽器解析差異與 404） -->
+    <audio id="voiceover-audio" preload="auto">
+        <!-- 1. 完全網址轉義編碼 (最安全) -->
+        <source src="https://raw.githubusercontent.com/igudesman222/-/main/03-%E9%A0%90%E5%91%8A%E7%89%87%28%E9%85%8D%E9%9F%B3%29/01-%E9%85%8D%E9%9F%B3MP3/01-%E7%91%9E%E7%A5%A5%E9%AB%98%E4%B8%AD-%E7%AC%AC%E4%B8%80%E7%B5%84%E9%85%8D%E9%9F%B3%28%E4%BF%AE%29.mp3" type="audio/mpeg">
+        <!-- 2. 中文字元與括弧混合 URL 編碼 -->
+        <source src="https://raw.githubusercontent.com/igudesman222/-/main/03-%E9%A0%90%E5%91%8A%E7%89%87(%E9%85%8D%E9%9F%B3)/01-%E9%85%8D%E9%9F%B3MP3/01-%E7%91%9E%E7%A5%A5%E9%AB%98%E4%B8%AD-%E7%AC%AC%E4%B8%80%E7%B5%84%E9%85%8D%E9%9F%B3(%E4%BF%AE).mp3" type="audio/mpeg">
+        <!-- 3. 未經編碼的原始繁體中文路徑 -->
+        <source src="https://raw.githubusercontent.com/igudesman222/-/main/03-預告片(配音)/01-配音MP3/01-瑞祥高中-第一組配音(修).mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- 嵌入使用者上傳的實機試玩畫面影片 (已替換為測試影片連結避免錯誤) -->
+    <video id="gameplay-video" playsinline>
+        <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4" type="video/mp4">
+        您的瀏覽器不支援影片播放。
+    </video>
+
+    <!-- 10秒主視覺前導影片 -->
+    <video id="kv-video" playsinline preload="auto">
+        <!-- 根據使用者提供的 GitHub 路徑 (已作 URL 安全編碼處理) -->
+        <source src="https://raw.githubusercontent.com/igudesman222/igudesman2012/main/01-%E7%AC%AC%E4%B8%80%E7%B5%84%E8%B3%87%E6%BA%90/002-%E5%BD%B1%E7%89%87%E4%B8%BB%E8%A6%96%E8%A6%BA/01-%E7%AC%AC%E4%B8%80%E7%B5%84%E4%B8%BB%E8%A6%96%E8%A6%BA%E5%8B%95%E7%95%AB.mp4" type="video/mp4">
+    </video>
+
+    <div class="letterbox" id="letterbox-top"></div>
+    <div class="letterbox" id="letterbox-bottom"></div>
+
+    <div id="labels-container"></div>
+
+    <div id="subtitle-container">
+        <div id="speaker-name"></div>
+        <div id="subtitle"></div>
+    </div>
+
+    <!-- 語音狀態除錯面板 -->
+    <div id="audio-debug-panel">
+        系統診斷: <span id="audio-status" style="color: #38bdf8;">等待開始...</span>
+    </div>
+
+
+    <script>
+        // --- 啟動按鈕保險機制 ---
+        // 若 type="module" 的 Three.js 尚未載入，先記錄使用者點擊；
+        // 若模組載入失敗，啟動 2D 備援流程，避免「點擊後完全沒反應」。
+        (function () {
+            window.__pendingTrailerStart = false;
+            window.__moduleReady = false;
+            window.__moduleStarted = false;
+            window.__emergencyMode = false;
+
+            function status(text, isError) {
+                var el = document.getElementById('audio-status');
+                if (el) {
+                    el.innerText = text;
+                    el.style.color = isError ? '#ef4444' : '#10b981';
+                }
+            }
+
+            function playSafely(el) {
+                if (!el) return;
+                var promise = el.play && el.play();
+                if (promise && typeof promise.catch === 'function') {
+                    promise.catch(function (e) {
+                        console.warn('media play failed:', e);
+                    });
+                }
+            }
+
+            function startEmergencyTrailer() {
+                if (window.__moduleStarted || window.__emergencyMode) return;
+                window.__emergencyMode = true;
+                status('3D 模組載入較慢或失敗，已啟動備援播放模式', true);
+
+                var overlay = document.getElementById('overlay');
+                var timer = document.getElementById('timer-display');
+                var subBox = document.getElementById('subtitle-container');
+                var speaker = document.getElementById('speaker-name');
+                var subtitle = document.getElementById('subtitle');
+                var kv = document.getElementById('kv-video');
+                var teamScreen = document.getElementById('team-intro-screen');
+                var voice = document.getElementById('voiceover-audio');
+
+                if (overlay) {
+                    overlay.style.opacity = 0;
+                    setTimeout(function () { overlay.style.display = 'none'; }, 600);
+                }
+                if (timer) timer.style.display = 'none';
+                if (kv) {
+                    kv.muted = false;
+                    kv.volume = 1;
+                    kv.playsInline = true;
+                    kv.style.display = 'block';
+                    kv.style.opacity = 1;
+                    playSafely(kv);
+                    setTimeout(function () {
+                        kv.style.opacity = 0;
+                        setTimeout(function () { kv.style.display = 'none'; }, 800);
+                        if (teamScreen) {
+                            teamScreen.style.display = 'flex';
+                            setTimeout(function () { teamScreen.style.opacity = 1; }, 50);
+                            setTimeout(function () {
+                                teamScreen.style.opacity = 0;
+                                setTimeout(function () { teamScreen.style.display = 'none'; }, 800);
+                            }, 4000);
+                        }
+                    }, 8000);
+                }
+
+                var start = Date.now() - 14000;
+                var fallbackLines = [
+                    { t: 14000, sp: '旁白', tx: '這裡是基隆外木山，海浪依舊拍打著礁岩，但在這片美麗的藍色之下，一場關於「能源轉型」和「生態保育」的拉鋸戰正悄然上演。' },
+                    { t: 84000, sp: '環保團體人士', tx: '巨大的機具陰影已經籠罩海床，清澈的海水被污泥覆蓋，底下的珊瑚礁承受得了嗎？' },
+                    { t: 153000, sp: '海洋科學家', tx: '四接爭議並非只有乾淨發電的問題，而是關係到能不能和基隆海域共存。' },
+                    { t: 184000, sp: '', tx: '究竟我們該如何在綠能發電和海洋生態間取得平衡？' },
+                    { t: 195000, sp: '', tx: '加入「四接疑雲」，讓我們一起守護北海岸的未來。' }
+                ];
+                var i = -1;
+                var tick = setInterval(function () {
+                    var elapsed = Date.now() - start;
+                    var sec = Math.min(elapsed / 1000, 200);
+                    var mm = String(Math.floor(sec / 60)).padStart(2, '0');
+                    var ss = String(Math.floor(sec % 60)).padStart(2, '0');
+                    if (timer) timer.innerText = mm + ':' + ss + ' / 03:20';
+                    var ending = document.getElementById('ending-visual-screen');
+                    if (ending && elapsed >= 184000 && !ending.classList.contains('active')) {
+                        ending.style.display = 'block';
+                        setTimeout(function () { ending.classList.add('active'); }, 30);
+                    }
+                    if (i < fallbackLines.length - 1 && elapsed >= fallbackLines[i + 1].t) {
+                        i++;
+                        if (speaker) {
+                            speaker.innerText = fallbackLines[i].sp;
+                            speaker.style.display = fallbackLines[i].sp ? 'block' : 'none';
+                        }
+                        if (subtitle) subtitle.innerText = fallbackLines[i].tx;
+                        if (subBox) subBox.style.opacity = 1;
+                        if (i === 2 && voice) playSafely(voice);
+                    }
+                    if (elapsed >= 200000) {
+                        clearInterval(tick);
+                        if (timer) timer.style.display = 'none';
+                        if (subBox) subBox.style.opacity = 0;
+                        if (ending) { ending.classList.remove('active'); setTimeout(function () { ending.style.display = 'none'; }, 800); }
+                        if (overlay) { overlay.style.display = 'flex'; setTimeout(function () { overlay.style.opacity = 1; }, 50); }
+                    }
+                }, 250);
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                var btn = document.getElementById('play-btn');
+                if (!btn) return;
+                btn.addEventListener('click', function () {
+                    window.__pendingTrailerStart = true;
+                    status('已收到點擊，正在啟動預告片...', false);
+                    if (window.__moduleReady && typeof window.startKVSequence === 'function') {
+                        window.startKVSequence();
+                    } else {
+                        setTimeout(function () {
+                            if (!window.__moduleStarted) startEmergencyTrailer();
+                        }, 1200);
+                    }
+                });
+            });
+        })();
+    </script>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.module.min.js"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+
+        // --- 核心變數 ---
+        let scene, camera, renderer, clock = new THREE.Clock();
+        let npcs = {}, corals = [], seaFloor, submarine;
+        let isPlaying = false, startTime = 0, currentTimelineIndex = -1;
+        let currentSpeakerId = null;
+        const FIRST_MAIN_SEGMENT_TIME = 14000; // 團隊介紹後直接進入第一大段（0:14 旁白），跳過計時器 00:01-00:04 等前段畫面。
+        const FIRST_MAIN_SEGMENT_EVENT_INDEX = 2; // TIMELINE 中 0:14 旁白事件的索引
+        const gameplayVideo = document.getElementById('gameplay-video');
+        const kvVideo = document.getElementById('kv-video');
+        const voiceoverAudio = document.getElementById('voiceover-audio'); 
+        
+        // --- BGM (背景音樂) 相關設定 ---
+        // 使用 raw.githubusercontent.com 才能讓 <audio> 直接播放；GitHub 的 /tree/ 頁面是 HTML，不是音訊檔。
+        const BGM_TRACKS = [
+            {
+                name: "海底壓痕.mp3 第一段",
+                start: 14000,      // 0:14
+                end: 85000,        // 1:25 前
+                src: "https://raw.githubusercontent.com/igudesman222/igudesman2012/main/01-%E7%AC%AC%E4%B8%80%E7%B5%84%E8%B3%87%E6%BA%90/003-%E8%83%8C%E6%99%AF%E9%9F%B3%E6%A8%82/%E6%B5%B7%E5%BA%95%E5%A3%93%E7%97%95.mp3%20%E7%AC%AC%E4%B8%80%E6%AE%B5.mp3"
+            },
+            {
+                name: "狹縫奔逃.mp3 第二段",
+                start: 85000,      // 1:25
+                end: 154000,       // 2:34 前
+                src: "https://raw.githubusercontent.com/igudesman222/igudesman2012/main/01-%E7%AC%AC%E4%B8%80%E7%B5%84%E8%B3%87%E6%BA%90/003-%E8%83%8C%E6%99%AF%E9%9F%B3%E6%A8%82/%E7%8B%B9%E7%B8%AB%E5%A5%94%E9%80%83.mp3%20%E7%AC%AC%E4%BA%8C%E6%AE%B5.mp3"
+            },
+            {
+                name: "破曉回聲.mp3 第三段",
+                start: 154000,     // 2:34
+                end: 200000,       // 3:20
+                src: "https://raw.githubusercontent.com/igudesman222/igudesman2012/main/01-%E7%AC%AC%E4%B8%80%E7%B5%84%E8%B3%87%E6%BA%90/003-%E8%83%8C%E6%99%AF%E9%9F%B3%E6%A8%82/%E7%A0%B4%E6%9B%89%E5%9B%9E%E8%81%B2.mp3%20%E7%AC%AC%E4%B8%89%E6%AE%B5.mp3"
+            }
+        ];
+
+        let bgmAudio = new Audio();
+        bgmAudio.loop = true;
+        bgmAudio.preload = "auto";
+        let currentBgmIndex = -1;
+        let bgmFadeTimer = null;
+        const BGM_TARGET_VOLUME = 0.25; // 背景音樂較小聲，避免蓋過配音
+
+        function switchBGM(index) {
+            if (currentBgmIndex === index) return;
+            currentBgmIndex = index;
+            const track = BGM_TRACKS[index];
+            if (!track) return;
+
+            if (bgmFadeTimer) {
+                clearInterval(bgmFadeTimer);
+                bgmFadeTimer = null;
+            }
+
+            const playNext = () => {
+                bgmAudio.src = track.src;
+                bgmAudio.currentTime = 0;
+                bgmAudio.volume = 0;
+                bgmAudio.play().then(() => {
+                    updateAudioStatus(`背景音樂：${track.name}`);
+                }).catch(e => {
+                    console.warn("BGM play failed:", e);
+                    updateAudioStatus("背景音樂播放失敗：" + e.message, true);
+                });
+
+                let volIn = 0;
+                bgmFadeTimer = setInterval(() => {
+                    volIn += 0.05;
+                    if (volIn >= BGM_TARGET_VOLUME) {
+                        bgmAudio.volume = BGM_TARGET_VOLUME;
+                        clearInterval(bgmFadeTimer);
+                        bgmFadeTimer = null;
+                    } else {
+                        bgmAudio.volume = volIn;
+                    }
+                }, 100);
+            };
+
+            if (bgmAudio.paused || !bgmAudio.src) {
+                playNext();
+                return;
+            }
+
+            let vol = bgmAudio.volume;
+            bgmFadeTimer = setInterval(() => {
+                vol -= 0.05;
+                if (vol <= 0) {
+                    clearInterval(bgmFadeTimer);
+                    bgmFadeTimer = null;
+                    playNext();
+                } else {
+                    bgmAudio.volume = Math.max(0, vol);
+                }
+            }, 50);
+        }
+
+        function stopBGM() {
+            if (currentBgmIndex === -1 && bgmAudio.paused) return;
+            currentBgmIndex = -1;
+            if (bgmFadeTimer) {
+                clearInterval(bgmFadeTimer);
+                bgmFadeTimer = null;
+            }
+            let vol = bgmAudio.volume || BGM_TARGET_VOLUME;
+            bgmFadeTimer = setInterval(() => {
+                vol -= 0.05;
+                if (vol <= 0) {
+                    clearInterval(bgmFadeTimer);
+                    bgmFadeTimer = null;
+                    bgmAudio.pause();
+                    bgmAudio.currentTime = 0;
+                    bgmAudio.volume = BGM_TARGET_VOLUME;
+                } else {
+                    bgmAudio.volume = Math.max(0, vol);
+                }
+            }, 100);
+        }
+
+        function updateBGMByTime(elapsed) {
+            const index = BGM_TRACKS.findIndex(track => elapsed >= track.start && elapsed < track.end);
+            if (index >= 0) switchBGM(index);
+            else if (elapsed >= 200000) stopBGM();
+        }
+
+        // --- 圖片基礎路徑 ---
+        // 使用 jsDelivr CDN 加速並確保 CORS 跨網域請求沒問題
+        const GITHUB_BASE_URL = "https://cdn.jsdelivr.net/gh/igudesman222/igudesman2012@main/01-%E7%AC%AC%E4%B8%80%E7%B5%84%E8%B3%87%E6%BA%90/001-%E5%9C%96%E7%89%87/";
+        const textureLoader = new THREE.TextureLoader();
+
+        // 導演鏡頭與環境狀態 (Lerp 目標)
+        let dirState = {
+            camPos: new THREE.Vector3(30, 25, 30),
+            camLook: new THREE.Vector3(0, 0, 0),
+            bgColor: new THREE.Color(0x001e3c),
+            oil: 0,
+            coralS: 1.0,
+            coralC: new THREE.Color(0x4ade80),
+            shake: 0,
+            labels: false,
+            hud: 0
+        };
+
+        // 當前運算過渡狀態
+        let curState = {
+            camPos: new THREE.Vector3(30, 25, 30),
+            camLook: new THREE.Vector3(0, 0, 0),
+            bgColor: new THREE.Color(0x001e3c),
+            oil: 0,
+            coralS: 1.0,
+            coralC: new THREE.Color(0x4ade80)
+        };
+
+        // 4個實體角色配置 (加入圖片檔名)
+        const CHARS = {
+            capital: { name: "台電CEO", pos: [4, 0, -4], imageFile: "02-%E7%85%A7%E7%89%87%E4%BA%8C(%E5%8E%BB%E8%83%8C).png" },       // 藍色
+            eco: { name: "環保團體人士", pos: [-4, 0, 3], imageFile: "03-%E7%85%A7%E7%89%87%E4%B8%89(%E5%8E%BB%E8%83%8C).png" },   // 紅色
+            shun: { name: "海洋科學家", pos: [-3, 0, -3], imageFile: "04-%E7%85%A7%E7%89%87%E5%9B%9B(%E5%8E%BB%E8%83%8C).png" },   // 綠色
+            min: { name: "基隆民眾", pos: [3, 0, 4], imageFile: "05-%E7%85%A7%E7%89%87%E4%BA%94(%E5%8E%BB%E8%83%8C).png" }         // 橘黃
+        };
+
+        // 運鏡輔助函數
+        function setCamera(px, py, pz, lx, ly, lz) {
+            dirState.camPos.set(px, py, pz);
+            dirState.camLook.set(lx, ly, lz);
+        }
+
+        const SPEAKER_TO_CHAR_ID = {
+            "台電CEO": "capital",
+            "環保團體人士": "eco",
+            "海洋科學家": "shun",
+            "基隆民眾": "min"
+        };
+
+        // 說話角色專用鏡頭：角色站 C 位、放大，但保留字幕下方安全區。
+        function focusSpeaker(id, distance = 7.2, height = 2.55) {
+            const data = CHARS[id];
+            if (!data) return;
+            const [x, , z] = data.pos;
+            currentSpeakerId = id;
+            setCamera(x, height, z + distance, x, 1.35, z);
+        }
+
+        function clearSpeakerFocus() {
+            currentSpeakerId = null;
+        }
+
+        // --- 語音診斷狀態輔助函數 ---
+        function updateAudioStatus(text, isError = false) {
+            const el = document.getElementById('audio-status');
+            if (el) {
+                el.innerText = text;
+                el.style.color = isError ? '#ef4444' : '#10b981';
+            }
+        }
+
+        // 監聽音訊加載狀態
+        voiceoverAudio.addEventListener('error', (e) => {
+            const err = voiceoverAudio.error;
+            let msg = "載入失敗";
+            if (err) {
+                switch(err.code) {
+                    case err.MEDIA_ERR_ABORTED: msg = "加載中斷"; break;
+                    case err.MEDIA_ERR_NETWORK: msg = "網路錯誤 (請檢查 GitHub 連結)"; break;
+                    case err.MEDIA_ERR_DECODE: msg = "音訊解碼錯誤"; break;
+                    case err.MEDIA_ERR_SRC_NOT_SUPPORTED: msg = "404 找不到配音檔或不支援格式"; break;
+                }
+            }
+            updateAudioStatus(msg, true);
+            console.error("Audio Load Error:", msg, e);
+        });
+
+        voiceoverAudio.addEventListener('canplaythrough', () => {
+            updateAudioStatus("語音檔加載完成 (Ready)");
+        });
+
+        // --- 3分45秒精密時間軸 (依照第一組講稿四接疑雲完全對齊) ---
+        const TIMELINE = [
+            { time: 0, speaker: "", text: "（已跳過：開場小動畫）", action: () => {
+                setCamera(35, 20, 35, 0, 0, 0);
+                dirState.labels = false;
+                dirState.bgColor.setHex(0x001026);
+            }},
+            { time: 8000, speaker: "製作團隊介紹", text: "高雄市立瑞祥高中 海洋探險隊\n安翊、子晴、舜丞、威仁", action: () => {
+                dirState.labels = true;
+                flashEffect();
+                setCamera(20, 10, 20, 0, 0, 0);
+            }},
+            { time: 14000, speaker: "旁白", text: "這裡是基隆外木山，海浪依舊拍打著礁岩，但在這片美麗的藍色之下，一場關於「能源轉型」和「生態保育」的拉鋸戰正悄然上演。", action: () => {
+                setCamera(0, 15, 30, 0, 0, 0);
+                dirState.bgColor.setHex(0x001e3c);
+                // 背景音樂由 updateBGMByTime(elapsed) 依時間軸自動啟動。
+                
+                // 在 14 秒時正式播放配音，附帶異常補償與診斷日誌
+                voiceoverAudio.play()
+                    .then(() => updateAudioStatus("配音播放中..."))
+                    .catch(e => {
+                        console.error("14秒播放被瀏覽器阻擋:", e);
+                        updateAudioStatus("播放受阻: " + e.message, true);
+                    });
+            }},
+            { time: 27000, speaker: "台電CEO", text: "增氣減煤是能源轉型關鍵，四接，能確保北部用電穩定並減排。我們已極大化縮小填海，力求發展和環境平衡。", action: () => {
+                focusSpeaker('capital');
+                dirState.bgColor.setHex(0x1e293b);
+            }},
+            { time: 40000, speaker: "環保團體人士", text: "我們堅決反對！填海造陸將造成珊瑚滅絕與航安威脅，你知道嗎？不可逆的生態浩劫不應該是能源轉型的代價。", action: () => {
+                focusSpeaker('eco');
+                dirState.shake = 0.04;
+            }},
+            { time: 50000, speaker: "海洋科學家", text: "根據我們的研究，天然氣發電雖然比較環保，但為此填海造陸也會損害海岸線，環境仍要謹慎評估！", action: () => {
+                dirState.shake = 0;
+                focusSpeaker('shun');
+            }},
+            { time: 60000, speaker: "基隆民眾", text: "我們想要乾淨空氣和穩定電力，卻也捨不得這片湛藍大海。在發展和家園之間，我們只求一個透明的雙贏方案。", action: () => {
+                focusSpeaker('min');
+            }},
+            { time: 71000, speaker: "台電CEO", text: "我們會持續與科學家合作並進行生態檢測，還會公開所有環境數據。穩定供電和守護基隆的藍天碧海，絕對不是一條單行道。", action: () => {
+                focusSpeaker('capital');
+            }},
+            { time: 84000, speaker: "環保團體人士", text: "（語氣焦急）你們看！你們看！巨大的機具陰影已經籠罩海床，清澈的海水被污泥覆蓋，底下的珊瑚礁承受得了嗎？", action: () => {
+                dirState.hud = 1;
+                dirState.oil = 0.9;
+                dirState.bgColor.setHex(0x1c1917);
+                setCamera(0, 1.5, 6, 0, 1, -10);
+                dirState.shake = 0.09;
+                // 第二段背景音樂會在 1:25 自動切換。
+            }},
+            { time: 94000, speaker: "海洋科學家", text: "（語氣沉重）為了釐清真相，我們需要第一手的環評數據。這必須得仰賴一位勇敢的駕駛員，開著潛艇親自下去一探究竟。", action: () => {
+                dirState.shake = 0.02;
+                focusSpeaker('shun');
+                dirState.coralC.setHex(0xd1d5db); // 珊瑚白化
+                dirState.coralS = 0.5;
+            }},
+            { time: 105000, speaker: "環保團體人士", text: "(語氣無奈)難道我們只能眼睜睜看著這一切發生嗎？海洋科學家，真的沒有別的辦法能拯救這片海洋了嗎？", action: () => {
+                focusSpeaker('eco');
+                dirState.shake = 0.06;
+            }},
+            { time: 114000, speaker: "海洋科學家", text: "(猶豫)方法......方法不是沒有但我們需要更詳盡的海底環評數據。這必須得仰賴一位技術高超的勘探員，駕駛潛艇深入海底，才能揭開真相。", action: () => {
+                dirState.shake = 0;
+                focusSpeaker('shun');
+                flashEffect();
+            }},
+            { time: 128000, speaker: "旁白", text: "螢幕前的『勇士』們啊！海洋科學家決定尋求你的幫助，來完成這項艱鉅的任務。", action: () => {
+                setCamera(-10, 12, -10, -3, 0.5, -3);
+            }},
+            { time: 137000, speaker: "旁白", text: "這是一款關於「四接」爭議的遊戲，將複雜的政策辯論轉化為直觀的潛艇冒險。玩法為玩家駕駛潛艇在海底探索，針對能源開發或環境保育進行兩難決策。", action: () => {
+                dirState.hud = 1;
+                setCamera(0, 3, 10, 0, 1.5, -20);
+            }},
+            { time: 153000, speaker: "海洋科學家", text: "四接爭議並非只有乾淨發電的問題，而是關係到能不能和基隆海域共存，四接的開發不應該以犧牲海洋環境為代價！", action: () => {
+                dirState.hud = 0;
+                focusSpeaker('shun');
+                dirState.bgColor.setHex(0x0f172a);
+                // 第三段背景音樂會在 2:34 自動切換。
+            }},
+            { time: 165000, speaker: "基隆民眾", text: "難道人類所追求的未來，真的沒辦法和這片海洋和平共處嗎？", action: () => {
+                focusSpeaker('min');
+            }},
+            { time: 171000, speaker: "台電CEO", text: "(為難)我們一再退讓，就是想要找出共存的可能。但是在供電不足的壓力之下，這已經是我們權衡後爭取到的最大平衡了。", action: () => {
+                focusSpeaker('capital');
+                dirState.coralC.setHex(0x4ade80);
+                dirState.coralS = 0.9;
+                dirState.oil = 0.3;
+            }},
+            { time: 184000, speaker: "", text: "究竟我們該如何在綠能發電和海洋生態間取得平衡？", action: () => {
+                dirState.labels = false;
+                dirState.hud = 0;
+                clearSpeakerFocus();
+                setCamera(0, 15, 30, 0, 0, 0);
+                showEndingVisual();
+            }},
+            { time: 189000, speaker: "", text: "真相，就藏在深海中。你的選擇，將決定基隆海岸線的未來！", action: () => {
+                setCamera(0, 3, 10, 0, 1.5, -20);
+            }},
+            { time: 195000, speaker: "", text: "加入「四接疑雲」，讓我們一起守護北海岸的未來。", action: () => {
+                dirState.hud = 0;
+            }},
+            { time: 200000, action: () => returnToMainScreen() } 
+        ];
+
+        // --- STREAMING_CHUNK:Initializing 3D world scene... ---
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(56, window.innerWidth / window.innerHeight, 0.1, 1000);
+            
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); // 開啟透明背景支援
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.domElement.style.position = 'fixed';
+            renderer.domElement.style.inset = '0';
+            renderer.domElement.style.width = '100vw';
+            renderer.domElement.style.height = '100vh';
+            document.body.appendChild(renderer.domElement);
+
+            scene.add(new THREE.AmbientLight(0xffffff, 0.85));
+            const sun = new THREE.DirectionalLight(0xffffff, 1.2);
+            sun.position.set(10, 25, 10);
+            scene.add(sun);
+
+            // 海床
+            seaFloor = new THREE.Mesh(
+                new THREE.PlaneGeometry(350, 350),
+                new THREE.MeshStandardMaterial({ color: 0x001e3c, roughness: 0.8 })
+            );
+            seaFloor.rotation.x = -Math.PI/2;
+            scene.add(seaFloor);
+
+            createEnvironment();
+            setupNPCs(); // 更新此處呼叫
+
+            document.getElementById('play-btn').addEventListener('click', startKVSequence);
+            window.addEventListener('resize', onWindowResize);
+            
+            renderer.render(scene, camera);
+        }
+
+        // --- STREAMING_CHUNK:Setting up NPCs with Sprite Materials... ---
+        function setupNPCs() {
+            const container = document.getElementById('labels-container');
+            
+            // 建立人物角色
+            for (const [id, data] of Object.entries(CHARS)) {
+                // 讀取圖片並建立 SpriteMaterial
+                const textureUrl = GITHUB_BASE_URL + data.imageFile;
+                
+                textureLoader.load(
+                    textureUrl,
+                    (texture) => {
+                        const spriteMaterial = new THREE.SpriteMaterial({ map: texture, transparent: true });
+                        const sprite = new THREE.Sprite(spriteMaterial);
+                        
+                        // 根據圖片比例調整大小 (假設寬高比接近1，您可以根據實際圖片調整)
+                        sprite.userData.basePos = new THREE.Vector3(...data.pos);
+                        sprite.userData.basePos.y = 0.85;
+                        sprite.userData.baseScale = 1.65;
+                        sprite.userData.focusScale = 3.2;
+                        sprite.scale.set(sprite.userData.baseScale, sprite.userData.baseScale, 1); 
+                        sprite.position.copy(sprite.userData.basePos); // 中景呈現，避免人物在近拍時被畫面上緣或字幕區切掉
+                        
+                        scene.add(sprite);
+                        npcs[id] = sprite; // 儲存為 npcs 以便後續更新名牌位置
+                    },
+                    undefined,
+                    (err) => console.error(`Error loading texture for ${id}:`, err)
+                );
+
+                // 2D 動態名牌標籤
+                const label = document.createElement('div');
+                label.className = 'name-label';
+                label.innerText = data.name;
+                label.id = `label-${id}`;
+                container.appendChild(label);
+            }
+
+            // 建立探勘潛水艇
+            const subTextureUrl = GITHUB_BASE_URL + "01-%E7%85%A7%E7%89%87%E4%B8%80(%E5%8E%BB%E8%83%8C).png";
+            textureLoader.load(
+                subTextureUrl,
+                (texture) => {
+                    const subMaterial = new THREE.SpriteMaterial({ map: texture, transparent: true });
+                    submarine = new THREE.Sprite(subMaterial);
+                    
+                    // 潛水艇比較大
+                    submarine.scale.set(4, 3, 1); 
+                    submarine.position.set(0, 4, 0);
+                    scene.add(submarine);
+                },
+                undefined,
+                (err) => console.error(`Error loading submarine texture:`, err)
+            );
+        }
+
+        function createEnvironment() {
+            for(let i=0; i<130; i++) {
+                const h = Math.random() * 1.5 + 0.4;
+                const c = new THREE.Mesh(
+                    new THREE.ConeGeometry(0.18, h, 6),
+                    new THREE.MeshStandardMaterial({ color: 0x4ade80, roughness: 0.9 })
+                );
+                c.position.set(Math.random()*90-45, h/2, Math.random()*90-45);
+                corals.push(c);
+                scene.add(c);
+            }
+        }
+
+        // --- 實現影格動畫迴圈與攝影機線性過渡 ---
+        function animate() {
+            if (!isPlaying) return;
+            requestAnimationFrame(animate);
+            const dt = Math.min(clock.getDelta(), 0.1);
+            const elapsed = Date.now() - startTime;
+            updateBGMByTime(elapsed);
+
+            // 計時器已刪除，保留時間運算僅供流程內部使用
+            const elapsedSec = Math.min(elapsed / 1000, 200);
+            const mins = Math.floor(elapsedSec / 60);
+            const secs = Math.floor(elapsedSec % 60);
+            const formattedMins = mins < 10 ? '0' + mins : mins;
+            const formattedSecs = secs < 10 ? '0' + secs : secs;
+            const timerEl = document.getElementById('timer-display');
+            if (timerEl) timerEl.style.display = 'none';
+
+            // 時間軸事件處理
+            if (currentTimelineIndex < TIMELINE.length - 1) {
+                if (elapsed >= TIMELINE[currentTimelineIndex + 1].time) {
+                    currentTimelineIndex++;
+                    const ev = TIMELINE[currentTimelineIndex];
+                    if (ev.action) ev.action();
+                    updateSubtitle(ev.speaker, ev.text);
+                }
+            }
+
+            // 只有在影片未播放前才更新 3D 運鏡（優化效能）
+            if (elapsed < 199000) {
+                curState.camPos.lerp(dirState.camPos, dt * 2.3);
+                curState.camLook.lerp(dirState.camLook, dt * 2.3);
+                curState.bgColor.lerp(dirState.bgColor, dt);
+                curState.oil = THREE.MathUtils.lerp(curState.oil, dirState.oil, dt);
+                curState.coralS = THREE.MathUtils.lerp(curState.coralS, dirState.coralS, dt);
+                curState.coralC.lerp(dirState.coralC, dt);
+
+                let s = (Math.random()-0.5) * dirState.shake;
+                camera.position.set(curState.camPos.x + s, curState.camPos.y + s, curState.camPos.z + s);
+                camera.lookAt(curState.camLook);
+
+                scene.background = curState.bgColor;
+                scene.fog = new THREE.FogExp2(curState.bgColor, 0.04);
+                seaFloor.material.color.set(0x001e3c).lerp(new THREE.Color(0x000000), curState.oil);
+
+                corals.forEach(c => {
+                    c.scale.y = curState.coralS;
+                    c.material.color.copy(curState.coralC);
+                });
+
+                // 說話角色放大並保持 C 位，其餘角色保留在背景中，不遮字幕。
+                for (const [id, sprite] of Object.entries(npcs)) {
+                    const isFocused = currentSpeakerId === id;
+                    const targetScale = isFocused ? sprite.userData.focusScale : sprite.userData.baseScale;
+                    sprite.scale.lerp(new THREE.Vector3(targetScale, targetScale, 1), dt * 5.5);
+                    const targetPos = sprite.userData.basePos ? sprite.userData.basePos.clone() : sprite.position.clone();
+                    targetPos.y = isFocused ? 1.65 : 0.85;
+                    sprite.position.lerp(targetPos, dt * 5.5);
+                    if (sprite.material) sprite.material.opacity = isFocused || !currentSpeakerId ? 1 : 0.72;
+                }
+
+                if(dirState.hud > 0 && submarine) { // 確保潛水艇已載入
+                    submarine.position.z -= dt * 6;
+                    // 因為 Sprite 永遠面向攝影機，我們稍微讓它上下浮動增加動態感
+                    submarine.position.y = 4 + Math.sin(elapsed * 0.002) * 0.5;
+                    if(submarine.position.z < -45) submarine.position.z = 45;
+                }
+                document.getElementById('sub-hud').style.opacity = dirState.hud;
+
+                updateLabels();
+                renderer.render(scene, camera);
+            }
+        }
+
+
+        function showEndingVisual() {
+            const ending = document.getElementById('ending-visual-screen');
+            if (!ending) return;
+            ending.style.display = 'block';
+            // 觸發 CSS transition 與推進動畫。
+            requestAnimationFrame(() => ending.classList.add('active'));
+        }
+
+        function hideEndingVisual() {
+            const ending = document.getElementById('ending-visual-screen');
+            if (!ending) return;
+            ending.classList.remove('active');
+            setTimeout(() => { ending.style.display = 'none'; }, 1000);
+        }
+
+        // 字幕更新邏輯
+        function updateSubtitle(speaker, text) {
+            const container = document.getElementById('subtitle-container');
+            const spk = document.getElementById('speaker-name');
+            const sub = document.getElementById('subtitle');
+            
+            container.style.opacity = 0;
+            if(!text) return;
+
+            setTimeout(() => {
+                currentSpeakerId = SPEAKER_TO_CHAR_ID[speaker] || null;
+                spk.innerText = speaker;
+                sub.innerText = text;
+                container.style.opacity = 1;
+                spk.style.display = speaker ? 'block' : 'none';
+                
+                if(speaker === "海洋科學家") spk.style.borderColor = "#10b981";
+                else if(speaker === "基隆民眾") spk.style.borderColor = "#f59e0b";
+                else if(speaker === "環保團體人士") spk.style.borderColor = "#ef4444";
+                else if(speaker === "台電CEO") spk.style.borderColor = "#3b82f6";
+                else if(speaker === "旁白") spk.style.borderColor = "#cbd5e1";
+                else spk.style.borderColor = "transparent";
+            }, 300);
+        }
+
+        function updateLabels() {
+            for(const [id, n] of Object.entries(npcs)) {
+                const el = document.getElementById(`label-${id}`);
+                if(!dirState.labels) { el.style.opacity = 0; continue; }
+                const v = n.position.clone();
+                v.y += 2.2;
+                v.project(camera);
+                if(v.z > 1) { el.style.opacity = 0; }
+                else {
+                    el.style.opacity = 1;
+                    el.style.left = `${(v.x * 0.5 + 0.5) * window.innerWidth}px`;
+                    el.style.top = `${Math.min((v.y * -0.5 + 0.5) * window.innerHeight, window.innerHeight * 0.70)}px`;
+                }
+            }
+        }
+
+        function flashEffect() {
+            const f = document.getElementById('flash-fx');
+            f.style.opacity = 0.8;
+            setTimeout(() => f.style.opacity = 0, 200);
+        }
+
+        // --- 核心音訊解鎖機制與啟動序列 ---
+        let hasStarted = false;
+
+        async function unlockAudioElements() {
+            updateAudioStatus("正在解鎖瀏覽器音訊限制...");
+
+            // 重要修正：Audio 沒有 src 時直接 play() 會讓部分瀏覽器判定失敗，
+            // 因此先放入第一段 BGM 的實際音訊來源，再以靜音播放/暫停取得使用者手勢授權。
+            try {
+                if (!bgmAudio.src && BGM_TRACKS[0]) bgmAudio.src = BGM_TRACKS[0].src;
+                bgmAudio.muted = true;
+                bgmAudio.volume = 0;
+                await bgmAudio.play();
+                bgmAudio.pause();
+                bgmAudio.currentTime = 0;
+                bgmAudio.muted = false;
+                bgmAudio.volume = BGM_TARGET_VOLUME;
+            } catch (e) {
+                console.warn("BGM 解鎖失敗，稍後會在時間軸再次嘗試播放:", e);
+                bgmAudio.muted = false;
+                bgmAudio.volume = BGM_TARGET_VOLUME;
+            }
+
+            try {
+                voiceoverAudio.muted = true;
+                await voiceoverAudio.play();
+                voiceoverAudio.pause();
+                voiceoverAudio.currentTime = 0;
+                voiceoverAudio.muted = false;
+                updateAudioStatus("音訊解鎖成功，預告片即將播放");
+            } catch (e) {
+                console.warn("配音解鎖失敗，14 秒時會再次嘗試播放:", e);
+                voiceoverAudio.muted = false;
+                updateAudioStatus("音訊解鎖受限，但影片會繼續播放", true);
+            }
+        }
+
+        function startKVSequence() {
+            if (window.__emergencyMode) return;
+            if (hasStarted) return;
+            window.__moduleStarted = true;
+            hasStarted = true;
+            document.getElementById('play-btn').disabled = true;
+
+            // 不等待音訊解鎖完成，避免網路較慢時開頭卡住。
+            unlockAudioElements();
+
+            // 2. 隱藏開場 UI
+            document.getElementById('overlay').style.opacity = 0;
+            setTimeout(() => {
+                document.getElementById('overlay').style.display = 'none';
+            }, 800);
+
+            // 3. 顯示並播放 8 秒主視覺影片。由於這是在使用者點擊後觸發，
+            // 可以保留影片原聲，並把音量調到最大。
+            kvVideo.muted = false;
+            kvVideo.volume = 1;
+            kvVideo.playsInline = true;
+            kvVideo.currentTime = 0;
+            kvVideo.style.display = 'block';
+            setTimeout(() => { kvVideo.style.opacity = 1; }, 50);
+            updateAudioStatus("8秒主視覺播放中：影片原聲已開啟，音量 100%");
+
+            const kvPlayPromise = kvVideo.play();
+            if (kvPlayPromise && typeof kvPlayPromise.catch === 'function') {
+                kvPlayPromise.catch(e => {
+                    console.error("主視覺影片播放失敗，直接進入 3D 預告片:", e);
+                    updateAudioStatus("主視覺影片未能播放，已改由 3D 預告片開始", true);
+                    kvVideo.style.display = 'none';
+                    startTrailer();
+                });
+            }
+
+            // 4. 播放 8 秒主視覺後，接第二畫面「團隊介紹」，再啟動 3D 預告片
+            setTimeout(() => {
+                if (isPlaying) return;
+                kvVideo.style.opacity = 0;
+                setTimeout(() => { kvVideo.style.display = 'none'; }, 1000);
+                showTeamIntroThenStartTrailer();
+            }, 8000);
+        }
+
+        function showTeamIntroThenStartTrailer() {
+            const teamScreen = document.getElementById('team-intro-screen');
+            if (!teamScreen) {
+                startTrailer();
+                return;
+            }
+            teamScreen.style.display = 'flex';
+            setTimeout(() => { teamScreen.style.opacity = 1; }, 50);
+            setTimeout(() => {
+                teamScreen.style.opacity = 0;
+                setTimeout(() => {
+                    teamScreen.style.display = 'none';
+                    startTrailer();
+                }, 850);
+            }, 4000);
+        }
+
+        function startTrailer() {
+            // 顯示計時器
+            document.getElementById('timer-display').style.display = 'none';
+            
+            // 確保其他影音狀態歸零重設
+            gameplayVideo.style.display = 'none';
+            gameplayVideo.style.opacity = '0';
+            gameplayVideo.pause();
+            gameplayVideo.currentTime = 0;
+            
+            voiceoverAudio.pause();
+            voiceoverAudio.currentTime = 0;
+
+            // 啟動 3D 動畫與時間軸：團隊介紹結束後直接跳到第一大段（0:14）。
+            isPlaying = true;
+            currentTimelineIndex = FIRST_MAIN_SEGMENT_EVENT_INDEX - 1;
+            startTime = Date.now() - FIRST_MAIN_SEGMENT_TIME;
+            clock.start();
+            animate();
+        }
+
+        function resetOpeningButton() {
+            const btn = document.getElementById('play-btn');
+            if (!btn) return;
+            btn.disabled = false;
+            btn.addEventListener('click', startKVSequence, { once: false });
+        }
+
+        function returnToMainScreen() {
+            isPlaying = false;
+            hasStarted = false;
+            currentTimelineIndex = -1;
+            document.getElementById('timer-display').style.display = 'none';
+            updateSubtitle('', '');
+            hideEndingVisual();
+            gameplayVideo.style.opacity = '0';
+            gameplayVideo.pause();
+            voiceoverAudio.pause();
+            stopBGM();
+            setTimeout(() => {
+                gameplayVideo.style.display = 'none';
+                gameplayVideo.currentTime = 0;
+            }, 800);
+
+            const ov = document.getElementById('overlay');
+            ov.innerHTML = `<div class="title">北海岸的抉擇：四接疑雲</div><div class="opening-tagline">海面之下，真相正在靠近</div><button id="play-btn">點擊開始，懸疑上線</button>`;
+            ov.style.display = 'flex';
+            setTimeout(() => { ov.style.opacity = 1; }, 50);
+            resetOpeningButton();
+            updateAudioStatus('已回到主畫面，可重新開始播放');
+        }
+
+        function endTrailer() {
+            returnToMainScreen();
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function bootTrailerModule() {
+            init();
+            window.startKVSequence = startKVSequence;
+            window.__moduleReady = true;
+            updateAudioStatus("3D 模組載入完成，可以開始播放");
+            if (window.__pendingTrailerStart && !window.__emergencyMode) {
+                startKVSequence();
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            window.addEventListener('DOMContentLoaded', bootTrailerModule, { once: true });
+        } else {
+            bootTrailerModule();
+        }
+    </script>
+</body>
+</html>
