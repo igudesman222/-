@@ -3,131 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>漁民的抉擇</title>
+    <title>漁民的抉擇 - 3D實機對白預告片</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
 
         body {
-            margin: 0;
-            overflow: hidden;
-            background-color: #000;
-            font-family: 'Noto Sans TC', sans-serif;
-            color: #fff;
-            user-select: none;
-            -webkit-user-select: none;
+            margin: 0; overflow: hidden; background-color: #000;
+            font-family: 'Noto Sans TC', sans-serif; color: #fff;
+            user-select: none; -webkit-user-select: none;
         }
 
-        #game-container {
-            position: absolute;
-            top: 0; left: 0; width: 100vw; height: 100vh;
+        #game-container { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; background: linear-gradient(#ffb88f 0%, #89c8e8 55%, #0ea5e9 56%, #075985 100%); }
+
+        /* 實機錄影畫面 (特定時段浮現) */
+        #gameplay-video {
+            position: absolute; top: 10%; left: 0; width: 100%; height: 80%;
+            object-fit: contain; z-index: 55; opacity: 0; transition: opacity 0.5s ease;
+            pointer-events: none; background-color: transparent;
         }
+
+        /* 開場主視覺動畫：取代原本前 10 秒預留段 */
+        #intro-video {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            /* 完整顯示主視覺影片，避免 cover 造成上下或左右被裁切 */
+            object-fit: contain; object-position: center center;
+            z-index: 75; opacity: 0; transition: opacity 0.5s ease;
+            pointer-events: none; background-color: #000;
+        }
+
+        /* 工作人員名單：主視覺結束後顯示 5 秒 */
+        #crew-card {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 78; opacity: 0; transition: opacity 0.6s ease;
+            pointer-events: none; display: flex; align-items: center; justify-content: center;
+            text-align: center; letter-spacing: 0.12em;
+        }
+        #crew-card .crew-title { color: #fcd34d; font-size: 1.9rem; font-weight: 900; margin-bottom: 1.5rem; }
+        #crew-card .crew-line { color: #e5e7eb; font-size: 1.85rem; line-height: 2.1; font-weight: 800; }
+        #crew-card .crew-note { color: #94a3b8; font-size: 1.1rem; margin-top: 1.5rem; }
 
         /* 電影黑邊 */
-        .letterbox {
-            position: absolute; left: 0; width: 100%; height: 12%;
-            background-color: #000; z-index: 10;
-        }
+        .letterbox { position: absolute; left: 0; width: 100%; height: 10%; background-color: #000; z-index: 10; }
         #letterbox-top { top: 0; }
         #letterbox-bottom { bottom: 0; }
 
-        /* ======== GitHub 影片素材 UI ======== */
-        .stage-video {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: contain; /* 保持全部畫面呈現：手機、平板、桌機都不裁切 */
-            object-position: center center;
-            background: #000;
-            z-index: 6;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.45s ease;
-        }
-        #opening-visual-video { z-index: 7; }
-        #gameplay-video { z-index: 8; }
-        .stage-video.is-visible { opacity: 1; }
-
-        #gameplay-info-panel {
-            position: absolute;
-            right: clamp(12px, 4vw, 48px);
-            bottom: calc(12% + clamp(14px, 3vw, 28px));
-            width: min(420px, calc(100vw - 24px));
-            padding: clamp(14px, 3vw, 22px);
-            border: 1px solid rgba(255,255,255,0.28);
-            border-radius: 18px;
-            background: linear-gradient(135deg, rgba(2, 6, 23, 0.82), rgba(15, 23, 42, 0.68));
-            box-shadow: 0 18px 45px rgba(0,0,0,0.45);
-            backdrop-filter: blur(10px);
-            z-index: 55;
-            opacity: 0;
-            transform: translateY(10px);
-            transition: opacity 0.35s ease, transform 0.35s ease;
-            pointer-events: none;
-        }
-        #gameplay-info-panel.is-visible { opacity: 1; transform: translateY(0); }
-        #gameplay-info-panel h2 {
-            margin: 0 0 10px; color: #67e8f9; font-size: clamp(1.05rem, 2.6vw, 1.45rem);
-            letter-spacing: 0.08em;
-        }
-        .gameplay-info-grid { display: grid; gap: 10px; }
-        .gameplay-info-card {
-            border-left: 4px solid #67e8f9;
-            padding-left: 12px;
-        }
-        .gameplay-info-card strong { display:block; color:#fcd34d; margin-bottom:4px; }
-        .gameplay-info-card p { margin:0; color:#e2e8f0; line-height:1.55; font-size: clamp(0.9rem, 2.2vw, 1rem); }
-
-
-        #team-intro-card,
-        #ending-cta-card {
-            position: absolute;
-            left: 50%; top: 50%; transform: translate(-50%, -50%) scale(0.98);
-            width: min(860px, calc(100vw - 32px));
-            padding: clamp(22px, 5vw, 46px);
-            box-sizing: border-box;
-            border: 1px solid rgba(103,232,249,0.45);
-            border-radius: 24px;
-            background: radial-gradient(circle at top, rgba(8,145,178,0.45), rgba(2,6,23,0.9) 62%);
-            box-shadow: 0 25px 70px rgba(0,0,0,0.58), inset 0 0 42px rgba(103,232,249,0.12);
-            text-align: center;
-            z-index: 58;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.45s ease, transform 0.45s ease;
-        }
-        #team-intro-card.is-visible,
-        #ending-cta-card.is-visible { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-        #team-intro-card h2,
-        #ending-cta-card h2 { margin: 0 0 14px; color: #67e8f9; font-size: clamp(1.6rem, 5vw, 3.4rem); letter-spacing: 0.12em; }
-        #team-intro-card p,
-        #ending-cta-card p { margin: 8px 0; color: #e2e8f0; font-size: clamp(1rem, 2.8vw, 1.35rem); line-height: 1.7; }
-        #ending-cta-card { z-index: 95; }
-
-        #ending-cta-card .qr-placeholder {
-            display: inline-flex; align-items: center; justify-content: center;
-            width: clamp(116px, 24vw, 180px); height: clamp(116px, 24vw, 180px);
-            margin-top: 18px; border: 2px dashed rgba(252,211,77,0.85); border-radius: 18px;
-            color: #fcd34d; font-weight: 900; letter-spacing: 0.08em;
-            background: rgba(15,23,42,0.68);
-        }
-
-        @media (max-width: 768px) {
-            .letterbox { height: 8%; }
-            #subtitle-container { bottom: 8%; width: 94%; }
-            #subtitle-text { font-size: 1.05rem; padding: 10px 14px; max-width: 94vw; }
-            .speaker-name { font-size: 0.92rem; }
-            #gameplay-info-panel {
-                left: 12px; right: 12px; bottom: calc(8% + 10px); width: auto;
-                padding: 12px 14px; border-radius: 14px;
-            }
-            #timer-display { font-size: 1rem; }
-        }
-
         /* ======== 情境特效 Overlays ======== */
-        /* 1. 新聞轉播 UI */
         #news-overlay {
-            position: absolute; top: 12%; left: 0; width: 100%; height: 76%;
+            position: absolute; top: 10%; left: 0; width: 100%; height: 80%;
             pointer-events: none; z-index: 15; opacity: 0; transition: opacity 0.3s;
         }
         .news-banner {
@@ -137,144 +60,98 @@
         }
         .news-live {
             position: absolute; top: 5%; right: 5%; background: #dd0000;
-            padding: 5px 15px; font-weight: bold; font-size: 1.2rem; letter-spacing: 2px;
+            padding: 5px 15px; font-weight: bold; font-size: 1.35rem; letter-spacing: 2px;
             animation: blink 1s infinite;
         }
         
-        /* 2. 手機/攝影機 UI */
         #cam-overlay {
-            position: absolute; top: 12%; left: 0; width: 100%; height: 76%;
+            position: absolute; top: 10%; left: 0; width: 100%; height: 80%;
             pointer-events: none; z-index: 15; opacity: 0; transition: opacity 0.3s;
             box-sizing: border-box; border: 2px solid rgba(255,255,255,0.2);
         }
         .cam-corners {
             position: absolute; width: 100%; height: 100%;
             background: 
-                linear-gradient(to right, #fff 4px, transparent 4px) 5% 5%,
-                linear-gradient(to bottom, #fff 4px, transparent 4px) 5% 5%,
-                linear-gradient(to left, #fff 4px, transparent 4px) 95% 5%,
-                linear-gradient(to bottom, #fff 4px, transparent 4px) 95% 5%,
-                linear-gradient(to right, #fff 4px, transparent 4px) 5% 95%,
-                linear-gradient(to top, #fff 4px, transparent 4px) 5% 95%,
-                linear-gradient(to left, #fff 4px, transparent 4px) 95% 95%,
-                linear-gradient(to top, #fff 4px, transparent 4px) 95% 95%;
+                linear-gradient(to right, #fff 4px, transparent 4px) 5% 5%, linear-gradient(to bottom, #fff 4px, transparent 4px) 5% 5%,
+                linear-gradient(to left, #fff 4px, transparent 4px) 95% 5%, linear-gradient(to bottom, #fff 4px, transparent 4px) 95% 5%,
+                linear-gradient(to right, #fff 4px, transparent 4px) 5% 95%, linear-gradient(to top, #fff 4px, transparent 4px) 5% 95%,
+                linear-gradient(to left, #fff 4px, transparent 4px) 95% 95%, linear-gradient(to top, #fff 4px, transparent 4px) 95% 95%;
             background-repeat: no-repeat; background-size: 40px 40px;
         }
-        .cam-rec {
-            position: absolute; top: 8%; left: 8%; color: #ff3333; font-weight: bold; font-size: 1.5rem;
-            display: flex; align-items: center; gap: 10px;
-        }
-        .rec-dot { width: 15px; height: 15px; background: #ff3333; border-radius: 50%; animation: blink 1s infinite; }
+        .cam-rec { position: absolute; top: 5%; left: 5%; color: #ff3333; font-weight: bold; font-size: 1.35rem; display: flex; align-items: center; gap: 8px; }
+        .rec-dot { width: 12px; height: 12px; background: #ff3333; border-radius: 50%; animation: blink 1s infinite; }
 
-        /* 3. 內部機密文件 UI */
         #doc-overlay {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 60%; height: 60%; background: rgba(240, 240, 240, 0.95);
             pointer-events: none; z-index: 16; opacity: 0; transition: opacity 0.5s;
-            color: #000; padding: 40px; box-shadow: 0 0 50px rgba(255,255,255,0.5);
-            font-family: 'Courier New', Courier, monospace; overflow: hidden;
+            color: #000; padding: 40px; box-shadow: 0 0 50px rgba(255,255,255,0.5); font-family: 'Courier New', Courier, monospace; overflow: hidden;
         }
         .doc-redacted { background: #000; color: #000; user-select: none; }
         .doc-stamp {
             position: absolute; top: 20%; right: 10%; color: red; border: 5px solid red;
-            padding: 10px; font-size: 2rem; font-weight: 900; transform: rotate(-15deg);
-            opacity: 0.7; letter-spacing: 5px;
+            padding: 10px; font-size: 2rem; font-weight: 900; transform: rotate(-15deg); opacity: 0.7; letter-spacing: 5px;
+        }
+
+        /* 實機遊戲 UI 覆蓋層 */
+        #ui-layer {
+            position: absolute; top: 10%; left: 0; width: 100%; height: 80%;
+            pointer-events: none; z-index: 14; opacity: 0; transition: opacity 0.5s;
         }
 
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
-        /* =========================================== */
 
-        /* 字幕 UI (確保在特效上方，放大字體並置中顯示對白) */
+        /* 字幕 UI：允許完整自動換行 */
         #subtitle-container {
-            position: absolute; bottom: 12%; left: 50%; transform: translateX(-50%);
-            width: 90%; text-align: center; z-index: 60; pointer-events: none;
-            display: flex; justify-content: center;
+            position: absolute; bottom: 2%; left: 50%; transform: translateX(-50%);
+            width: 95%; text-align: center; z-index: 60; pointer-events: none; display: flex; justify-content: center;
         }
         #subtitle-text {
-            font-size: 2rem; line-height: 1.6;
-            text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 0px 4px 12px rgba(0,0,0,0.9);
-            opacity: 0; transition: opacity 0.2s ease; white-space: pre-wrap;
-            background: rgba(0, 0, 0, 0.7); display: inline-block;
-            padding: 12px 30px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
-            letter-spacing: 0.05em;
-            max-width: 900px;
+            font-size: 1.35rem; line-height: 1.5; text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 0px 2px 4px rgba(0,0,0,0.9);
+            opacity: 0; transition: opacity 0.2s ease; white-space: normal; 
+            background: rgba(0, 0, 0, 0.8); display: inline-block;
+            padding: 10px 24px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); letter-spacing: 0.05em; max-width: 100%;
         }
-        .speaker-name {
-            display: block; font-size: 1.4rem; margin-bottom: 5px; opacity: 0.9;
-        }
+        .speaker-name { display: inline-block; font-size: 1.25rem; margin-right: 8px; opacity: 0.95; }
 
-        #fade-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: #000; z-index: 80; opacity: 1; transition: opacity 2s ease; pointer-events: none;
-        }
-
-        #title-card {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            text-align: center; z-index: 90; opacity: 0; transition: opacity 3s ease; pointer-events: none;
-        }
+        #fade-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #000; z-index: 80; opacity: 1; transition: opacity 2s ease; pointer-events: none; }
+        #title-card { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; z-index: 90; opacity: 0; transition: opacity 3s ease; pointer-events: none; }
         #title-card h1 { font-size: 5rem; letter-spacing: 15px; margin: 0; color: #fcd34d; text-shadow: 0 0 25px rgba(252, 211, 77, 0.5); }
         #title-card p { font-size: 1.8rem; letter-spacing: 8px; color: #fff; margin-top: 15px; }
 
-        #start-menu {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.9); display: flex; flex-direction: column;
-            justify-content: center; align-items: center; z-index: 100;
-        }
-        button {
-            background: transparent; color: #0ff; border: 2px solid #0ff; padding: 15px 40px;
-            font-size: 1.5rem; cursor: pointer; letter-spacing: 2px; transition: all 0.3s;
-            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3); border-radius: 5px; font-family: 'Noto Sans TC';
-        }
-        button:hover { background: #0ff; color: #000; box-shadow: 0 0 30px #0ff; }
         
-        #timer-display {
-            position: absolute; top: 15px; left: 15px; color: rgba(255,255,255,0.5);
-            font-family: monospace; z-index: 50; font-size: 1.5rem; pointer-events: none;
-        }
+        #start-menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.9); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
+        button { background: rgba(8, 145, 178, 0.6); color: #fff; border: 2px solid #22d3ee; padding: 17px 46px; font-size: 1.7rem; cursor: pointer; letter-spacing: 2px; transition: all 0.3s; box-shadow: 0 0 15px rgba(34, 211, 238, 0.3); border-radius: 5px; font-family: 'Noto Sans TC'; font-weight: bold; }
+        button:hover { background: #22d3ee; color: #000; box-shadow: 0 0 30px #22d3ee; transform: scale(1.05); }
     </style>
 </head>
 <body>
 
 <div id="game-container"></div>
-<video id="opening-visual-video" class="stage-video" src="https://raw.githubusercontent.com/igudesman222/igudesman2012/3b222eca70ac5952d69e441898173afdb146bc97/02-%E7%AC%AC%E4%BA%8C%E7%B5%84%E8%B3%87%E6%BA%90/02-001-%E5%BD%B1%E7%89%87/02-%E7%AC%AC%E4%BA%8C%E7%B5%84%E4%B8%BB%E8%A6%96%E8%A6%BA%E5%8B%95%E7%95%AB.mp4" playsinline preload="auto" crossorigin="anonymous"></video>
-<video id="gameplay-video" class="stage-video" src="https://raw.githubusercontent.com/igudesman222/igudesman2012/3b222eca70ac5952d69e441898173afdb146bc97/02-%E7%AC%AC%E4%BA%8C%E7%B5%84%E8%B3%87%E6%BA%90/02-001-%E5%BD%B1%E7%89%87/02-%E5%B0%8F%E9%81%8A%E6%88%B2%E9%81%8A%E7%8E%A9.mp4" muted playsinline loop preload="metadata"></video>
 
-<div id="gameplay-info-panel" aria-live="polite">
-    <h2>小遊戲遊玩說明</h2>
-    <div class="gameplay-info-grid">
-        <div class="gameplay-info-card">
-            <strong>操作方式</strong>
-            <p>W、A、S、D 控制方向，在魚塭步道巡視；按住滑鼠左鍵滑動，可 360 度環顧七股魚塭；靠近發光光圈後按 E 觸發事件。</p>
-        </div>
-        <div class="gameplay-info-card">
-            <strong>關鍵指標</strong>
-            <p>每個選擇都會改變魚群健康、發電達成率、生態評估與營運資金四項數值。</p>
-        </div>
-        <div class="gameplay-info-card">
-            <strong>通關條件</strong>
-            <p>撐過五天營運並避免營運資金歸零；資金歸零會被財團收購並提前 Game Over，最後依抉擇產生專屬結局。</p>
-        </div>
+<!-- 將音檔與影片直接加入 HTML DOM，並使用 source 標籤避免不支援來源的錯誤 -->
+<audio id="trailer-audio" preload="auto">
+    <source src="https://raw.githubusercontent.com/igudesman222/-/main/03-%E9%A0%90%E5%91%8A%E7%89%87(%E9%85%8D%E9%9F%B3)/01-%E9%85%8D%E9%9F%B3MP3/02-%E7%91%9E%E7%A5%A5%E9%AB%98%E4%B8%AD-%E7%AC%AC%E4%BA%8C%E7%B5%84%E9%85%8D%E9%9F%B3(%E4%BF%AE).mp3" type="audio/mpeg">
+</audio>
+<video id="gameplay-video" loop muted playsinline crossorigin="anonymous">
+    <source src="https://igudesman222.github.io/igudesman2012/02-%E7%AC%AC%E4%BA%8C%E7%B5%84%E8%B3%87%E6%BA%90/02-001-%E5%BD%B1%E7%89%87/02-%E5%B0%8F%E9%81%8A%E6%88%B2%E8%A9%A6%E7%8E%A9.mp4" type="video/mp4">
+</video>
+<video id="intro-video" preload="auto" playsinline crossorigin="anonymous">
+    <source src="https://raw.githubusercontent.com/igudesman222/-/main/04-%E9%96%8B%E5%A0%B4%E4%B8%BB%E8%A6%96%E8%A6%BA/02-%E7%AC%AC%E4%BA%8C%E7%B5%84%E4%B8%BB%E8%A6%96%E8%A6%BA%E5%8B%95%E7%95%AB.mp4" type="video/mp4">
+</video>
+
+<div id="crew-card">
+    <div>
+        <div class="crew-line">高雄市立瑞祥高中</div>
+        <div class="crew-line">海洋探險隊鈺荃、維元、柏凱</div>
     </div>
-</div>
-
-<div id="team-intro-card">
-    <h2>海洋探險隊</h2>
-    <p>高雄市立瑞祥高中</p>
-    <p>鈺荃・維元・柏凱</p>
-</div>
-
-<div id="ending-cta-card">
-    <h2>《漁民的抉擇》即刻體驗</h2>
-    <p>了解真相，是改變的開始。</p>
-    <p>請和我們一起，守護七股的海。</p>
-    <div class="qr-placeholder">QR Code / 遊玩連結</div>
 </div>
 
 <!-- 情境特效 Overlays -->
 <div id="news-overlay">
     <div class="news-live">LIVE</div>
     <div class="news-banner">
-        <h2 style="margin:0; font-size: 1.8rem; text-shadow: 1px 1px 2px #000;">BREAKING NEWS | 七股頂山子段漁電共生案場啟用</h2>
+        <h2 style="margin:0; font-size: 1.8rem; text-shadow: 1px 1px 2px #000;">BREAKING NEWS | 全台最大『漁電共生』示範區正式啟用</h2>
     </div>
 </div>
 <div id="cam-overlay">
@@ -289,11 +166,19 @@
     <p>為確保工程順利並填平潟湖，對外新聞稿請統一宣稱為：「滯洪池常態水質變化」。</p>
 </div>
 
+<!-- 主選單 -->
+<div id="start-menu">
+    <h1 style="color:#0ff; text-shadow:0 0 20px #0ff; font-size:4.2rem; margin-bottom:14px;">漁民的抉擇</h1>
+    <p style="color:#aaa; max-width:700px; text-align:center; line-height:1.6; margin-bottom: 40px; font-size: 1.35rem;">
+        主視覺開場 結合 3D實機與配音對白
+    </p>
+    <button id="start-trailer-btn">🎬 預告片</button>
+</div>
+
 <div id="fade-overlay"></div>
 <div id="letterbox-top" class="letterbox"></div>
 <div id="letterbox-bottom" class="letterbox"></div>
-<div id="timer-display">00:00 / 04:05</div>
-
+<!-- 底部字幕 -->
 <div id="subtitle-container"><div id="subtitle-text"></div></div>
 
 <div id="title-card">
@@ -301,414 +186,524 @@
     <p>了解真相，是改變的開始。</p>
 </div>
 
-<div id="start-menu">
-    <!-- 修改了這裡的標題 -->
-    <h1 style="color:#0ff; text-shadow:0 0 20px #0ff; font-size:3.5rem; margin-bottom:10px;">漁民的抉擇</h1>
-    <p style="color:#aaa; max-width:700px; text-align:center; line-height:1.6; margin-bottom: 40px; font-size: 1.2rem;">
-        依講稿重排：開場動畫、議題背景、玩法介紹與宣傳收束<br>
-        點擊下方按鈕開始播放 4 分 05 秒預告片
-    </p>
-
-    <button id="start-btn">播放講稿版預告片</button>
-</div>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
 <script>
-    // --- Three.js 初始化 ---
-    const container = document.getElementById('game-container');
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xa0b4c8);
-    scene.fog = new THREE.FogExp2(0xa0b4c8, 0.012);
+    // ==========================================
+    // 1. 音效與變數
+    // ==========================================
+    const bgAudio = document.getElementById('trailer-audio');
 
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.shadowMap.enabled = true; 
-    container.appendChild(renderer.domElement);
+    let scene, camera, renderer, globalDirLight, globalHemiLight, sunMesh, player;
+    let dynamicPondsGroup = new THREE.Group();
+    let aeratorWheels = [], dustParticles = [], zoneMeshes = [];
+    let solarTex, dirtTex, faceTex;
 
-    // --- 材質與光影 ---
-    function createMudTexture() {
-        const cvs = document.createElement('canvas');
-        cvs.width = 512; cvs.height = 512; const ctx = cvs.getContext('2d');
-        ctx.fillStyle = '#4a4033'; ctx.fillRect(0,0,512,512); 
-        for(let i=0; i<20000; i++) {
-            ctx.fillStyle = Math.random()>0.5 ? '#3a3023' : '#222222';
-            ctx.fillRect(Math.random()*512, Math.random()*512, 3, 3);
-        }
-        const tex = new THREE.CanvasTexture(cvs);
-        tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(10, 10);
-        return tex;
-    }
-    const mudMat = new THREE.MeshStandardMaterial({ map: createMudTexture(), roughness: 0.9, metalness: 0.1 });
-    const panelMat = new THREE.MeshStandardMaterial({ color: 0x445577, roughness: 0.2, metalness: 0.8 });
-    const waterMat = new THREE.MeshStandardMaterial({ color: 0x4a6a8a, transparent: true, opacity: 0.85, roughness: 0.05, metalness: 0.9 });
-    const concreteMat = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, roughness: 0.9 });
-
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7); scene.add(ambientLight);
-    const hemiLight = new THREE.HemisphereLight(0xa0b4c8, 0x444444, 0.6); scene.add(hemiLight);
-    const dirLight = new THREE.DirectionalLight(0xffeedd, 0.9); 
-    dirLight.position.set(-50, 60, -50); dirLight.castShadow = true;
-    dirLight.shadow.camera.top = 100; dirLight.shadow.camera.bottom = -100;
-    dirLight.shadow.camera.left = -100; dirLight.shadow.camera.right = 100;
-    scene.add(dirLight);
-
-    // --- 地形與物件 ---
-    const ground = new THREE.Mesh(new THREE.PlaneGeometry(300, 300, 50, 50), mudMat);
-    ground.rotation.x = -Math.PI / 2; ground.position.y = -0.5; ground.receiveShadow = true; scene.add(ground);
-    
-    const waterGeo = new THREE.PlaneGeometry(300, 300, 60, 60);
-    const waterInitialZ = new Float32Array(waterGeo.attributes.position.count);
-    for(let i = 0; i < waterGeo.attributes.position.count; i++) waterInitialZ[i] = waterGeo.attributes.position.getZ(i);
-    const water = new THREE.Mesh(waterGeo, waterMat);
-    water.rotation.x = -Math.PI / 2; water.position.y = 0; scene.add(water);
-
-    const templeGroup = new THREE.Group();
-    const tBase = new THREE.Mesh(new THREE.BoxGeometry(16, 8, 12), new THREE.MeshStandardMaterial({color: 0xddccaa})); tBase.position.y = 4; tBase.castShadow = true;
-    const roof = new THREE.Mesh(new THREE.ConeGeometry(12, 6, 4), new THREE.MeshStandardMaterial({color: 0xaa3322, roughness: 0.7})); roof.rotation.y = Math.PI/4; roof.position.y = 11; roof.castShadow = true;
-    templeGroup.add(tBase, roof); templeGroup.position.set(-65, 0, -65); scene.add(templeGroup);
-
-    const core = new THREE.Mesh(new THREE.SphereGeometry(1.2, 16, 16), new THREE.MeshBasicMaterial({ color: 0x00ffaa })); core.position.set(0, 2, 0); scene.add(core);
-    const light = new THREE.PointLight(0x00ffaa, 2, 40); light.position.set(0, 2, 0); scene.add(light);
-
-    function createSolarArray(cx, cz, w, d) {
-        const group = new THREE.Group(); group.position.set(cx, 0, cz);
-        const cols = Math.floor(w / 7.5); const rows = Math.floor(d / 6.5);
-        for (let r = 0; r < rows; r++) {
-            for (let c = 0; c < cols; c++) {
-                if(Math.random() > 0.85) continue;
-                const px = (c - cols/2) * 7.5; const pz = (r - rows/2) * 6.5;
-                const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 2), concreteMat); pole.position.set(px, 0.5, pz); pole.castShadow = true; group.add(pole);
-                const panel = new THREE.Mesh(new THREE.BoxGeometry(4, 0.1, 2.5), panelMat); panel.position.set(px, 1.5, pz); panel.rotation.x = Math.PI/8; panel.castShadow = true; group.add(panel);
-            }
-        }
-        scene.add(group);
-    }
-    createSolarArray(-20, -20, 80, 80); createSolarArray(40, -20, 60, 80); createSolarArray(-40, 40, 80, 60);
-
-    const animatedObjects = [];
-    function createFisherman(x, z, rotY) {
-        const group = new THREE.Group();
-        const skinMat = new THREE.MeshStandardMaterial({color: 0xd2b48c}); const shirtMat = new THREE.MeshStandardMaterial({color: 0x88aacc});
-        const waderMat = new THREE.MeshStandardMaterial({color: 0x2f4f4f}); const hatMat = new THREE.MeshStandardMaterial({color: 0xddcc99, side: THREE.DoubleSide});
-        const head = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.25, 0.22), skinMat); head.position.y = 1.45;
-        const hat = new THREE.Mesh(new THREE.ConeGeometry(0.4, 0.15, 16), hatMat); hat.position.y = 1.6;
-        const body = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.35, 0.22), shirtMat); body.position.y = 1.15;
-        const waderBody = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.3, 0.25), waderMat); waderBody.position.y = 0.85;
-        const legL = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.7, 0.16), waderMat); legL.position.set(-0.11, 0.35, 0);
-        const legR = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.7, 0.16), waderMat); legR.position.set(0.11, 0.35, 0);
-        group.add(head, hat, body, waderBody, legL, legR); group.position.set(x, 0.5, z); group.rotation.y = rotY; scene.add(group);
-        animatedObjects.push({ obj: group, type: 'fisherman', baseY: 0.5 });
-    }
-    createFisherman(-15, 10, Math.PI); 
-
-    const flyingBirds = [];
-    function createFlyingBird(y) {
-        const group = new THREE.Group();
-        const bodyMat = new THREE.MeshBasicMaterial({color: 0xffffff}); 
-        const body = new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.7, 8), bodyMat); body.rotation.x = Math.PI/2;
-        const wingGeo = new THREE.PlaneGeometry(0.6, 0.25); wingGeo.translate(0.3, 0, 0); 
-        const wingL = new THREE.Mesh(wingGeo, bodyMat); wingL.rotation.x = Math.PI/2; wingL.position.set(0, 0.05, -0.1);
-        const wingR = new THREE.Mesh(wingGeo, bodyMat); wingR.rotation.x = Math.PI/2; wingR.rotation.y = Math.PI; wingR.position.set(0, 0.05, -0.1);
-        group.add(body, wingL, wingR); scene.add(group);
-        flyingBirds.push({ group, wingL, wingR, phase: Math.random()*Math.PI*2, radius: 20 + Math.random()*20, centerY: y });
-    }
-    for(let i=0; i<20; i++) createFlyingBird(10 + Math.random()*5);
+    let isPlayingTrailer = false, trailerTime = 0, totalTime = 275;
+    const introDuration = 10;
+    const crewDuration = 5;
+    const firstSegmentStart = introDuration + crewDuration;
+    let audioStarted = false;
+    let openingPhase = 'idle'; // idle | intro | crew | main
+    let introStartedAt = 0;
+    let crewStartedAt = 0;
+    let mainStartedAt = 0;
+    let introFallbackTimer = null;
+    let crewAutoTimer = null;
+    let currentSubtitleIndex = -1;
+    let currentCamStart = new THREE.Vector3(), currentCamEnd = new THREE.Vector3(), currentLookAt = new THREE.Vector3();
 
     // ==========================================
-    // 結合後的腳本資料 (150秒) 與 重新分配的運鏡
+    // 2. 劇本與運鏡
     // ==========================================
     const subtitles = [
-        { start: 0, end: 8, speaker: "", text: "" },
-
-        // 【第一大段：議題交代爭議與故事背景】
-        { start: 14, end: 21, speaker: "旁白", text: "在這片曾被夕陽染成金色的潟湖，一場名為『轉型』的風暴，正席捲而來。" },
-        { start: 22, end: 33, speaker: "女廣播", text: "現在為您插播，位於台南七股的全台最大漁電共生案場：七股頂山子段，預計年發電量達 1.8 億度，將能滿足五萬戶家庭用電。" },
-        { start: 34, end: 59, speaker: "阿明", text: "唉……以前啊，七股到處都是魚塭，隨便撈都是滿滿的文蛤跟虱目魚。現在搞什麼漁電共生，魚塭都抽乾了，土地租金也翻了快十倍！我們這些老骨頭連租都租不起，是要怎麼活？" },
+        { start: 15, end: 22, speaker: "旁白", text: "在這片曾被夕陽染成金色的潟湖，一場名為『轉型』的風暴，正席捲而來。" },
+        { start: 23, end: 35, speaker: "男主播", text: "現在為您插播，位於台南七股的全台最大漁電共生案場：七股頂山子段，預計年發電量達1.8億度，將能滿足五萬戶家庭用電。" },
+        { start: 37, end: 59, speaker: "阿明", text: "唉……以前啊，七股到處都是魚塭，隨便撈都是滿滿的文蛤跟虱目魚。現在搞什麼漁電共生，魚塭都抽乾了，土地租金也翻了快十倍！我們這些老骨頭連租都租不起，是要怎麼活？" },
         { start: 60, end: 69, speaker: "阿海", text: "不只這樣啦！那些施工用的化學物料流進水裡，水質整個壞掉，魚蝦死一堆，我們連成本都收不回來！" },
-        { start: 70, end: 76, speaker: "旁白", text: "當水面不再閃爍，被埋葬的，不只是七股人民的記憶，還有當地生態……" },
-        { start: 77, end: 87, speaker: "阿海", text: "太扯了，有聽說一些不肖廠商為多塞幾塊光電板，偷偷填平潟湖，連旁邊的紅樹林都直接剷掉！這裡本來是天然的滯洪池耶！" },
-        { start: 88, end: 96, speaker: "阿明", text: "對啊！滯洪池沒了，以後只要颱風一來、大雨一落，我們這附近的庄頭誰不怕淹水？" },
-        { start: 97, end: 105, speaker: "阿海", text: "而且你們看，魚塭全插滿了太陽能板，連黑面琵鷺、白鷺鷥飛過來，都找不到地方落腳覓食，這到底算哪門子的『共生』？" },
-
-        // 【第二大段：介紹遊戲玩法與敘事推進】
-        { start: 106, end: 111, speaker: "旁白", text: "歡迎來到 3D 經營互動遊戲——《漁民的抉擇》。" },
-        { start: 112, end: 118, speaker: "阿海", text: "哇，我的畫面變成 3D 的了？那我該怎麼玩？是要親自下去養魚嗎？" },
-        { start: 119, end: 132, speaker: "年輕志工", text: "很直覺啦！你只要用鍵盤的 W、A、S、D，就能控制方向，在這片超大的魚塭步道上巡視。再來，按住滑鼠左鍵滑動，還可以 360 度環顧七股魚塭的風景喔！" },
-        { start: 133, end: 144, speaker: "阿明", text: "沒錯，但你可不是來觀光的！巡視的時候，你要注意尋找地上那些發光的光圈。一走進去，按下鍵盤的 E，就會觸發當地的突發事件。" },
-        { start: 145, end: 155, speaker: "旁白", text: "從異常的高溫、颱風警報，到黑面琵鷺的迷航。每一次按下 E 的抉擇，都伴隨著沉重的代價。" },
-        { start: 156, end: 160, speaker: "阿海", text: "哇，感覺壓力好大……那我亂選會怎麼樣嗎？" },
-        { start: 161, end: 171, speaker: "年輕志工", text: "嘿，亂選可是會出局的喔！你的每個決定，都會改變畫面上這四個數值：魚群健康、發電達成率、生態評估，還有最重要的營運資金。" },
-        { start: 172, end: 183, speaker: "阿海", text: "這遊戲超現實的啦！我得努力撐過五天的日常營運。如果為了救魚或做環保，把營運資金花到變零，魚塭就會直接被財團收購，提早 Game Over！" },
-        { start: 184, end: 192, speaker: "年輕志工", text: "一路上所有大小的抉擇都會產生蝴蝶效應。當你走完整趟旅程，遊戲就會根據你前面的決定，出現專屬於你的結局。" },
-        { start: 193, end: 203, speaker: "旁白", text: "你的抉擇，會為這片魚塭帶來怎樣的未來？你能否看破魚塭的秘密？遊戲，即將開始。" },
-
-        // 【第三大段：議題喚醒與遊戲宣傳語】
-        { start: 204, end: 214, speaker: "旁白", text: "這裡是七股，是台南鄉親賴以維生的海，也是黑面琵鷺眷戀的家。然而，當綠能插旗，是轉型，還是吞噬？" },
-        { start: 215, end: 223, speaker: "阿海", text: "政府說『漁電共生』是雙贏，但如果連漁民的飯碗跟生態都保不住，這種綠能，真的值得提倡嗎？" },
-        { start: 224, end: 231, speaker: "年輕志工", text: "沒錯，讓我們一起走進這片被光電板覆蓋的土地，親自見證七股魚塭的故事。" },
-        { start: 232, end: 245, speaker: "旁白", text: "《漁民的抉擇》即刻體驗。了解真相，是改變的開始。請和我們一起，守護七股的海。" }
+        { start: 70, end: 78, speaker: "旁白", text: "當水面不再閃爍，被埋葬的，不只是七股人民的記憶，還有當地生態…。" },
+        { start: 80, end: 92, speaker: "阿海", text: "太扯了，有聽說一些不肖廠商為多塞幾塊光電板，偷偷填平潟湖，連旁邊的紅樹林都直接剷掉！這裡本來是天然的滯洪池耶！" },
+        { start: 93, end: 102, speaker: "阿明", text: "對啊！滯洪池沒了，以後只要颱風一來、大雨一落，我們這附近的庄頭誰不怕淹水？" },
+        { start: 102, end: 112, speaker: "阿海", text: "而且你們看，魚塭全插滿了太陽能板，連黑面琵鷺、白鷺鷥飛過來，都找不到地方落腳覓食，這到底算哪門子的『共生』？" },
+        { start: 113, end: 119, speaker: "旁白", text: "歡迎來到 3D 經營互動遊戲——《漁民的抉擇》。" },
+        { start: 121, end: 126, speaker: "阿海", text: "哇，我的畫面變成 3D 了？那我該怎麼玩？是要親自下去養魚嗎？" },
+        { start: 127, end: 144, speaker: "志工", text: "很直覺啦！用鍵盤 W、A、S、D，就能在這片超大的步道上巡視。按住滑鼠左鍵滑動，還可以 360 度環顧風景喔！" },
+        { start: 144, end: 159, speaker: "阿明", text: "沒錯，但你不是來觀光的！你要注意尋找地上那些發光的光圈。一走進去，按下鍵盤的「E」，就會觸發突發事件。" },
+        { start: 160, end: 171, speaker: "旁白", text: "從異常的高溫、颱風警報，到黑面琵鷺的迷航。每一次按下「E」的抉擇，都伴隨著沉重的代價。" },
+        { start: 172, end: 176, speaker: "阿海", text: "哇，感覺壓力好大... 那我亂選會怎麼樣嗎？" },
+        { start: 179, end: 191, speaker: "志工", text: "亂選會出局喔！你的每個決定，都會改變畫面上四個數值：魚群健康、發電達成率、生態評估，還有營運資金。" },
+        { start: 192, end: 205, speaker: "阿海", text: "我得努力撐過七天的日常營運。如果為了救魚，把「營運資金」花到變零，魚塭就會被財團收購，提早 Game Over！" },
+        { start: 207, end: 218, speaker: "志工", text: "一路上大小抉擇都會產生蝴蝶效應。當你走完整趟旅程，遊戲就會根據你前面的決定，出現專屬結局。" },
+        { start: 219, end: 229, speaker: "旁白", text: "你的抉擇，會為這片魚塭帶來怎樣的未來，你能否看破魚塭的秘密？遊戲，即將開始。" },
+        { start: 230, end: 245, speaker: "旁白", text: "這裡是七股，是台南鄉親賴以維生的海，也是黑面琵鷺的家。當綠能插旗，是轉型，還是吞噬？" },
+        { start: 245, end: 254, speaker: "阿海", text: "政府說『漁電共生』是雙贏，但如果連漁民飯碗跟生態都保不住，這種綠能值得提倡嗎？" },
+        { start: 255, end: 263, speaker: "志工", text: "沒錯，讓我們一起走進這片被光電板覆蓋的土地，親自見證七股魚塭的故事。" },
+        { start: 264, end: 275, speaker: "旁白", text: "《漁民的抉擇》即刻體驗。了解真相，是改變的開始。" },
+        { start: 275, end: 280, speaker: "旁白", text: "請和我們一起，守護七股的海！" }
     ];
 
-    // 依講稿 4:05 時間軸重新配置運鏡
     const cameraShots = [
-        { start: 0, end: 13, camStart: [15, 4, 15], camEnd: [15, 4, 15], look: [-65, 5, -65] },
-        { start: 14, end: 33, camStart: [15, 4, 15], camEnd: [-5, 3, 10], look: [-65, 5, -65] },
-        { start: 34, end: 76, camStart: [-10, 1.5, 5], camEnd: [-30, 2, -15], look: [-40, 2, -20] },
-        { start: 77, end: 105, camStart: [30, 5, 30], camEnd: [12, 4, 12], look: [0, 1.5, 0] },
-        { start: 106, end: 132, camStart: [-30, 1.5, 20], camEnd: [-10, 1.5, 20], look: [-20, 1, -20] },
-        { start: 133, end: 160, camStart: [10, 1, -10], camEnd: [0, 1, -20], look: [0, 1, -30] },
-        { start: 161, end: 203, camStart: [10, 2, -10], camEnd: [2, 2, -2], look: [0, 2, 0] },
-        { start: 204, end: 231, camStart: [-10, 1.5, 10], camEnd: [-18, 1.5, 10], look: [-15, 1.5, 0] },
-        { start: 232, end: 248, camStart: [0, 2, 4], camEnd: [0, 2, 4], look: [0, 2, 0] }
+        { start: 15, end: 35, camStart: [-150, 40, 0], camEnd: [-50, 20, 30], look: [50, 0, 0] },
+        { start: 35, end: 65, camStart: [80, 10, 80], camEnd: [30, 5, 20], look: [100, 0, -50] },
+        { start: 65, end: 95, camStart: [150, 5, -150], camEnd: [120, 8, -100], look: [0, 0, 0] },
+        { start: 95, end: 113, camStart: [-10, 4, 30], camEnd: [-10, 2, -10], look: [-30, 1, -50] },
+        { start: 113, end: 229, camStart: [0, 0, 0], camEnd: [0, 0, 0], look: [0, 0, 0] }, // 實機影片播放段落
+        { start: 229, end: 245, camStart: [150, 40, 150], camEnd: [-50, 30, 50], look: [50, 0, -50] },
+        { start: 245, end: 280, camStart: [-30, 3, 20], camEnd: [-30, 10, 100], look: [-30, 0, -50] }
     ];
 
-    const subtitleText = document.getElementById('subtitle-text');
-    const timerDisplay = document.getElementById('timer-display');
-    const fadeOverlay = document.getElementById('fade-overlay');
-    const titleCard = document.getElementById('title-card');
-    
-    // 情境 UI 元素
-    const newsOverlay = document.getElementById('news-overlay');
-    const camOverlay = document.getElementById('cam-overlay');
-    const docOverlay = document.getElementById('doc-overlay');
-    const openingVisualVideo = document.getElementById('opening-visual-video');
-    const gameplayVideo = document.getElementById('gameplay-video');
-    const gameplayInfoPanel = document.getElementById('gameplay-info-panel');
-    const teamIntroCard = document.getElementById('team-intro-card');
-    const endingCtaCard = document.getElementById('ending-cta-card');
+    const pathCurves = [
+        new THREE.CatmullRomCurve3([new THREE.Vector3(-30,0,-150), new THREE.Vector3(50,0,-180), new THREE.Vector3(120,0,-130), new THREE.Vector3(200,0,-150)]),
+        new THREE.CatmullRomCurve3([new THREE.Vector3(-30,0,-50), new THREE.Vector3(60,0,-20), new THREE.Vector3(140,0,-60), new THREE.Vector3(220,0,0)]),
+        new THREE.CatmullRomCurve3([new THREE.Vector3(-30,0,50), new THREE.Vector3(40,0,80), new THREE.Vector3(130,0,40), new THREE.Vector3(190,0,100)]),
+        new THREE.CatmullRomCurve3([new THREE.Vector3(-30,0,150), new THREE.Vector3(70,0,170), new THREE.Vector3(150,0,130), new THREE.Vector3(210,0,180)]),
+        new THREE.CatmullRomCurve3([new THREE.Vector3(50,0,-180), new THREE.Vector3(60,0,-20), new THREE.Vector3(40,0,80), new THREE.Vector3(70,0,170)]),
+        new THREE.CatmullRomCurve3([new THREE.Vector3(140,0,-60), new THREE.Vector3(130,0,40)])
+    ];
+    let pathPoints = []; pathCurves.forEach(c => pathPoints.push(...c.getSpacedPoints(150)));
+    function getGroundY(x) { return Math.abs(x - (-30)) <= 5.5 ? 1.0 : 0.75; }
 
-    let isPlaying = false;
-    let trailerTime = 0;
-    const totalTime = 245;
-    let currentSubtitleIndex = -1;
-    let currentCamStart = new THREE.Vector3(); let currentCamEnd = new THREE.Vector3(); let currentLookAt = new THREE.Vector3();
+    // ==========================================
+    // 3. 紋理與模型生成
+    // ==========================================
+    function createTextures() {
+        const c1 = document.createElement('canvas'); c1.width = 1024; c1.height = 256; const ctx1 = c1.getContext('2d');
+        ctx1.fillStyle = '#0a1122'; ctx1.fillRect(0, 0, 1024, 256); ctx1.strokeStyle = '#475569'; ctx1.lineWidth = 1.5;
+        for(let i=0; i<=1024; i+=16) { ctx1.beginPath(); ctx1.moveTo(i, 0); ctx1.lineTo(i, 256); ctx1.stroke(); }
+        for(let j=0; j<=256; j+=32) { ctx1.beginPath(); ctx1.moveTo(0, j); ctx1.lineTo(1024, j); ctx1.stroke(); }
+        solarTex = new THREE.CanvasTexture(c1); solarTex.wrapS = THREE.RepeatWrapping; solarTex.wrapT = THREE.RepeatWrapping;
 
-    // --- 主視覺背景音樂增幅與清晰化 ---
-    // 只處理 02-第二組主視覺動畫.mp4：在使用者按下開始後啟用 Web Audio，避免瀏覽器自動播放限制。
-    let openingAudioContext = null;
-    let openingAudioSource = null;
-    let openingAudioReady = false;
+        const c2 = document.createElement('canvas'); c2.width = 512; c2.height = 512; const ctx2 = c2.getContext('2d');
+        ctx2.fillStyle = '#7a6e5d'; ctx2.fillRect(0, 0, 512, 512);
+        for(let i=0; i<30000; i++) {
+            ctx2.fillStyle = Math.random() > 0.8 ? '#5c5243' : (Math.random() > 0.4 ? '#8a7d6a' : '#6b6051');
+            ctx2.globalAlpha = Math.random() * 0.4; ctx2.fillRect(Math.random()*512, Math.random()*512, Math.random()*3+1, Math.random()*3+1);
+        }
+        dirtTex = new THREE.CanvasTexture(c2); dirtTex.wrapS = THREE.RepeatWrapping; dirtTex.wrapT = THREE.RepeatWrapping; dirtTex.repeat.set(15, 15);
+    }
 
-    function initOpeningVisualAudio() {
-        if (!openingVisualVideo || openingAudioReady) return;
-        try {
-            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-            if (!AudioContextClass) {
-                openingVisualVideo.muted = false;
-                openingVisualVideo.volume = 1.0;
-                return;
+    function createAeratorModel() {
+        const group = new THREE.Group();
+        const blueMat = new THREE.MeshStandardMaterial({ color: 0x1e3a8a, roughness: 0.5 }); 
+        const metalMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.8 }); 
+        const yellowMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.4 }); 
+        const floatL = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.4, 3.5), blueMat); floatL.position.set(-1.2, 0.2, 0); group.add(floatL);
+        const floatR = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.4, 3.5), blueMat); floatR.position.set(1.2, 0.2, 0); group.add(floatR);
+        const bar1 = new THREE.Mesh(new THREE.BoxGeometry(3.0, 0.1, 0.2), metalMat); bar1.position.set(0, 0.45, 0.8); group.add(bar1);
+        const bar2 = new THREE.Mesh(new THREE.BoxGeometry(3.0, 0.1, 0.2), metalMat); bar2.position.set(0, 0.45, -0.8); group.add(bar2);
+        const motorBox = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.2, 1.2), blueMat); motorBox.position.set(0, 1.0, 0); group.add(motorBox);
+        const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 4.2, 8), metalMat); shaft.rotation.z = Math.PI / 2; shaft.position.set(0, 0.9, 0); group.add(shaft);
+
+        function createWheel() {
+            const wGroup = new THREE.Group();
+            const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.4, 16), yellowMat); hub.rotation.z = Math.PI / 2; wGroup.add(hub);
+            const ring1 = new THREE.Mesh(new THREE.TorusGeometry(0.6, 0.05, 8, 32), yellowMat); ring1.rotation.y = Math.PI / 2; ring1.position.x = -0.1; wGroup.add(ring1);
+            const ring2 = new THREE.Mesh(new THREE.TorusGeometry(0.6, 0.05, 8, 32), yellowMat); ring2.rotation.y = Math.PI / 2; ring2.position.x = 0.1; wGroup.add(ring2);
+            for(let i=0; i<8; i++) {
+                const spoke = new THREE.Group(); spoke.rotation.x = (i / 8) * Math.PI * 2;
+                const paddle = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.3, 0.05), yellowMat); paddle.position.set(0, 0.7, 0); spoke.add(paddle);
+                const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.6, 8), yellowMat); arm.position.set(0, 0.3, 0); spoke.add(arm); wGroup.add(spoke);
             }
-
-            openingAudioContext = openingAudioContext || new AudioContextClass();
-            openingAudioSource = openingAudioSource || openingAudioContext.createMediaElementSource(openingVisualVideo);
-
-            // 清掉低頻轟鳴，讓主視覺音樂更乾淨。
-            const highPass = openingAudioContext.createBiquadFilter();
-            highPass.type = 'highpass';
-            highPass.frequency.value = 85;
-            highPass.Q.value = 0.7;
-
-            // 稍微降低混濁低頻。
-            const lowShelf = openingAudioContext.createBiquadFilter();
-            lowShelf.type = 'lowshelf';
-            lowShelf.frequency.value = 180;
-            lowShelf.gain.value = -1.8;
-
-            // 提升人耳較敏感的清晰度頻段，讓背景音樂更亮、更清新。
-            const presence = openingAudioContext.createBiquadFilter();
-            presence.type = 'peaking';
-            presence.frequency.value = 3200;
-            presence.Q.value = 0.9;
-            presence.gain.value = 3.2;
-
-            // 保留空氣感，但避免高頻太刺。
-            const air = openingAudioContext.createBiquadFilter();
-            air.type = 'highshelf';
-            air.frequency.value = 8000;
-            air.gain.value = 1.6;
-
-            // 壓縮動態，讓背景音樂整體聽起來更大聲但不容易爆音。
-            const compressor = openingAudioContext.createDynamicsCompressor();
-            compressor.threshold.value = -24;
-            compressor.knee.value = 24;
-            compressor.ratio.value = 3.2;
-            compressor.attack.value = 0.004;
-            compressor.release.value = 0.22;
-
-            // 最後增益。若現場設備仍偏小，可把 1.8 調到 2.0；若破音，調回 1.5。
-            const gainNode = openingAudioContext.createGain();
-            gainNode.gain.value = 1.8;
-
-            openingAudioSource
-                .connect(highPass)
-                .connect(lowShelf)
-                .connect(presence)
-                .connect(air)
-                .connect(compressor)
-                .connect(gainNode)
-                .connect(openingAudioContext.destination);
-
-            openingVisualVideo.muted = false;
-            openingVisualVideo.volume = 0.95;
-            openingAudioReady = true;
-        } catch (error) {
-            console.warn('Opening visual audio enhancement fallback:', error);
-            openingVisualVideo.muted = false;
-            openingVisualVideo.volume = 1.0;
+            return wGroup;
         }
+        const wheelL = createWheel(); wheelL.position.set(-2.1, 0.9, 0); group.add(wheelL); aeratorWheels.push(wheelL);
+        const wheelR = createWheel(); wheelR.position.set(2.1, 0.9, 0); group.add(wheelR); aeratorWheels.push(wheelR);
+        const splash = new THREE.Mesh(new THREE.PlaneGeometry(4, 3), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.3 }));
+        splash.rotation.x = -Math.PI / 2; splash.position.y = 0.05; group.add(splash); group.scale.set(1.5, 1.5, 1.5);
+        return group;
     }
 
-    function resumeOpeningVisualAudio() {
-        if (openingAudioContext && openingAudioContext.state === 'suspended') {
-            openingAudioContext.resume().catch(error => console.warn('Audio resume failed:', error));
+    // ==========================================
+    // 4. 初始化 3D 核心
+    // ==========================================
+    function init3DGameScene() {
+        const container = document.getElementById('game-container');
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xffb88f);
+        scene.fog = new THREE.FogExp2(0xffdac1, 0.005);
+        
+        camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
+        
+        // 設定初始視角，避免影片切換前看到黑畫面
+        camera.position.set(-150, 40, 0);
+        camera.lookAt(50, 0, 0);
+        
+        renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance", alpha: false });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0xffb88f, 1);
+        renderer.domElement.style.position = 'absolute';
+        renderer.domElement.style.top = '0';
+        renderer.domElement.style.left = '0';
+        renderer.domElement.style.width = '100%';
+        renderer.domElement.style.height = '100%';
+        renderer.domElement.style.display = 'block';
+        renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.85;
+        container.appendChild(renderer.domElement);
+
+        scene.add(new THREE.AmbientLight(0xffffff, 0.5)); 
+        globalHemiLight = new THREE.HemisphereLight(0xddeeff, 0x443322, 0.4); globalHemiLight.position.set(0, 50, 0); scene.add(globalHemiLight);
+        globalDirLight = new THREE.DirectionalLight(0xfff8eb, 1.8); globalDirLight.position.set(250, 0, 50); globalDirLight.castShadow = true;
+        globalDirLight.shadow.mapSize.width = 2048; globalDirLight.shadow.mapSize.height = 2048;
+        globalDirLight.shadow.camera.top = 200; globalDirLight.shadow.camera.bottom = -200;
+        globalDirLight.shadow.camera.left = -200; globalDirLight.shadow.camera.right = 200;
+        globalDirLight.shadow.bias = -0.0005; scene.add(globalDirLight);
+        sunMesh = new THREE.Mesh(new THREE.SphereGeometry(15, 32, 32), new THREE.MeshBasicMaterial({ color: 0xffffff })); scene.add(sunMesh);
+
+        createTextures();
+
+        const mapSize = 400; 
+        const water = new THREE.Mesh(new THREE.PlaneGeometry(mapSize * 1.5, mapSize * 1.5), new THREE.MeshPhysicalMaterial({ color: 0x0ea5e9, transparent: true, opacity: 0.75, roughness: 0.1, metalness: 0.4 })); water.rotation.x = -Math.PI / 2; scene.add(water);
+        const bed = new THREE.Mesh(new THREE.PlaneGeometry(mapSize * 1.5, mapSize * 1.5), new THREE.MeshStandardMaterial({ color: 0x1e3a8a, map: dirtTex })); bed.rotation.x = -Math.PI / 2; bed.position.y = -2; scene.add(bed);
+
+        const dirtMat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: dirtTex, roughness: 1.0 });
+        const sandbar = new THREE.Mesh(new THREE.BoxGeometry(60, 1.2, mapSize * 1.2), new THREE.MeshStandardMaterial({ color: 0xd2b48c, roughness: 1.0, map: dirtTex })); sandbar.position.set(-200, 0.1, 0); sandbar.receiveShadow = true; scene.add(sandbar);
+        const seawall = new THREE.Mesh(new THREE.BoxGeometry(10, 1.5, mapSize * 1.2), dirtMat); seawall.position.set(-30, 0.25, 0); seawall.receiveShadow = true; seawall.castShadow = true; scene.add(seawall);
+
+        const pathMeshes = new THREE.Group();
+        pathCurves.forEach(curve => {
+            const tube = new THREE.Mesh(new THREE.TubeGeometry(curve, 64, 2.5, 8, false), dirtMat);
+            tube.scale.y = 0.2; tube.position.y = 0.25; tube.receiveShadow = true; tube.castShadow = true; pathMeshes.add(tube);
+        });
+        scene.add(pathMeshes);
+
+        const mangroveMat = new THREE.MeshStandardMaterial({ color: 0x166534, roughness: 0.9 }); const treeGroup = new THREE.Group();
+        for(let i=0; i<40; i++) {
+            const mg = new THREE.Mesh(new THREE.DodecahedronGeometry(1.5 + Math.random()*2), mangroveMat);
+            mg.position.set(-40 + Math.random() * 25, 0.5, -180 + Math.random() * 360); mg.castShadow = true; treeGroup.add(mg);
         }
+        scene.add(treeGroup);
+
+        scene.add(dynamicPondsGroup); renderDynamicPonds(50);
     }
 
-    function updateSubtitle(time) {
-        let newIndex = -1;
-        for (let i = 0; i < subtitles.length; i++) {
-            if (time >= subtitles[i].start && time < subtitles[i].end) { newIndex = i; break; }
-        }
-        if (newIndex !== currentSubtitleIndex) {
-            currentSubtitleIndex = newIndex;
-            if (newIndex !== -1) {
-                const scene = subtitles[newIndex];
-                let color = "#e2e8f0"; // default 旁白
-                
-                // 新增說話者顏色辨識
-                if (scene.speaker === "阿明") color = "#fbbf24";        // 黃色 (老漁民)
-                else if (scene.speaker === "女主播" || scene.speaker === "女廣播") color = "#94a3b8";   // 灰色 (客觀播報)
-                else if (scene.speaker === "年輕志工") color = "#34d399"; // 綠色 (環保熱血)
-                else if (scene.speaker === "阿海") color = "#60a5fa";     // 藍色 (玩家主角/管理者)
-                else if (scene.speaker === "系統提示") color = "#f87171";
-                
-                let html = "";
-                if (scene.speaker) {
-                    html += `<span class='speaker-name' style='color:${color}; font-weight:900;'>【${scene.speaker}】</span>`;
+    function renderDynamicPonds(coveragePercent) {
+        while(dynamicPondsGroup.children.length > 0) dynamicPondsGroup.remove(dynamicPondsGroup.children[0]);
+        aeratorWheels = [];
+        const panelMat = new THREE.MeshPhysicalMaterial({ color: 0xffffff, map: solarTex, metalness: 0.7, roughness: 0.1, clearcoat: 1.0 });
+        const frameMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.8, roughness: 0.4 });
+        for (let cx = -15; cx <= 180; cx += 10) {
+            for (let cz = -180; cz <= 180; cz += 8) {
+                if (Math.abs(cx - (-30))<10 || Math.abs(cz)<5) continue; 
+                const densityVal = (Math.abs(cx * 17) + Math.abs(cz * 23)) % 100;
+                if (densityVal >= coveragePercent) {
+                    if (densityVal > 85) { const ag = createAeratorModel(); ag.position.set(cx, 0, cz); ag.rotation.y = Math.random() * Math.PI; dynamicPondsGroup.add(ag); }
+                } else {
+                    const pg = new THREE.Group(); pg.position.set(cx, 0, cz);
+                    const p1 = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 3), frameMat); p1.position.set(-3.1, 1.5, 0); pg.add(p1);
+                    const p2 = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 3), frameMat); p2.position.set(3.1, 1.5, 0); pg.add(p2);
+                    const panel = new THREE.Mesh(new THREE.BoxGeometry(9.5, 0.1, 4.5), panelMat); panel.position.set(0, 3, 0.5); panel.rotation.x = Math.PI / 12; pg.add(panel);
+                    dynamicPondsGroup.add(pg);
                 }
-                
-                // 結尾標題金黃色特效
-                let textStyle = (scene.text.includes('漁民的抉擇') || scene.text.includes('了解真相')) ? "color: #fcd34d;" : "color: #f8fafc;";
-                html += `<span style='${textStyle}'>${scene.text}</span>`;
-                
-                subtitleText.style.opacity = 0;
-                setTimeout(() => {
-                    subtitleText.innerHTML = html; subtitleText.style.display = 'inline-block'; subtitleText.style.opacity = 1;
-                }, 150);
-            } else { subtitleText.style.opacity = 0; }
-        }
-    }
-
-    function setVideoVisible(video, shouldShow) {
-        if (!video) return;
-        video.classList.toggle('is-visible', shouldShow);
-        if (shouldShow) {
-            if (video === openingVisualVideo) {
-                initOpeningVisualAudio();
-                resumeOpeningVisualAudio();
-                openingVisualVideo.muted = false;
-                openingVisualVideo.volume = 0.95;
-            } else {
-                video.muted = true;
             }
-            if (video.paused) video.play().catch(e => console.log('Video play blocked:', e));
-        } else if (!video.paused) {
-            video.pause();
         }
     }
 
-    document.getElementById('start-btn').addEventListener('click', () => {
+    // 更新環境光影 
+    function updateEnvironment(gTime) {
+        if (!scene || !scene.fog) return; 
+        
+        let t = gTime < 9.0 ? (gTime - 6.0) / 3.0 : (gTime < 15.0 ? 0 : (gTime - 15.0) / 3.0);
+        let currentColor = new THREE.Color(); let lightIntensity = 1.0;
+        const cDawn = new THREE.Color(0xff8a66); const cNoon = new THREE.Color(0x60a5fa); const cDusk = new THREE.Color(0xd94600); 
+
+        if (gTime < 9.0) { currentColor.lerpColors(cDawn, cNoon, t); lightIntensity = 0.5 + 1.5 * t; }
+        else if (gTime < 15.0) { currentColor.copy(cNoon); lightIntensity = 2.0; }
+        else { currentColor.lerpColors(cNoon, cDusk, t); lightIntensity = 2.0 - 1.6 * t; }
+        
+        scene.background = currentColor; 
+        if (scene.fog) scene.fog.color = currentColor;
+        
+        const sunAngle = Math.PI * ((gTime - 6.0) / 12.0); const radius = 250;
+        const sunX = Math.cos(sunAngle) * radius; const sunY = Math.sin(sunAngle) * radius;
+        
+        if (globalDirLight) {
+            globalDirLight.position.set(sunX, sunY, 50); 
+            globalDirLight.intensity = lightIntensity;
+        }
+
+        if (sunMesh && sunMesh.material) {
+            sunMesh.position.set(sunX, sunY, 50); let sunColor = new THREE.Color();
+            if (gTime < 9.0) sunColor.lerpColors(new THREE.Color(0xff4400), new THREE.Color(0xffffff), t);
+            else if (gTime < 15.0) sunColor.setHex(0xffffff);
+            else sunColor.lerpColors(new THREE.Color(0xffffff), new THREE.Color(0xff2200), t);
+            sunMesh.material.color = sunColor;
+        }
+        
+        if (globalHemiLight) {
+            globalHemiLight.intensity = 0.3 + 0.5 * Math.sin(sunAngle); 
+        }
+    }
+
+    // ==========================================
+    // 5. 核心渲染迴圈與控制
+    function getNowSeconds() { return performance.now() / 1000; }
+
+    function clearOpeningTimers() {
+        if (introFallbackTimer) { clearTimeout(introFallbackTimer); introFallbackTimer = null; }
+        if (crewAutoTimer) { clearTimeout(crewAutoTimer); crewAutoTimer = null; }
+    }
+
+    function enterCrewCredits() {
+        if (!isPlayingTrailer || openingPhase !== 'intro') return;
+        if (introFallbackTimer) { clearTimeout(introFallbackTimer); introFallbackTimer = null; }
+        const introVideo = document.getElementById('intro-video');
+        const crewCard = document.getElementById('crew-card');
+        openingPhase = 'crew';
+        trailerTime = introDuration;
+        crewStartedAt = getNowSeconds();
+        introVideo.style.opacity = 0;
+        setTimeout(() => { if (!introVideo.paused) introVideo.pause(); }, 500);
+        crewCard.style.display = 'flex';
+        crewCard.style.visibility = 'visible';
+        crewCard.style.pointerEvents = 'none';
+        crewCard.style.opacity = 1;
+
+        // 不只依靠 requestAnimationFrame；另外用獨立計時器保證 5 秒後一定進入第一大段。
+        if (crewAutoTimer) clearTimeout(crewAutoTimer);
+        crewAutoTimer = setTimeout(() => {
+            if (isPlayingTrailer && openingPhase === 'crew') enterMainSegment();
+        }, crewDuration * 1000);
+    }
+
+    function applyCameraShotAt(time) {
+        let currentShot = null;
+        for (let i = 0; i < cameraShots.length; i++) {
+            if (time >= cameraShots[i].start && time < cameraShots[i].end) { currentShot = cameraShots[i]; break; }
+        }
+        if (!currentShot) return false;
+        const progress = Math.max(0, Math.min(1, (time - currentShot.start) / (currentShot.end - currentShot.start)));
+        currentCamStart.fromArray(currentShot.camStart);
+        currentCamEnd.fromArray(currentShot.camEnd);
+        camera.position.lerpVectors(currentCamStart, currentCamEnd, progress);
+        camera.lookAt(currentLookAt.fromArray(currentShot.look));
+        return true;
+    }
+
+    function forceMainVisualReady() {
+        const gameContainer = document.getElementById('game-container');
+        gameContainer.style.display = 'block';
+        gameContainer.style.opacity = '1';
+        gameContainer.style.zIndex = '1';
+        gameContainer.style.background = 'linear-gradient(#ffb88f 0%, #89c8e8 55%, #0ea5e9 56%, #075985 100%)';
+        if (renderer && renderer.domElement) {
+            renderer.domElement.style.display = 'block';
+            renderer.domElement.style.opacity = '1';
+            renderer.domElement.style.visibility = 'visible';
+            renderer.domElement.style.position = 'absolute';
+            renderer.domElement.style.top = '0';
+            renderer.domElement.style.left = '0';
+            renderer.domElement.style.width = '100%';
+            renderer.domElement.style.height = '100%';
+            renderer.setClearColor(0xffb88f, 1);
+        }
+    }
+
+    function enterMainSegment() {
+        if (!isPlayingTrailer || openingPhase === 'main' || openingPhase === 'idle') return;
+        if (crewAutoTimer) { clearTimeout(crewAutoTimer); crewAutoTimer = null; }
+        const crewCard = document.getElementById('crew-card');
+        const introVideo = document.getElementById('intro-video');
+        const fadeOverlay = document.getElementById('fade-overlay');
+        const subtitleText = document.getElementById('subtitle-text');
+
+        forceMainVisualReady();
+        openingPhase = 'main';
+        audioStarted = true;
+        trailerTime = firstSegmentStart;
+        mainStartedAt = getNowSeconds();
+
+        // 進入第一大段時，立即清掉片頭與工作人員覆蓋層，避免上一幕殘留造成白/黑畫面。
+        introVideo.style.opacity = 0;
+        introVideo.style.visibility = 'hidden';
+        introVideo.style.pointerEvents = 'none';
+        if (!introVideo.paused) introVideo.pause();
+        crewCard.style.opacity = 0;
+        crewCard.style.visibility = 'hidden';
+        crewCard.style.pointerEvents = 'none';
+        fadeOverlay.style.opacity = 0;
+        subtitleText.style.opacity = 0;
+
+        // 先把環境與鏡頭鎖到第一段起始畫面，再交給 animate() 接續更新。
+        updateEnvironment(6.0 + (trailerTime / totalTime) * 12.0);
+        applyCameraShotAt(trailerTime + 0.01);
+
+        try { bgAudio.currentTime = 0; } catch (e) { console.warn("Audio seek skipped:", e); }
+        bgAudio.play().catch(e => {
+            console.error("Delayed audio play failed: ", e);
+            // 即使音訊被瀏覽器阻擋，畫面時間軸仍繼續往下跑，避免停在工作人員名單。
+        });
+    }
+
+    // ==========================================
+    window.onload = function() {
+        init3DGameScene();
+        window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
+        animate();
+    };
+
+    document.getElementById('start-trailer-btn').addEventListener('click', () => {
         document.getElementById('start-menu').style.display = 'none';
-        fadeOverlay.style.opacity = 0; isPlaying = true; trailerTime = 0; currentSubtitleIndex = -1;
-        core.material.color.setHex(0x00ffaa); light.color.setHex(0x00ffaa); titleCard.style.opacity = 0;
-        initOpeningVisualAudio();
-        resumeOpeningVisualAudio();
-        [openingVisualVideo, gameplayVideo].forEach(video => { if (video) video.currentTime = 0; });
+        document.getElementById('fade-overlay').style.opacity = 0; 
+        document.getElementById('title-card').style.opacity = 0;
+        document.getElementById('crew-card').style.opacity = 0;
+        document.getElementById('crew-card').style.visibility = 'hidden';
+        document.getElementById('crew-card').style.pointerEvents = 'none';
+        
+        isPlayingTrailer = true; trailerTime = 0; currentSubtitleIndex = -1; audioStarted = false;
+        clearOpeningTimers();
+        openingPhase = 'intro';
+        introStartedAt = getNowSeconds();
+        crewStartedAt = 0;
+        mainStartedAt = 0;
+        
+        // 點擊當下，解除瀏覽器的音訊封鎖：播放並立即暫停
+        bgAudio.play().then(() => {
+            bgAudio.pause();
+            bgAudio.currentTime = 0;
+        }).catch(e => console.error("Audio unlock failed: ", e));
+        
+        // 觸發並顯示開場主視覺動畫影片
+        const introVideo = document.getElementById('intro-video');
+        introVideo.style.visibility = 'visible';
+        introVideo.style.pointerEvents = 'none';
+        introVideo.currentTime = 0;
+        introVideo.style.opacity = 1;
+        introVideo.onended = enterCrewCredits;
+        introVideo.play().catch(e => {
+            console.log("Intro video play failed:", e);
+            // 若片頭影片無法播放，仍用 10 秒保底計時自動切到工作人員名單。
+        });
+        introFallbackTimer = setTimeout(() => {
+            if (isPlayingTrailer && openingPhase === 'intro') enterCrewCredits();
+        }, introDuration * 1000);
+        
+        const gameplayVideo = document.getElementById('gameplay-video');
+        gameplayVideo.currentTime = 0;
+        gameplayVideo.style.opacity = 0;
     });
 
     const clock = new THREE.Clock();
 
-    function animate() {
-        requestAnimationFrame(animate);
-        const delta = clock.getDelta(); const time = clock.getElapsedTime();
-
-        const positions = waterGeo.attributes.position;
-        for (let i = 0; i < positions.count; i++) {
-            const x = positions.getX(i); const y = positions.getY(i);
-            positions.setZ(i, waterInitialZ[i] + Math.sin(x*0.5+time)*0.08 + Math.cos(y*0.5+time)*0.08);
-        }
-        positions.needsUpdate = true; waterGeo.computeVertexNormals(); 
-
-        animatedObjects.forEach(anim => { anim.obj.position.y = anim.baseY + Math.sin(time * 2) * 0.015; });
-        flyingBirds.forEach(bird => {
-            bird.phase += delta * 0.8;
-            bird.wingL.rotation.z = Math.sin(time * 15) * 0.5; bird.wingR.rotation.z = -Math.sin(time * 15) * 0.5;
-            bird.group.position.x = Math.cos(bird.phase) * bird.radius; bird.group.position.z = Math.sin(bird.phase) * bird.radius;
-            bird.group.position.y = bird.centerY + Math.sin(bird.phase * 2) * 2; bird.group.rotation.y = -bird.phase + Math.PI;
-        });
+    function updateSubtitle(time) {
+        // 提早 0.8 秒觸發字幕，預留觀眾準備與動畫載入的時間
+        let checkTime = time + 0.8; 
+        let newIndex = -1;
         
-        core.position.y = 2 + Math.sin(time * 2) * 0.2; light.position.y = core.position.y;
-
-        if (isPlaying) {
-            trailerTime += delta;
-            
-            let minutes = Math.floor(trailerTime / 60); let seconds = Math.floor(trailerTime % 60);
-            timerDisplay.innerText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} / 04:05`;
-
-            // ================= 依講稿分段播放 =================
-            // 0-8秒：開場主視覺只播放一次；9-13秒：製作團隊介紹只顯示一次。
-            // 主視覺不再延伸到團隊卡背後，避免畫面重複。
-            const isOpeningVisualSection = trailerTime >= 0 && trailerTime < 8.2;
-            teamIntroCard.classList.toggle('is-visible', trailerTime >= 9 && trailerTime < 14);
-
-            // 1:46-2:49：背景替換為小遊戲遊玩畫面。
-            const isGameplaySection = trailerTime >= 106 && trailerTime < 169;
-            setVideoVisible(openingVisualVideo, isOpeningVisualSection);
-            setVideoVisible(gameplayVideo, isGameplaySection);
-            gameplayInfoPanel.classList.toggle('is-visible', trailerTime >= 112 && trailerTime < 169);
-
-            // 0:22-0:33：女廣播新聞畫面；1:45左右閃現機密文件強化爭議。
-            newsOverlay.style.opacity = (trailerTime >= 22 && trailerTime < 33) ? 1 : 0;
-            camOverlay.style.opacity = isGameplaySection ? 1 : 0;
-            docOverlay.style.opacity = (trailerTime >= 145 && trailerTime < 155) ? 1 : 0;
-            endingCtaCard.classList.toggle('is-visible', trailerTime >= 232 && trailerTime < 246);
-
-            // 運鏡
-            let currentShot = null;
-            for (let i = 0; i < cameraShots.length; i++) {
-                if (trailerTime >= cameraShots[i].start && trailerTime < cameraShots[i].end) { currentShot = cameraShots[i]; break; }
-            }
-            if (currentShot) {
-                const progress = (trailerTime - currentShot.start) / (currentShot.end - currentShot.start);
-                currentCamStart.fromArray(currentShot.camStart); currentCamEnd.fromArray(currentShot.camEnd);
-                camera.position.lerpVectors(currentCamStart, currentCamEnd, progress); camera.lookAt(currentLookAt.fromArray(currentShot.look));
-            }
-
-            updateSubtitle(trailerTime);
-
-            // 結尾 Fade to Black（3:52 後，搭配宣傳語與 QR Code 區塊）
-            if (trailerTime >= 232 && trailerTime < 234) {
-                fadeOverlay.style.opacity = 1; core.material.color.setHex(0xffffff); light.color.setHex(0xffffff);
-            }
-            // 結尾由 endingCtaCard 呈現宣傳語；不再重複顯示開場標題卡。
-            if (trailerTime >= 232) { titleCard.style.opacity = 0; }
-
-            // 結束預告片（4分05秒）
-            if (trailerTime >= totalTime + 1) {
-                isPlaying = false; document.getElementById('start-btn').innerText = "重新播放 (REPLAY)";
-                document.getElementById('start-menu').style.display = 'flex'; titleCard.style.opacity = 0; timerDisplay.innerText = "00:00 / 04:05";
-                newsOverlay.style.opacity = 0; camOverlay.style.opacity = 0; docOverlay.style.opacity = 0; gameplayInfoPanel.classList.remove('is-visible'); teamIntroCard.classList.remove('is-visible'); endingCtaCard.classList.remove('is-visible'); setVideoVisible(openingVisualVideo, false); setVideoVisible(gameplayVideo, false);
-            }
+        for (let i = 0; i < subtitles.length; i++) {
+            if (checkTime >= subtitles[i].start && checkTime < subtitles[i].end) { newIndex = i; break; }
         }
-        renderer.render(scene, camera);
+        
+        if (newIndex !== currentSubtitleIndex) {
+            currentSubtitleIndex = newIndex;
+            if (newIndex !== -1) {
+                const sceneText = subtitles[newIndex];
+                let color = "#e2e8f0";
+                if (sceneText.speaker === "阿明") color = "#fbbf24";
+                else if (sceneText.speaker === "男主播") color = "#94a3b8";
+                else if (sceneText.speaker === "年輕志工" || sceneText.speaker === "志工") color = "#34d399";
+                else if (sceneText.speaker === "阿海") color = "#60a5fa"; 
+                
+                let html = "";
+                if (sceneText.speaker) html += `<span class='speaker-name' style='color:${color}; font-weight:900;'>【${sceneText.speaker}】</span>`;
+                let textStyle = (sceneText.text.includes('漁民的抉擇') || sceneText.text.includes('了解真相')) ? "color: #fcd34d;" : "color: #f8fafc;";
+                html += `<span style='${textStyle}'>${sceneText.text}</span>`;
+                
+                const subtitleText = document.getElementById('subtitle-text');
+                subtitleText.style.opacity = 0;
+                // 將延遲降為 50ms 以加速切換顯示
+                setTimeout(() => { subtitleText.innerHTML = html; subtitleText.style.opacity = 1; }, 50);
+            } else { document.getElementById('subtitle-text').style.opacity = 0; }
+        }
     }
 
-    window.addEventListener('resize', () => {
-        camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-    animate();
-</script>
-</body>
-</html>
+    function animate() {
+        requestAnimationFrame(animate);
+        const delta = Math.min(clock.getDelta(), 0.1);
+
+        // 背景風車動畫
+        aeratorWheels.forEach(w => w.rotation.x -= 0.05);
+
+        if (isPlayingTrailer) {
+            
+            // 片頭流程：主視覺影片結束或 10 秒保底 -> 工作人員名單 5 秒 -> 第一大段。
+            const introVideo = document.getElementById('intro-video');
+            const crewCard = document.getElementById('crew-card');
+
+            if (openingPhase === 'intro') {
+                const introElapsed = getNowSeconds() - introStartedAt;
+                trailerTime = Math.min(introElapsed, introDuration);
+
+                // 優先聽影片 ended；若瀏覽器沒有觸發 ended，10 秒後也強制接續，避免停在片頭最後一格。
+                if (introVideo.ended || introElapsed >= introDuration) {
+                    enterCrewCredits();
+                }
+            } else if (openingPhase === 'crew') {
+                const crewElapsed = getNowSeconds() - crewStartedAt;
+                trailerTime = introDuration + Math.min(crewElapsed, crewDuration);
+                crewCard.style.opacity = 1;
+
+                if (crewElapsed >= crewDuration) {
+                    enterMainSegment();
+                }
+            } else if (openingPhase === 'main') {
+                if (!bgAudio.paused && !bgAudio.ended) {
+                    // 以音訊實際進度為準：片頭 10 秒 + 工作人員名單 5 秒。
+                    trailerTime = firstSegmentStart + bgAudio.currentTime;
+                } else {
+                    // 音訊若尚未成功播放或已被阻擋，畫面仍按時間推進。
+                    trailerTime = firstSegmentStart + (getNowSeconds() - mainStartedAt);
+                }
+            }
+            
+            let gameTime = 6.0 + (trailerTime / totalTime) * 12.0;
+            updateEnvironment(gameTime);
+
+            // 控制實機遊玩影片的顯示與播放
+            const gameplayVideo = document.getElementById('gameplay-video');
+            let isShowcasing = (trailerTime >= 113 && trailerTime < 228); // 第二大段：1:53–3:48
+            
+            if (isShowcasing && gameplayVideo.style.opacity !== '1') {
+                // 確保影片時間同步
+                if(gameplayVideo.readyState >= 2) {
+                    gameplayVideo.currentTime = Math.max(0, trailerTime - 113);
+                }
+                gameplayVideo.style.opacity = 1;
+                gameplayVideo.play().catch(e => console.log("影片播放失敗:", e));
+            } else if (!isShowcasing && gameplayVideo.style.opacity !== '0') {
+                gameplayVideo.style.opacity = 0;
+                gameplayVideo.pause();
+            }
+
+            // 情境 UI (只有在非實機影片展示期間才顯示相機框)
+            document.getElementById('news-overlay').style.opacity = (openingPhase === 'main' && trailerTime >= 23 && trailerTime < 35) ? 1 : 0;
+            document.getElementById('doc-overlay').style.opacity = (openingPhase === 'main' && trailerTime >= 80 && trailerTime < 92) ? 1 : 0;
+            document.getElementById('cam-overlay').style.opacity = (openingPhase === 'main' && isShowcasing) ? 1 : 0;
+
+            // 運鏡
+            if (!isShowcasing) applyCameraShotAt(trailerTime);
+
+            if (openingPhase === 'main') updateSubtitle(trailerTime); else document.getElementById('subtitle-text').style.opacity = 0;
+
+            // 結尾 Fade to Black
+            if (trailerTime >= 263 && trailerTime < 265) document.getElementById('fade-overlay').style.opacity = 1;
+            if (trailerTime >= 264) document.getElementById('title-card').style.opacity = 1;
+
+            // 結束預告片
+            if (trailerTime >= totalTime + 1) {
+                isPlayingTrailer = false; openingPhase = 'idle'; clearOpeningTimers(); bgAudio.pause();
+                document.getElementById('start-menu').style.display = 'flex'; document.getElementById('title-card').style.opacity = 0; 
+                document.getElementById('news-overlay').style.opacity = 0; document.getElementById('cam-overlay').style.opacity = 0; document.getElementById('doc-overlay').style.opacity = 0; document.getElementById('crew-card').style.opacity = 0; document.getElementById('crew-card').style.visibility = 'hidden';
+        document.getElementById('crew-card').style.pointerEvents = 'none';
+                gameplayVideo.style.opacity = 0; gameplayVideo.pause();
+                introVideo.style.opacity = 0; introVideo.pause();
+            }
+
+        } else {
+            // === 主選單環景模式 ===
+            const time = Date.now() * 0.0005;
+            camera.position.x = Math.cos(time) * 40; camera.position.z = Math.sin(time) * 40; camera.position.y = 15;
+            camera.lookAt(0, 0, 0);
+        }
+        
+        if (renderer && scene && camera) renderer.render(sc
