@@ -662,10 +662,11 @@ const ASSETS = {
         endAt: clip.endAt,
         sources: [pagesAsset(...clip.parts), mediaGameAsset(...clip.parts), gameAsset(...clip.parts)]
     })),
-    bgmAct1: asset("003-背景音樂", "01-海潮微光（第一幕）.mp3"),
-    bgmAct2: asset("003-背景音樂", "02-遮天板（第二幕）.mp3"),
-    bgmAct3: asset("003-背景音樂", "03-未知樣本（第三幕）.mp3"),
-    bgmAct4: asset("003-背景音樂", "04-霧海天亮（第四幕）.mp3"),
+   // 修改後
+bgmAct1: pagesAsset("003-背景音樂", "01-海潮微光（第一幕）.mp3"),
+bgmAct2: pagesAsset("003-背景音樂", "02-遮天板（第二幕）.mp3"),
+bgmAct3: pagesAsset("003-背景音樂", "03-未知樣本（第三幕）.mp3"),
+bgmAct4: pagesAsset("003-背景音樂", "04-霧海天亮（第四幕）.mp3"),
     voiceoverSources: [
         `https://igudesman222.github.io/-/${encodePath(...VO_PARTS)}`,
         `https://raw.githubusercontent.com/igudesman222/-/main/${encodePath(...VO_PARTS)}`,
@@ -1374,14 +1375,17 @@ document.addEventListener('DOMContentLoaded', () => {
         loadVoiceoverSource(0);
     }
     
-    bgmAct1.src = ASSETS.bgmAct1;
-    bgmAct2.src = ASSETS.bgmAct2;
-    bgmAct3.src = ASSETS.bgmAct3;
-    bgmAct4.src = ASSETS.bgmAct4;
-    runWhenIdle(() => {
-        bgmAct1.load();
-        bgmAct2.load();
-    }, 1500);
+    // 修改後
+bgmAct1.src = ASSETS.bgmAct1;
+bgmAct2.src = ASSETS.bgmAct2;
+bgmAct3.src = ASSETS.bgmAct3;
+bgmAct4.src = ASSETS.bgmAct4;
+runWhenIdle(() => {
+    bgmAct1.load();
+    bgmAct2.load();
+    bgmAct3.load(); // 補上第三幕預載
+    bgmAct4.load(); // 補上第四幕預載
+}, 1500);
 });
 
 function playBGM(audioElement) {
