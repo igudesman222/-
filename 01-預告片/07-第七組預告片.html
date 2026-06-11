@@ -965,14 +965,14 @@
 
     <div class="viewport" id="stage">
         <div id="opening-visual">
-            <!-- 【完美修正：使用 jsDelivr CDN 絕對路徑，保證手機可讀取且跨資料庫無痛抓取影片】 -->
-            <video id="opening-video" playsinline preload="auto" crossorigin="anonymous" src="https://cdn.jsdelivr.net/gh/igudesman222/igudesman2012/04-開場主視覺/07-第七組主視覺動畫.mp4"></video>
+            <!-- 【完美修正：將開場主視覺影片修正為 - 資料庫】 -->
+            <video id="opening-video" playsinline preload="auto" crossorigin="anonymous" src="https://cdn.jsdelivr.net/gh/igudesman222/-/04-開場主視覺/07-第七組主視覺動畫.mp4"></video>
             <div class="opening-frame"></div>
             <div class="opening-caption">07-第七組主視覺動畫 // Offshore Signal Opening</div>
         </div>
         <div id="gameplay-visual">
             <video id="gameplay-video" playsinline muted preload="auto" crossorigin="anonymous">
-                <!-- 【完美修正：遊戲遊玩影片 jsDelivr CDN 絕對路徑】 -->
+                <!-- 遊戲遊玩影片 jsDelivr CDN 絕對路徑 -->
                 <source src="https://cdn.jsdelivr.net/gh/igudesman222/igudesman2012/07-第七組資源/07-001-影片/07-小遊戲遊玩錄製.mp4" type="video/mp4">
             </video>
             <div class="gameplay-veil"></div>
@@ -1041,7 +1041,7 @@
         let gameplaySourceIndex = 0;
         let gameplaySourceLoaded = false;
 
-        // 【完美修正：三大段配樂改為 jsDelivr CDN，解決平板抓不到 GitHub 跨資料夾的問題】
+        // 保留正常運作的配樂
         const audioAssets = {
             part1: new Audio('https://cdn.jsdelivr.net/gh/igudesman222/igudesman2012/07-第七組資源/07-003-音樂/01-海靈的投影(第一大段).mp3'),
             part2: new Audio('https://cdn.jsdelivr.net/gh/igudesman222/igudesman2012/07-第七組資源/07-003-音樂/02-珊瑚回音祭(第二大段).mp3'),
@@ -1075,7 +1075,7 @@
             audio.playsInline = true;
         });
 
-        // 【完美修正：第七組配音跨庫 jsDelivr CDN，指向 `igudesman222/-` 資料庫】
+        // 保留正常運作的配音
         const voiceoverAudio = new Audio('https://cdn.jsdelivr.net/gh/igudesman222/-/03-預告片(配音)/01-配音MP3/07-瑞祥高中-第七組配音(修).mp3');
         voiceoverAudio.preload = 'auto';
         voiceoverAudio.crossOrigin = 'anonymous';
