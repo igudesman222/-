@@ -1441,18 +1441,20 @@ function startTrailer() {
         loadMainVideoSource(0, true);
     }
 
-    // 只暖機載入，不預先 play()。避免瀏覽器延遲解析播放承諾，造成開場影片結束後 BGM 誤播。
-    allBgms.forEach(bgm => {
-        bgm.pause();
-        bgm.currentTime = 0;
-        bgm.volume = 0;
-        try { bgm.load(); } catch (e) { console.log('音訊載入初始化:', e); }
-    });
-
-    if (voiceoverAudio) {
-        voiceoverAudio.pause();
-        voiceoverAudio.currentTime = 0;
+    // 【手機版核心修正】在點擊按鈕的當下，立刻將所有音訊與配音靜音播放並暫停，以合法取得手機瀏覽器的播放權限
+[...allBgms, voiceoverAudio].forEach(audio => {
+    if (audio) {
+        audio.muted = true; // 手機版必須使用 muted 才能靜音解鎖
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                audio.pause();
+                audio.muted = false; // 解鎖成功後恢復聲音設定
+                audio.currentTime = 0;
+            }).catch(e => console.log('手機端音訊解鎖受阻:', e));
+        }
     }
+});
 
     setTimeout(() => {
         introScreen.style.display = 'none';
@@ -1569,14 +1571,14 @@ function updateUI() {
 
     // CRITICAL: Voiceover plays with maximum audio quality synchronized perfectly at 17s
     if (currentSeconds === 16) {
-        if (voiceoverAudio) {
-            voiceoverAudio.currentTime = 0;
-            voiceoverAudio.volume = 1.0; // Voiceover set to 100% full volume
-            voiceoverAudio.play().catch(e => console.log('配音自動播放阻擋:', e));
-        }
-        playBGM(bgmAct1);
+    if (voiceoverAudio) {
+        voiceoverAudio.currentTime = 0;
+        voiceoverAudio.muted = false; // 【確保配音未被靜音】
+        voiceoverAudio.volume = 1.0; 
+        voiceoverAudio.play().catch(e => console.log('配音自動播放阻擋:', e));
     }
-    
+    playBGM(bgmAct1);
+}    
     if (currentSeconds === 66) { stopBGM(bgmAct1); playBGM(bgmAct2); }
     if (currentSeconds === 102) { stopBGM(bgmAct2); playBGM(bgmAct3); }
     if (currentSeconds === 127) { stopBGM(bgmAct3); playBGM(bgmAct4); }
