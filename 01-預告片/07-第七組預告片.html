@@ -704,11 +704,14 @@
     let gameplaySourceIndex = 0;
     let gameplaySourceLoaded = false;
 
-    const audioAssets = {
-        part1: new Audio('https://raw.githubusercontent.com/igudesman222/igudesman2012/d1278a5538b420f840b166fe84935837d3909e48/07-第七組資源/07-003-音樂/01-海靈的投影(第一大段).mp3'),
-        part2: new Audio('https://raw.githubusercontent.com/igudesman222/igudesman2012/d1278a5538b420f840b166fe84935837d3909e48/07-第七組資源/07-003-音樂/02-珊瑚回音祭(第二大段).mp3'),
-        part3: new Audio('https://raw.githubusercontent.com/igudesman222/igudesman2012/d1278a5538b420f840b166fe84935837d3909e48/07-第七組資源/07-003-音樂/03-珊瑚回音祭(終)(第三大段).mp3')
-    };
+    // 假設資源資料夾與 HTML 檔案在同一層或上層
+const audioAssets = {
+    part1: new Audio('./07-第七組資源/07-003-音樂/01-海靈的投影(第一大段).mp3'),
+    part2: new Audio('./07-第七組資源/07-003-音樂/02-珊瑚回音祭(第二大段).mp3'),
+    part3: new Audio('./07-第七組資源/07-003-音樂/03-珊瑚回音祭(終)(第三大段).mp3')
+};
+
+const voiceoverAudio = new Audio('./03-預告片(配音)/01-配音MP3/07-瑞祥高中-第七組配音(修).mp3');
 
     const audioSchedule = [
         { start: 15, end: 117, key: 'part1', label: '第一大段｜海靈的投影' },
@@ -1303,19 +1306,28 @@
     });
 
     document.getElementById('start-btn').addEventListener('click', () => {
-        if (isStarted) return;
-        playTouchSfx('confirm');
-        boostOpeningVideoAudio();
-        prepareGameplayVideo();
-        isStarted = true;
-        const fade = document.getElementById('final-fade');
-        fade.classList.remove('active');
-        document.getElementById('boot-screen').style.opacity = '0';
-        setTimeout(() => {
-            document.getElementById('boot-screen').style.display = 'none';
-            startTrailer();
-        }, 1500);
+    if (isStarted) return;
+    playTouchSfx('confirm');
+
+    // ==== 【新增：解除行動裝置音訊限制】 ====
+    // 在使用者點擊的當下，立刻讓所有配音與背景音樂「播放並暫停」，藉此取得行動裝置的授權
+    voiceoverAudio.play().then(() => { voiceoverAudio.pause(); }).catch(() => {});
+    Object.values(audioAssets).forEach(audio => {
+        audio.play().then(() => { audio.pause(); }).catch(() => {});
     });
+    // ===================================
+
+    boostOpeningVideoAudio();
+    prepareGameplayVideo();
+    isStarted = true;
+    const fade = document.getElementById('final-fade');
+    fade.classList.remove('active');
+    document.getElementById('boot-screen').style.opacity = '0';
+    setTimeout(() => {
+        document.getElementById('boot-screen').style.display = 'none';
+        startTrailer();
+    }, 1500);
+});
 
     window.addEventListener('resize', () => {
         setAppHeight();
