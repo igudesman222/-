@@ -189,7 +189,7 @@
         #gameplay-visual {
             position: fixed;
             inset: 0;
-            z-index: 42;
+            z-index: 35;
             background: #010409;
             opacity: 0;
             pointer-events: none;
@@ -205,7 +205,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            filter: contrast(1.08) saturate(1.05) brightness(0.68);
+            filter: contrast(1.08) saturate(1.05) brightness(0.82);
             transform: scale(1.015);
         }
 
@@ -1027,44 +1027,45 @@
     </div>
 
     <script>
-        const GAMEPLAY_VIDEO_START = 123;
-        const GAMEPLAY_VIDEO_END = 137.8;
+        const GAMEPLAY_VIDEO_START = 125;
+        const GAMEPLAY_VIDEO_END = 197;
         const GAMEPLAY_VIDEO_OFFSET = 0;
 
-        const VOICEOVER_TIMELINE_START = 15;
-        const SUBTITLE_SYNC_OFFSET = 0.35;
+        const VOICEOVER_TIMELINE_START = 16;
+        const SUBTITLE_SYNC_OFFSET = 0;
 
         const gameplayVideoSources = [
-            'https://cdn.jsdelivr.net/gh/igudesman222/igudesman2012/07-第七組資源/07-001-影片/07-小遊戲遊玩錄製.mp4',
-            'https://cdn.jsdelivr.net/gh/igudesman222/igudesman2012/07-第七組資源/07-001-影片/07-小遊戲遊玩錄製.MP4'
+            'https://cdn.jsdelivr.net/gh/igudesman222/igudesman2012/07-%E7%AC%AC%E4%B8%83%E7%B5%84%E8%B3%87%E6%BA%90/07-001-%E5%BD%B1%E7%89%87/07-%E5%B0%8F%E9%81%8A%E6%88%B2%E9%81%8A%E7%8E%A9%E9%8C%84%E8%A3%BD.mp4',
+            'https://raw.githubusercontent.com/igudesman222/igudesman2012/main/07-%E7%AC%AC%E4%B8%83%E7%B5%84%E8%B3%87%E6%BA%90/07-001-%E5%BD%B1%E7%89%87/07-%E5%B0%8F%E9%81%8A%E6%88%B2%E9%81%8A%E7%8E%A9%E9%8C%84%E8%A3%BD.mp4',
+            'https://cdn.jsdelivr.net/gh/igudesman222/igudesman2012/07-%E7%AC%AC%E4%B8%83%E7%B5%84%E8%B3%87%E6%BA%90/07-001-%E5%BD%B1%E7%89%87/07-%E5%B0%8F%E9%81%8A%E6%88%B2%E9%81%8A%E7%8E%A9%E9%8C%84%E8%A3%BD.MP4'
         ];
         let gameplaySourceIndex = 0;
         let gameplaySourceLoaded = false;
 
-        // 保留正常運作的配樂
+        // 配樂：第一大段改用指定完整版，其餘段落保留原設定
         const audioAssets = {
-            part1: new Audio('https://cdn.jsdelivr.net/gh/igudesman222/igudesman2012/07-第七組資源/07-003-音樂/01-海靈的投影(第一大段).mp3'),
+            part1: new Audio('https://cdn.jsdelivr.net/gh/igudesman222/igudesman2012/07-%E7%AC%AC%E4%B8%83%E7%B5%84%E8%B3%87%E6%BA%90/07-003-%E9%9F%B3%E6%A8%82/03-%E6%B5%B7%E9%9D%88%E7%9A%84%E6%8A%95%E5%BD%B1(%E7%AC%AC%E4%B8%89%E5%A4%A7%E6%AE%B5)%20%E5%AE%8C%E6%95%B4%E7%89%88.mp3'),
             part2: new Audio('https://cdn.jsdelivr.net/gh/igudesman222/igudesman2012/07-第七組資源/07-003-音樂/02-珊瑚回音祭(第二大段).mp3'),
             part3: new Audio('https://cdn.jsdelivr.net/gh/igudesman222/igudesman2012/07-第七組資源/07-003-音樂/03-珊瑚回音祭(終)(第三大段).mp3')
         };
 
         const audioSchedule = [{
-                start: 15,
-                end: 117,
-                key: 'part1',
-                label: '第一大段｜海靈的投影'
+                "start": 16,
+                "end": 124,
+                "key": "part1",
+                "label": "第一大段｜海靈的投影 完整版"
             },
             {
-                start: 118,
-                end: 137,
-                key: 'part2',
-                label: '第二大段｜珊瑚回音祭'
+                "start": 125,
+                "end": 197,
+                "key": "part2",
+                "label": "第二大段｜珊瑚回音祭"
             },
             {
-                start: 138,
-                end: 190,
-                key: 'part3',
-                label: '第三大段｜珊瑚回音祭(終)'
+                "start": 198,
+                "end": 243,
+                "key": "part3",
+                "label": "第三大段｜珊瑚回音祭(終)"
             }
         ];
 
@@ -1075,11 +1076,31 @@
             audio.playsInline = true;
         });
 
-        // 保留正常運作的配音
-        const voiceoverAudio = new Audio('https://cdn.jsdelivr.net/gh/igudesman222/-/03-預告片(配音)/01-配音MP3/07-瑞祥高中-第七組配音(修).mp3');
-        voiceoverAudio.preload = 'auto';
-        voiceoverAudio.crossOrigin = 'anonymous';
-        let voiceoverPlayed = false;
+        // 配音：0:16-2:05 使用第一二大段；3:17-4:03 使用第三大段
+        const voiceoverAssets = {
+            firstSecond: new Audio('https://cdn.jsdelivr.net/gh/igudesman222/-/03-%E9%A0%90%E5%91%8A%E7%89%87(%E9%85%8D%E9%9F%B3)/01-%E9%85%8D%E9%9F%B3MP3/07-%E7%91%9E%E7%A5%A5%E9%AB%98%E4%B8%AD-%E7%AC%AC%E4%B8%83%E7%B5%84%E9%85%8D%E9%9F%B3-%E7%AC%AC%E4%B8%80%E4%BA%8C%E5%A4%A7%E6%AE%B5%E7%94%A8.mp3'),
+            third: new Audio('https://cdn.jsdelivr.net/gh/igudesman222/-/03-%E9%A0%90%E5%91%8A%E7%89%87(%E9%85%8D%E9%9F%B3)/01-%E9%85%8D%E9%9F%B3MP3/07-%E7%91%9E%E7%A5%A5%E9%AB%98%E4%B8%AD-%E7%AC%AC%E4%B8%83%E7%B5%84%E9%85%8D%E9%9F%B3-%E7%AC%AC%E4%B8%89%E5%A4%A7%E6%AE%B5%E7%94%A8.mp3')
+        };
+        const voiceoverSchedule = [{
+                start: 16,
+                end: 125,
+                key: 'firstSecond',
+                label: '第一、二大段配音'
+            },
+            {
+                start: 197,
+                end: 243,
+                key: 'third',
+                label: '第三大段配音'
+            }
+        ];
+        Object.keys(voiceoverAssets).forEach(key => {
+            const audio = voiceoverAssets[key];
+            audio.preload = 'auto';
+            audio.crossOrigin = 'anonymous';
+            audio.playsInline = true;
+        });
+        let activeVoiceKey = null;
 
         let currentAudio = null;
         let activeBgmKey = null;
@@ -1232,139 +1253,172 @@
         }
 
         const script = [{
-                t: 0,
-                type: 'video',
-                main: '07-第七組主視覺動畫',
-                sub: '開場主視覺',
-                label: '00:00-00:07 MAIN VISUAL'
+                "t": 0,
+                "type": "video",
+                "main": "07-第七組主視覺動畫",
+                "sub": "開場主視覺",
+                "label": "00:00-00:08 MAIN VISUAL"
             },
             {
-                t: 8,
-                type: 'team',
-                main: '高雄市立瑞祥高中  海洋探險隊\n宇晴、潤豪、湘庭',
-                sub: '',
-                label: '00:08-00:14 PRODUCTION TEAM'
+                "t": 9.5,
+                "type": "team",
+                "main": "高雄市立瑞祥高中  海洋探險隊\n宇晴、潤豪、湘庭",
+                "sub": "",
+                "label": "00:09-00:16 PRODUCTION TEAM"
             },
             {
-                t: 15,
-                type: 'talk',
-                who: '旁白',
-                emotion: '陳述',
-                msg: '能源轉型，是當今的重要課題。為了減少燃煤，我們建造了離岸風電廠。但這座巨大的「海上風車」，真的有想像中的美好嗎？'
+                "t": 16,
+                "type": "talk",
+                "who": "旁白",
+                "emotion": "陳述",
+                "msg": "能源轉型，是當今的重要課題。為了減少燃煤，我們建造了離岸風電廠。但這座巨大的「海上風車」，真的有想像中的美好嗎？"
             },
             {
-                t: 27,
-                type: 'talk',
-                who: '阿建',
-                emotion: '得意大笑',
-                msg: '我的海上供電廠終於完工了！既有乾淨的能源，又能讓我大賺一筆，簡直是一舉兩得！'
+                "t": 28.5,
+                "type": "talk",
+                "who": "阿建",
+                "emotion": "得意大笑",
+                "msg": "哈哈哈~我的海上供電廠終於完工了！既有乾淨的能源，又能讓我大賺一筆，簡直是一舉兩得！"
             },
             {
-                t: 37,
-                type: 'talk',
-                who: '遠德',
-                emotion: '憤怒',
-                msg: '綠能立意雖好，但施工噪音卻嚴重傷害了白海豚！這些只在乎自己利益的商人，根本不在乎生態死活！'
+                "t": 38,
+                "type": "talk",
+                "who": "遠德",
+                "emotion": "憤怒",
+                "msg": "綠能立意雖好，但施工噪音卻嚴重傷害了白海豚！這些只在乎自己利益的商人，根本不在乎生態死活！"
             },
             {
-                t: 45,
-                type: 'talk',
-                who: '白海豚',
-                emotion: '虛弱',
-                msg: '遠德……打樁噪音太大了，干擾了我們的聲波，大家無法溝通跟覓食，棲息地也被工程船污染了……'
+                "t": 46,
+                "type": "talk",
+                "who": "白海豚",
+                "emotion": "虛弱",
+                "msg": "遠德……打樁噪音太大了，干擾了我們的聲波，大家無法溝通跟覓食，棲息地也被工程船污染了……"
             },
             {
-                t: 58,
-                type: 'talk',
-                who: '遠德',
-                emotion: '急切',
-                msg: '白海豚，你們撐住！我現在就去找廠長理論，一定替你們討回公道！'
+                "t": 59.5,
+                "type": "talk",
+                "who": "遠德",
+                "emotion": "急切",
+                "msg": "白海豚，你們撐住！我現在就去找廠長理論，一定替你們討回公道！"
             },
             {
-                t: 64,
-                type: 'talk',
-                who: '遠德',
-                emotion: '拍桌怒吼',
-                msg: '阿建！你給我出來面對！只要我遠德還在，就不可能讓你這個奸商得逞！'
+                "t": 65,
+                "type": "talk",
+                "who": "遠德",
+                "emotion": "拍桌怒吼",
+                "msg": "阿建！你給我出來面對！只要我遠德還在，就不可能讓你這個奸商得逞！"
             },
             {
-                t: 73,
-                type: 'talk',
-                who: '阿建',
-                emotion: '冷笑',
-                msg: '愚蠢！我可是政府核准的合法供電商。這案子不僅能大撈一筆，還能提供綠電，好處多到滿出來，你能拿我怎樣？'
-            },
-
-            {
-                t: 85,
-                type: 'talk',
-                who: '遠德',
-                emotion: '質問',
-                msg: '為了你那可悲的利益，犧牲這麼多白海豚的命，值得嗎？'
+                "t": 74,
+                "type": "talk",
+                "who": "阿建",
+                "emotion": "冷笑",
+                "msg": "愚蠢！我可是政府核准的合法供電商。這案子不僅能大撈一筆，還能提供綠電，好處多到滿出來，你能拿我怎樣？"
             },
             {
-                t: 89,
-                type: 'talk',
-                who: '阿建',
-                emotion: '狂妄',
-                msg: '幾條海豚的命，換我一輩子財富自由，傻子才不選！你這麼拼命，難道以為海豚會把你當英雄嗎？真是太可笑了！'
+                "t": 86,
+                "type": "talk",
+                "who": "遠德",
+                "emotion": "質問",
+                "msg": "為了你那可悲的利益，犧牲這麼多白海豚的命，值得嗎？"
             },
             {
-                t: 101,
-                type: 'talk',
-                who: '遠德',
-                emotion: '堅定',
-                msg: '我才不稀罕當什麼英雄！這裡是我的家，白海豚是我的家人，保護他們是我的責任！'
+                "t": 90,
+                "type": "talk",
+                "who": "阿建",
+                "emotion": "狂妄",
+                "msg": "幾條海豚的命，換我一輩子財富自由，傻子才不選！你這麼拼命，難道以為海豚會把你當英雄嗎？真是太可笑了！"
             },
             {
-                t: 109,
-                type: 'talk',
-                who: '阿建',
-                emotion: '嘲諷',
-                msg: '說得好聽，你憑什麼阻止我？等電廠正式啟用，我就是全國媒體爭相報導的「綠能英雄」！'
+                "t": 102,
+                "type": "talk",
+                "who": "遠德",
+                "emotion": "堅定",
+                "msg": "我才不稀罕當什麼英雄！這裡是我的家，白海豚是我的家人，保護他們是我的責任！"
             },
             {
-                t: 119,
-                type: 'talk',
-                who: '旁白',
-                emotion: '引導',
-                msg: '遠德會遇到重重難關，幫助遠德完成這次的任務吧！'
-            },
-
-            {
-                t: 124,
-                type: 'talk',
-                who: '遠德',
-                emotion: '宣示',
-                msg: '看到了吧？只要我在這片土地上，誰都別想傷害白海豚！'
+                "t": 110,
+                "type": "talk",
+                "who": "阿建",
+                "emotion": "嘲諷",
+                "msg": "說得好聽，你憑什麼阻止我？等電廠正式啟用，我就是全國媒體爭相報導的「綠能英雄」！"
             },
             {
-                t: 130,
-                type: 'talk',
-                who: '阿建',
-                emotion: '氣急敗壞',
-                msg: '你這可惡的死小孩，竟敢壞我的好事！你給我等著，下一次我絕對不會放過你！'
+                "t": 120,
+                "type": "talk",
+                "who": "旁白",
+                "emotion": "引導",
+                "msg": "遠德會遇到重重難關，幫助遠德完成這次的任務吧！"
             },
             {
-                t: 137,
-                type: 'talk',
-                who: '遠德',
-                emotion: '守護',
-                msg: '下一次？哼，你放心，就算我不破壞你的詭計，這片土地的任何一個人都不可能讓你得逞！這是我們的家，現在是，以後也是。'
+                "t": 125,
+                "type": "visual",
+                "main": "第一大關",
+                "sub": "「破碎的聲納」\n操作方式：圓圈進入虛線區域時點擊空白鍵，連續成功七次才算成功！",
+                "label": "02:05-02:20 GAMEPLAY // STAGE 01"
             },
             {
-                t: 146,
-                type: 'talk',
-                who: '旁白',
-                emotion: '沉思',
-                msg: '綠能轉型是未來的光，但不該讓生態蒙上陰影。利益之外，我們更該學會如何與海洋共存。'
+                "t": 141,
+                "type": "visual",
+                "main": "第二大關",
+                "sub": "「遠德的迷航」\n請運用滑鼠調整聲波的頻率達 99% 才成功！",
+                "label": "02:21-02:33 GAMEPLAY // STAGE 02"
             },
             {
-                t: 155,
-                type: 'final',
-                main: '《海之契約：遠德章節》\n白海豚的安危，需要大家來守護！',
-                sub: '',
-                label: '02:35-02:50 FINAL MESSAGE'
+                "t": 154,
+                "type": "visual",
+                "main": "第三大關",
+                "sub": "「淤塞的密道」\n請將畫面上呈現的單字在有限的時間內運用鍵盤拼出，共三關！",
+                "label": "02:34-02:50 GAMEPLAY // STAGE 03"
+            },
+            {
+                "t": 171,
+                "type": "visual",
+                "main": "第四大關",
+                "sub": "「深淵守護戰」\n請利用空白鍵，當魚叉（紅色線條）移動到左方紅線後，點擊空白鍵消除魚叉，總共要消除 15 個！",
+                "label": "02:51-03:13 GAMEPLAY // STAGE 04"
+            },
+            {
+                "t": 195,
+                "type": "visual",
+                "main": "守護成功",
+                "sub": "恭喜你成功守護了白海豚家族！",
+                "label": "03:15-03:17 CLEAR CONDITION"
+            },
+            {
+                "t": 197,
+                "type": "talk",
+                "who": "遠德",
+                "emotion": "宣示",
+                "msg": "看到了吧？只要我在這片土地上，誰都別想傷害白海豚！"
+            },
+            {
+                "t": 203,
+                "type": "talk",
+                "who": "阿建",
+                "emotion": "氣急敗壞",
+                "msg": "你這可惡的死小孩，竟敢壞我的好事！你給我等著，下一次我絕對不會放過你！"
+            },
+            {
+                "t": 210,
+                "type": "talk",
+                "who": "遠德",
+                "emotion": "守護",
+                "msg": "下一次？哼，你放心，就算我不破壞你的詭計，這片土地的任何一個人都不可能讓你得逞！這是我們的家，現在是，以後也是。"
+            },
+            {
+                "t": 219,
+                "type": "talk",
+                "who": "旁白",
+                "emotion": "沉思",
+                "msg": "綠能轉型是未來的光，但不該讓生態蒙上陰影。利益之外，我們更該學會如何與海洋共存。"
+            },
+            {
+                "t": 228,
+                "type": "final",
+                "main": "《海之契約：遠德章節》\n白海豚的安危，需要大家來守護！",
+                "sub": "",
+                "label": "03:48-04:03 FINAL MESSAGE"
             }
         ];
 
@@ -1409,6 +1463,40 @@
             activeBgmKey = null;
             document.getElementById('audio-info').innerText = 'BGM: STANDBY';
         }
+
+        function switchVoiceover(key) {
+            if (activeVoiceKey === key) return;
+            Object.keys(voiceoverAssets).forEach(vKey => {
+                const audio = voiceoverAssets[vKey];
+                if (vKey !== key) {
+                    audio.pause();
+                    audio.currentTime = 0;
+                }
+            });
+            const nextVoice = voiceoverAssets[key];
+            if (!nextVoice) return;
+            activeVoiceKey = key;
+            nextVoice.currentTime = 0;
+            nextVoice.volume = 1;
+            const p = nextVoice.play();
+            if (p !== undefined) p.catch(() => {});
+        }
+
+        function stopVoiceover() {
+            Object.keys(voiceoverAssets).forEach(key => {
+                const audio = voiceoverAssets[key];
+                audio.pause();
+                audio.currentTime = 0;
+            });
+            activeVoiceKey = null;
+        }
+
+        function handleVoiceoverSchedule(elapsed) {
+            const segment = voiceoverSchedule.find(s => elapsed >= s.start && elapsed < s.end);
+            if (segment) switchVoiceover(segment.key);
+            else if (activeVoiceKey) stopVoiceover();
+        }
+
 
         function handleAudioSchedule(elapsed) {
             const segment = audioSchedule.find(s => elapsed >= s.start && elapsed <= s.end);
@@ -1555,7 +1643,7 @@
         }
 
         function updateUI(step) {
-            const total = 170;
+            const total = 243;
             const percent = Math.min(100, Math.floor((step.t / total) * 100));
             document.getElementById('progress-bar').style.width = percent + '%';
             document.getElementById('progress-val').innerText = `SYNC ${percent.toString().padStart(2, '0')}%`;
@@ -1692,9 +1780,7 @@
         function resetToBootScreen() {
             stopCurrentAudio();
 
-            voiceoverPlayed = false;
-            voiceoverAudio.pause();
-            voiceoverAudio.currentTime = 0;
+            stopVoiceover();
 
             const openingVideo = document.getElementById('opening-video');
             openingVideo.pause();
@@ -1726,15 +1812,14 @@
             endingStarted = true;
             document.getElementById('status-tag').innerText = 'FADE_TO_BLACK';
             stopCurrentAudio();
+            stopVoiceover();
             const fade = document.getElementById('final-fade');
             fade.classList.add('active');
             setTimeout(resetToBootScreen, 4300);
         }
 
         function getSyncedElapsed(rawElapsed) {
-            if (voiceoverPlayed && !voiceoverAudio.paused && Number.isFinite(voiceoverAudio.currentTime)) {
-                return VOICEOVER_TIMELINE_START + voiceoverAudio.currentTime;
-            }
+            // 以使用者指定的字幕時間軸為主，避免配音檔長度或瀏覽器播放延遲造成字幕漂移。
             return rawElapsed;
         }
 
@@ -1753,16 +1838,10 @@
             trailerLoop = setInterval(() => {
                 const rawElapsed = (Date.now() - startTime) / 1000;
 
-                if (rawElapsed >= VOICEOVER_TIMELINE_START && !voiceoverPlayed) {
-                    voiceoverPlayed = true;
-                    voiceoverAudio.currentTime = 0;
-                    const p = voiceoverAudio.play();
-                    if (p !== undefined) p.catch(() => {});
-                }
-
                 const elapsed = getSyncedElapsed(rawElapsed);
                 document.getElementById('runtime-clock').innerText = formatTime(elapsed);
                 handleAudioSchedule(elapsed);
+                handleVoiceoverSchedule(elapsed);
                 handleGameplayVideo(elapsed);
 
                 let idx = -1;
@@ -1777,7 +1856,7 @@
                     currentIdx = idx;
                     updateUI(script[idx]);
                 }
-                if (elapsed >= 170) {
+                if (elapsed >= 243) {
                     clearInterval(trailerLoop);
                     trailerLoop = null;
                     beginEndingSequence();
@@ -1799,15 +1878,20 @@
             playTouchSfx('confirm');
 
             try {
-                voiceoverAudio.load();
-                const p1 = voiceoverAudio.play();
-                if (p1 !== undefined) {
-                    p1.then(() => {
-                        voiceoverAudio.pause();
-                    }).catch(() => {});
-                } else {
-                    voiceoverAudio.pause();
-                }
+                Object.keys(voiceoverAssets).forEach(key => {
+                    const audio = voiceoverAssets[key];
+                    audio.load();
+                    const p1 = audio.play();
+                    if (p1 !== undefined) {
+                        p1.then(() => {
+                            audio.pause();
+                            audio.currentTime = 0;
+                        }).catch(() => {});
+                    } else {
+                        audio.pause();
+                        audio.currentTime = 0;
+                    }
+                });
 
                 Object.keys(audioAssets).forEach(key => {
                     const audio = audioAssets[key];
