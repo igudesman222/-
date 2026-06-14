@@ -713,6 +713,128 @@
             }
         }
 
+
+        /* 四大關卡字幕：先置中 1.5 秒，再縮到左上角，讓遊戲畫面露出 */
+        .gameplay-main.gameplay-compact {
+            position: fixed !important;
+            top: max(54px, env(safe-area-inset-top)) !important;
+            left: max(42px, env(safe-area-inset-left)) !important;
+            z-index: 130 !important;
+            max-width: min(420px, 38vw) !important;
+            font-size: clamp(1.25rem, 2.2vw, 2.05rem) !important;
+            line-height: 1.08 !important;
+            letter-spacing: 0.12em !important;
+            padding-left: 0.12em !important;
+            text-align: left !important;
+            white-space: nowrap !important;
+            opacity: 0.96 !important;
+            transform: none !important;
+            transition: all 0.75s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+
+        .gameplay-subtitle.gameplay-compact {
+            position: fixed !important;
+            top: max(102px, calc(env(safe-area-inset-top) + 86px)) !important;
+            left: max(42px, env(safe-area-inset-left)) !important;
+            z-index: 130 !important;
+            width: min(430px, 38vw) !important;
+            max-width: min(430px, 38vw) !important;
+            margin-top: 0 !important;
+            padding: 12px 15px !important;
+            border-radius: 14px !important;
+            background: rgba(2, 8, 15, 0.66) !important;
+            border: 1px solid rgba(45, 212, 191, 0.28) !important;
+            text-align: left !important;
+            font-size: clamp(0.78rem, 1.05vw, 1.05rem) !important;
+            line-height: 1.38 !important;
+            letter-spacing: 0.015em !important;
+            opacity: 0.9 !important;
+            transform: none !important;
+            backdrop-filter: blur(12px);
+            transition: all 0.75s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+
+        .gameplay-subtitle.gameplay-compact .gameplay-stage-name {
+            margin-bottom: 0.25em !important;
+            font-size: clamp(1rem, 1.45vw, 1.35rem) !important;
+            line-height: 1.18 !important;
+            letter-spacing: 0.055em !important;
+        }
+
+        .gameplay-subtitle.gameplay-compact .gameplay-stage-desc {
+            font-size: clamp(0.78rem, 1.05vw, 1.02rem) !important;
+            line-height: 1.42 !important;
+            letter-spacing: 0.01em !important;
+        }
+
+        .gameplay-label.gameplay-compact {
+            position: fixed !important;
+            top: max(31px, calc(env(safe-area-inset-top) + 18px)) !important;
+            left: max(42px, env(safe-area-inset-left)) !important;
+            z-index: 130 !important;
+            opacity: 0.46 !important;
+            letter-spacing: 0.22em !important;
+            transition: all 0.75s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+
+        /* 關卡字幕縮角後：左上角正方框、字幕變暗，遊戲畫面同步變亮凸顯 */
+        body.gameplay-focus-mode #gameplay-video {
+            filter: contrast(1.16) saturate(1.16) brightness(1.12) !important;
+        }
+
+        body.gameplay-focus-mode .gameplay-veil {
+            background: radial-gradient(circle at center, rgba(0, 53, 84, 0.015), rgba(1, 4, 9, 0.18) 82%),
+                linear-gradient(180deg, rgba(1, 4, 9, 0.02), rgba(1, 4, 9, 0.16)) !important;
+            box-shadow: inset 0 0 70px rgba(1, 4, 9, 0.42) !important;
+        }
+
+        body.gameplay-focus-mode #gameplay-visual::after {
+            opacity: 0.42;
+        }
+
+        .gameplay-main.gameplay-compact {
+            width: min(250px, 28vw) !important;
+            max-width: min(250px, 28vw) !important;
+            min-height: 38px !important;
+            padding: 9px 12px !important;
+            padding-left: 12px !important;
+            border-radius: 16px 16px 0 0 !important;
+            background: rgba(1, 4, 9, 0.58) !important;
+            border: 1px solid rgba(45, 212, 191, 0.22) !important;
+            border-bottom: 0 !important;
+            color: rgba(204, 251, 241, 0.58) !important;
+            text-shadow: none !important;
+            backdrop-filter: blur(10px);
+        }
+
+        .gameplay-subtitle.gameplay-compact {
+            top: max(92px, calc(env(safe-area-inset-top) + 76px)) !important;
+            width: min(250px, 28vw) !important;
+            max-width: min(250px, 28vw) !important;
+            min-width: min(250px, 28vw) !important;
+            height: min(250px, 28vw) !important;
+            max-height: min(250px, 28vw) !important;
+            padding: 15px 14px !important;
+            border-radius: 0 0 18px 18px !important;
+            background: rgba(1, 4, 9, 0.62) !important;
+            border: 1px solid rgba(45, 212, 191, 0.22) !important;
+            color: rgba(226, 232, 240, 0.54) !important;
+            opacity: 0.62 !important;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.42), inset 0 0 22px rgba(45, 212, 191, 0.04) !important;
+            overflow: hidden !important;
+        }
+
+        .gameplay-subtitle.gameplay-compact .gameplay-stage-name {
+            color: rgba(204, 251, 241, 0.64) !important;
+            border-bottom: 1px solid rgba(45, 212, 191, 0.16);
+            padding-bottom: 0.38em;
+            margin-bottom: 0.5em !important;
+        }
+
+        .gameplay-subtitle.gameplay-compact .gameplay-stage-desc {
+            color: rgba(241, 245, 249, 0.56) !important;
+        }
+
         .final-fade-overlay {
             position: fixed;
             inset: 0;
@@ -965,6 +1087,44 @@
             }
         }
 
+
+        @media (max-width: 900px) {
+            .gameplay-main.gameplay-compact {
+                top: max(48px, env(safe-area-inset-top)) !important;
+                left: max(18px, env(safe-area-inset-left)) !important;
+                width: min(42vw, 190px) !important;
+                max-width: min(42vw, 190px) !important;
+                font-size: clamp(0.92rem, 4.2vw, 1.35rem) !important;
+                padding: 8px 10px !important;
+                padding-left: 10px !important;
+            }
+
+            .gameplay-subtitle.gameplay-compact {
+                top: max(86px, calc(env(safe-area-inset-top) + 70px)) !important;
+                left: max(18px, env(safe-area-inset-left)) !important;
+                width: min(42vw, 190px) !important;
+                max-width: min(42vw, 190px) !important;
+                min-width: min(42vw, 190px) !important;
+                height: min(42vw, 190px) !important;
+                max-height: min(42vw, 190px) !important;
+                padding: 10px 10px !important;
+                font-size: clamp(0.58rem, 2.6vw, 0.78rem) !important;
+            }
+
+            .gameplay-subtitle.gameplay-compact .gameplay-stage-name {
+                font-size: clamp(0.92rem, 4vw, 1.25rem) !important;
+            }
+
+            .gameplay-subtitle.gameplay-compact .gameplay-stage-desc {
+                font-size: clamp(0.72rem, 3.1vw, 0.95rem) !important;
+            }
+
+            .gameplay-label.gameplay-compact {
+                top: max(24px, calc(env(safe-area-inset-top) + 12px)) !important;
+                left: max(18px, env(safe-area-inset-left)) !important;
+            }
+        }
+
         @media (prefers-reduced-motion: reduce) {
 
             .grid-3d,
@@ -1148,6 +1308,7 @@
                 padding: 0 12px;
             }
         }
+
     </style>
 </head>
 
@@ -1261,25 +1422,26 @@
             part3: new Audio('https://cdn.jsdelivr.net/gh/igudesman222/igudesman2012/07-第七組資源/07-003-音樂/03-珊瑚回音祭(終)(第三大段).mp3')
         };
 
-        const audioSchedule = [{
-                "start": 13,
-                "end": 125.99,
-                "key": "part1",
-                "label": "第一大段｜海靈的投影 完整版"
+        const audioSchedule = [
+            {
+                        "start": 13,
+                        "end": 125.99,
+                        "key": "part1",
+                        "label": "第一大段｜海靈的投影 完整版"
             },
             {
-                "start": 126,
-                "end": 197.99,
-                "key": "part2",
-                "label": "第二大段｜珊瑚回音祭（02:06開始）"
+                        "start": 126,
+                        "end": 197.99,
+                        "key": "part2",
+                        "label": "第二大段｜珊瑚回音祭（02:06開始）"
             },
             {
-                "start": 198,
-                "end": 244,
-                "key": "part3",
-                "label": "第三大段｜珊瑚回音祭(終)（03:18開始）"
+                        "start": 198,
+                        "end": 244,
+                        "key": "part3",
+                        "label": "第三大段｜珊瑚回音祭(終)（03:18開始）"
             }
-        ];
+];
 
         Object.keys(audioAssets).forEach(key => {
             const audio = audioAssets[key];
@@ -1293,18 +1455,9 @@
             firstSecond: new Audio('https://cdn.jsdelivr.net/gh/igudesman222/-/03-%E9%A0%90%E5%91%8A%E7%89%87(%E9%85%8D%E9%9F%B3)/01-%E9%85%8D%E9%9F%B3MP3/07-%E7%91%9E%E7%A5%A5%E9%AB%98%E4%B8%AD-%E7%AC%AC%E4%B8%83%E7%B5%84%E9%85%8D%E9%9F%B3-%E7%AC%AC%E4%B8%80%E4%BA%8C%E5%A4%A7%E6%AE%B5%E7%94%A8.mp3'),
             third: new Audio('https://cdn.jsdelivr.net/gh/igudesman222/-/03-%E9%A0%90%E5%91%8A%E7%89%87(%E9%85%8D%E9%9F%B3)/01-%E9%85%8D%E9%9F%B3MP3/07-%E7%91%9E%E7%A5%A5%E9%AB%98%E4%B8%AD-%E7%AC%AC%E4%B8%83%E7%B5%84%E9%85%8D%E9%9F%B3-%E7%AC%AC%E4%B8%89%E5%A4%A7%E6%AE%B5%E7%94%A8.mp3')
         };
-        const voiceoverSchedule = [{
-                start: 15.16,
-                end: 123.64,
-                key: 'firstSecond',
-                label: '第一、二大段配音'
-            },
-            {
-                start: 198,
-                end: 232.2,
-                key: 'third',
-                label: '第三大段配音'
-            }
+        const voiceoverSchedule = [
+            { start: 15.16, end: 123.64, key: 'firstSecond', label: '第一、二大段配音' },
+            { start: 198, end: 232.2, key: 'third', label: '第三大段配音' }
         ];
         Object.keys(voiceoverAssets).forEach(key => {
             const audio = voiceoverAssets[key];
@@ -1468,183 +1621,184 @@
             }
         }
 
-        const script = [{
-                "t": 0,
-                "type": "video",
-                "main": "07-第七組主視覺動畫",
-                "sub": "開場主視覺",
-                "label": "00:00.00-00:09.20 MAIN VISUAL"
-            },
+        const script = [
             {
-                "t": 9.2,
-                "type": "team",
-                "main": "高雄市立瑞祥高中  海洋探險隊\n宇晴、潤豪、湘庭",
-                "sub": "",
-                "label": "00:09.20-00:15.00 PRODUCTION TEAM"
-            },
+                        "t": 0,
+                        "type": "video",
+                        "main": "07-第七組主視覺動畫",
+                        "sub": "開場主視覺",
+                        "label": "00:00.00-00:09.20 MAIN VISUAL"
+},
             {
-                "t": 15.16,
-                "type": "talk",
-                "who": "旁白",
-                "emotion": "陳述",
-                "msg": "能源轉型，是當今的重要課題。為了減少燃煤，我們建造了離岸風電廠。但這座巨大的「海上風車」，真的有想像中的美好嗎？"
-            },
+                        "t": 9.2,
+                        "type": "team",
+                        "main": "高雄市立瑞祥高中  海洋探險隊\n宇晴、潤豪、湘庭",
+                        "sub": "",
+                        "label": "00:09.20-00:15.00 PRODUCTION TEAM"
+},
             {
-                "t": 26.2,
-                "type": "talk",
-                "who": "阿建",
-                "emotion": "得意大笑",
-                "msg": "哈哈哈！我的海上供電廠終於完工了！既有乾淨的能源，又能讓我大賺一筆，簡直是一舉兩得！"
-            },
+                        "t": 15.16,
+                        "type": "talk",
+                        "who": "旁白",
+                        "emotion": "陳述",
+                        "msg": "能源轉型，是當今的重要課題。為了減少燃煤，我們建造了離岸風電廠。但這座巨大的「海上風車」，真的有想像中的美好嗎？"
+},
             {
-                "t": 36.10,
-                "type": "talk",
-                "who": "遠德",
-                "emotion": "憤怒",
-                "msg": "綠能立意雖好，但施工噪音卻嚴重傷害了白海豚！這些只在乎自己利益的商人，根本不在乎生態死活！"
-            },
+                        "t": 26.2,
+                        "type": "talk",
+                        "who": "阿建",
+                        "emotion": "得意大笑",
+                        "msg": "哈哈哈！我的海上供電廠終於完工了！既有乾淨的能源，又能讓我大賺一筆，簡直是一舉兩得！"
+},
             {
-                "t": 44.76,
-                "type": "blank"
-            },
+                        "t": 36.10,
+                        "type": "talk",
+                        "who": "遠德",
+                        "emotion": "憤怒",
+                        "msg": "綠能立意雖好，但施工噪音卻嚴重傷害了白海豚！這些只在乎自己利益的商人，根本不在乎生態死活！"
+},
             {
-                "t": 45.46,
-                "type": "talk",
-                "who": "白海豚",
-                "emotion": "虛弱",
-                "msg": "遠德……打樁噪音太大了，干擾了我們的聲波，大家無法溝通跟覓食，棲息地也被工程船污染了……"
-            },
+                        "t": 44.76,
+                        "type": "blank"
+},
             {
-                "t": 57.4,
-                "type": "talk",
-                "who": "遠德",
-                "emotion": "急切",
-                "msg": "白海豚，你們撐住！我現在就去找廠長理論，一定替你們討回公道！"
-            },
+                        "t": 45.46,
+                        "type": "talk",
+                        "who": "白海豚",
+                        "emotion": "虛弱",
+                        "msg": "遠德……打樁噪音太大了，干擾了我們的聲波，大家無法溝通跟覓食，棲息地也被工程船污染了……"
+},
             {
-                "t": 64.28,
-                "type": "blank"
-            },
+                        "t": 57.4,
+                        "type": "talk",
+                        "who": "遠德",
+                        "emotion": "急切",
+                        "msg": "白海豚，你們撐住！我現在就去找廠長理論，一定替你們討回公道！"
+},
             {
-                "t": 64.84,
-                "type": "talk",
-                "who": "遠德",
-                "emotion": "拍桌怒吼",
-                "msg": "阿建！你給我出來面對！只要我遠德還在，就不可能讓你這個奸商得逞！"
-            },
+                        "t": 64.28,
+                        "type": "blank"
+},
             {
-                "t": 73.15,
-                "type": "talk",
-                "who": "阿建",
-                "emotion": "冷笑",
-                "msg": "愚蠢！我可是政府核准的合法供電商。這案子不僅能大撈一筆，還能提供綠電，好處多到滿出來，你能拿我怎樣？"
-            },
+                        "t": 64.84,
+                        "type": "talk",
+                        "who": "遠德",
+                        "emotion": "拍桌怒吼",
+                        "msg": "阿建！你給我出來面對！只要我遠德還在，就不可能讓你這個奸商得逞！"
+},
             {
-                "t": 85.07,
-                "type": "talk",
-                "who": "遠德",
-                "emotion": "質問",
-                "msg": "為了你那可悲的利益，犧牲這麼多白海豚的命，值得嗎？"
-            },
+                        "t": 73.15,
+                        "type": "talk",
+                        "who": "阿建",
+                        "emotion": "冷笑",
+                        "msg": "愚蠢！我可是政府核准的合法供電商。這案子不僅能大撈一筆，還能提供綠電，好處多到滿出來，你能拿我怎樣？"
+},
             {
-                "t": 89.97,
-                "type": "talk",
-                "who": "阿建",
-                "emotion": "狂妄",
-                "msg": "幾條海豚的命，換我一輩子財富自由，傻子才不選！你這麼拼命，難道以為海豚會把你當英雄嗎？真是太可笑了！"
-            },
+                        "t": 85.07,
+                        "type": "talk",
+                        "who": "遠德",
+                        "emotion": "質問",
+                        "msg": "為了你那可悲的利益，犧牲這麼多白海豚的命，值得嗎？"
+},
             {
-                "t": 101.08,
-                "type": "talk",
-                "who": "遠德",
-                "emotion": "堅定",
-                "msg": "我才不稀罕當什麼英雄！這裡是我的家，白海豚是我的家人，保護他們是我的責任！"
-            },
+                        "t": 89.97,
+                        "type": "talk",
+                        "who": "阿建",
+                        "emotion": "狂妄",
+                        "msg": "幾條海豚的命，換我一輩子財富自由，傻子才不選！你這麼拼命，難道以為海豚會把你當英雄嗎？真是太可笑了！"
+},
             {
-                "t": 109.72,
-                "type": "talk",
-                "who": "阿建",
-                "emotion": "嘲諷",
-                "msg": "說得好聽，你憑什麼阻止我？等電廠正式啟用，我就是全國媒體爭相報導的「綠能英雄」！"
-            },
+                        "t": 101.08,
+                        "type": "talk",
+                        "who": "遠德",
+                        "emotion": "堅定",
+                        "msg": "我才不稀罕當什麼英雄！這裡是我的家，白海豚是我的家人，保護他們是我的責任！"
+},
             {
-                "t": 119.3,
-                "type": "talk",
-                "who": "旁白",
-                "emotion": "引導",
-                "msg": "遠德會遇到重重難關，幫助遠德完成這次的任務吧！"
-            },
+                        "t": 109.72,
+                        "type": "talk",
+                        "who": "阿建",
+                        "emotion": "嘲諷",
+                        "msg": "說得好聽，你憑什麼阻止我？等電廠正式啟用，我就是全國媒體爭相報導的「綠能英雄」！"
+},
             {
-                "t": 126,
-                "type": "visual",
-                "main": "第一大關",
-                "sub": "「破碎的聲納」\n操作方式：圓圈進入虛線區域時點擊空白鍵，連續成功七次才算成功！",
-                "label": "02:06-02:21 GAMEPLAY // STAGE 01"
-            },
+                        "t": 119.3,
+                        "type": "talk",
+                        "who": "旁白",
+                        "emotion": "引導",
+                        "msg": "遠德會遇到重重難關，幫助遠德完成這次的任務吧！"
+},
             {
-                "t": 142,
-                "type": "visual",
-                "main": "第二大關",
-                "sub": "「遠德的迷航」\n請運用滑鼠調整聲波的頻率達 99% 才成功！",
-                "label": "02:22-02:34 GAMEPLAY // STAGE 02"
-            },
+                        "t": 126,
+                        "type": "visual",
+                        "main": "第一大關",
+                        "sub": "「破碎的聲納」\n操作方式：圓圈進入虛線區域時點擊空白鍵，連續成功七次才算成功！",
+                        "label": "02:06-02:21 GAMEPLAY // STAGE 01"
+},
             {
-                "t": 155,
-                "type": "visual",
-                "main": "第三大關",
-                "sub": "「淤塞的密道」\n請將畫面上呈現的單字在有限的時間內運用鍵盤拼出，共三關！",
-                "label": "02:35-02:51 GAMEPLAY // STAGE 03"
-            },
+                        "t": 142,
+                        "type": "visual",
+                        "main": "第二大關",
+                        "sub": "「遠德的迷航」\n請運用滑鼠調整聲波的頻率達 99% 才成功！",
+                        "label": "02:22-02:34 GAMEPLAY // STAGE 02"
+},
             {
-                "t": 172,
-                "type": "visual",
-                "main": "第四大關",
-                "sub": "「深淵守護戰」\n請利用空白鍵，當魚叉（紅色線條）移動到左方紅線後，點擊空白鍵消除魚叉，總共要消除 15 個！",
-                "label": "02:52-03:14 GAMEPLAY // STAGE 04"
-            },
+                        "t": 155,
+                        "type": "visual",
+                        "main": "第三大關",
+                        "sub": "「淤塞的密道」\n請將畫面上呈現的單字在有限的時間內運用鍵盤拼出，共三關！",
+                        "label": "02:35-02:51 GAMEPLAY // STAGE 03"
+},
             {
-                "t": 196,
-                "type": "visual",
-                "main": "守護成功",
-                "sub": "恭喜你成功守護了白海豚家族！",
-                "label": "03:16-03:18 CLEAR CONDITION"
-            },
+                        "t": 172,
+                        "type": "visual",
+                        "main": "第四大關",
+                        "sub": "「深淵守護戰」\n請利用空白鍵，當魚叉（紅色線條）移動到左方紅線後，點擊空白鍵消除魚叉，總共要消除 15 個！",
+                        "label": "02:52-03:14 GAMEPLAY // STAGE 04"
+},
             {
-                "t": 198,
-                "type": "talk",
-                "who": "遠德",
-                "emotion": "宣示",
-                "msg": "看到了吧？只要我在這片土地上，誰都別想傷害白海豚！"
-            },
+                        "t": 196,
+                        "type": "visual",
+                        "main": "守護成功",
+                        "sub": "恭喜你成功守護了白海豚家族！",
+                        "label": "03:16-03:18 CLEAR CONDITION"
+},
             {
-                "t": 203.14,
-                "type": "talk",
-                "who": "阿建",
-                "emotion": "氣急敗壞",
-                "msg": "你這可惡的死小孩，竟敢壞我的好事！你給我等著，下一次我絕對不會放過你！"
-            },
+                        "t": 198,
+                        "type": "talk",
+                        "who": "遠德",
+                        "emotion": "宣示",
+                        "msg": "看到了吧？只要我在這片土地上，誰都別想傷害白海豚！"
+},
             {
-                "t": 211.05,
-                "type": "talk",
-                "who": "遠德",
-                "emotion": "守護",
-                "msg": "下一次？哼，你放心，就算我不破壞你的詭計，這片土地的任何一個人都不可能讓你得逞！這是我們的家，現在是，以後也是。"
-            },
+                        "t": 203.14,
+                        "type": "talk",
+                        "who": "阿建",
+                        "emotion": "氣急敗壞",
+                        "msg": "你這可惡的死小孩，竟敢壞我的好事！你給我等著，下一次我絕對不會放過你！"
+},
             {
-                "t": 222.2,
-                "type": "talk",
-                "who": "旁白",
-                "emotion": "沉思",
-                "msg": "綠能轉型是未來的光，但不該讓生態蒙上陰影。利益之外，我們更該學會如何與海洋共存。"
-            },
+                        "t": 211.05,
+                        "type": "talk",
+                        "who": "遠德",
+                        "emotion": "守護",
+                        "msg": "下一次？哼，你放心，就算我不破壞你的詭計，這片土地的任何一個人都不可能讓你得逞！這是我們的家，現在是，以後也是。"
+},
             {
-                "t": 233,
-                "type": "final",
-                "main": "《海之契約：遠德章節》\n白海豚的安危，需要大家來守護！",
-                "sub": "",
-                "label": "03:53.00-04:04 FINAL MESSAGE"
-            }
-        ];
+                        "t": 222.2,
+                        "type": "talk",
+                        "who": "旁白",
+                        "emotion": "沉思",
+                        "msg": "綠能轉型是未來的光，但不該讓生態蒙上陰影。利益之外，我們更該學會如何與海洋共存。"
+},
+            {
+                        "t": 233,
+                        "type": "final",
+                        "main": "《海之契約：遠德章節》\n白海豚的安危，需要大家來守護！",
+                        "sub": "",
+                        "label": "03:53.00-04:04 FINAL MESSAGE"
+}
+];
 
         function switchAudio(key) {
             try {
@@ -1906,6 +2060,25 @@
                 .replace(/'/g, '&#039;');
         }
 
+
+
+        function isGameplayStageStep(step) {
+            return !!(step && step.type === 'visual' && step.label && step.label.includes('GAMEPLAY // STAGE'));
+        }
+
+        function updateGameplayCaptionPlacement(elapsed) {
+            const bigTitle = document.getElementById('big-title');
+            const subTitle = document.getElementById('sub-title');
+            const chapterLabel = document.getElementById('chapter-label');
+            const step = script[currentIdx];
+            const shouldCompact = isGameplayStageStep(step) && (elapsed - step.t >= 1.5);
+            [bigTitle, subTitle, chapterLabel].forEach(el => {
+                if (!el) return;
+                el.classList.toggle('gameplay-compact', shouldCompact);
+            });
+            document.body.classList.toggle('gameplay-focus-mode', shouldCompact);
+        }
+
         function updateUI(step) {
             const total = TRAILER_DURATION;
             const percent = Math.min(100, Math.floor((step.t / total) * 100));
@@ -1921,9 +2094,9 @@
             const openingVideo = document.getElementById('opening-video');
             const textContent = document.getElementById('text-content');
 
-            bigTitle.classList.remove('team-title', 'final-tagline', 'gameplay-main', 'title-pop');
-            subTitle.classList.remove('gameplay-subtitle', 'subtitle-pop');
-            chapterLabel.classList.remove('gameplay-label');
+            bigTitle.classList.remove('team-title', 'final-tagline', 'gameplay-main', 'title-pop', 'gameplay-compact');
+            subTitle.classList.remove('gameplay-subtitle', 'subtitle-pop', 'gameplay-compact');
+            chapterLabel.classList.remove('gameplay-label', 'gameplay-compact');
 
             if (step.type === 'video') {
                 statusTag.innerText = 'MAIN_VISUAL';
@@ -2010,6 +2183,7 @@
                         bigTitle.classList.add('title-pop');
                         subTitle.classList.add('subtitle-pop');
                     }
+                    updateGameplayCaptionPlacement(lastRenderedElapsed);
                 }, 100);
                 if (step.type === 'visual' || step.type === 'montage') {
                     spawnSonar();
@@ -2079,6 +2253,7 @@
             updatePlayPauseButton();
             document.getElementById('status-tag').innerText = 'IDLE';
             updateEmotionUI(null);
+            document.body.classList.remove('gameplay-focus-mode');
 
             const fade = document.getElementById('final-fade');
             const boot = document.getElementById('boot-screen');
@@ -2135,6 +2310,7 @@
                 currentIdx = idx;
                 updateUI(script[idx]);
             }
+            updateGameplayCaptionPlacement(clamped);
         }
 
         function seekToTime(targetTime, autoplayMedia = true) {
