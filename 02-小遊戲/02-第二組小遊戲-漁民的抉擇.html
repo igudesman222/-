@@ -103,31 +103,33 @@
         #touch-controls {
             position: fixed;
             inset: 0;
-            z-index: 120;
+            z-index: 90;
             display: none;
             pointer-events: none;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         #touch-steer-zone {
             position: absolute;
             left: 0;
             top: 0;
-            bottom: 0;
-            width: 64vw;
+            width: 56vw;
+            height: 100%;
             pointer-events: auto;
             touch-action: none;
         }
 
         #touch-joystick {
-            position: fixed;
-            left: 92px;
-            bottom: calc(92px + env(safe-area-inset-bottom));
+            position: absolute;
+            left: 84px;
+            bottom: calc(78px + env(safe-area-inset-bottom));
             width: 132px;
             height: 132px;
+            opacity: 0.72;
             transform: translate(-50%, -50%);
             pointer-events: none;
-            opacity: 0.72;
-            transition: opacity 0.15s;
+            transition: opacity 0.15s ease;
         }
 
         #touch-joystick.active {
@@ -137,11 +139,10 @@
         #joystick-base {
             position: absolute;
             inset: 0;
-            border: 2px solid rgba(34, 211, 238, 0.7);
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(34, 211, 238, 0.18) 0%, rgba(15, 23, 42, 0.22) 58%, rgba(15, 23, 42, 0.62) 100%);
-            box-shadow: 0 0 24px rgba(34, 211, 238, 0.22);
-            backdrop-filter: blur(6px);
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.42);
+            border: 2px solid rgba(255, 255, 255, 0.45);
+            box-shadow: 0 0 18px rgba(34, 211, 238, 0.35);
         }
 
         #joystick-knob {
@@ -152,64 +153,60 @@
             height: 54px;
             margin-left: -27px;
             margin-top: -27px;
-            border-radius: 50%;
-            border: 1px solid rgba(255, 255, 255, 0.85);
-            background: rgba(34, 211, 238, 0.88);
-            box-shadow: 0 0 18px rgba(34, 211, 238, 0.45);
-            transition: transform 0.06s linear;
+            border-radius: 999px;
+            background: rgba(34, 211, 238, 0.9);
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0 18px rgba(34, 211, 238, 0.8);
         }
 
         #touch-tip {
-            position: fixed;
+            position: absolute;
             left: 18px;
-            bottom: calc(162px + env(safe-area-inset-bottom));
-            color: rgba(226, 232, 240, 0.82);
+            bottom: calc(154px + env(safe-area-inset-bottom));
+            color: white;
             font-size: 13px;
-            letter-spacing: 1px;
-            text-shadow: 0 0 8px #000;
+            font-weight: bold;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+            opacity: 0.85;
             pointer-events: none;
         }
 
         #touch-actions {
-            position: fixed;
+            position: absolute;
             right: 18px;
-            bottom: calc(18px + env(safe-area-inset-bottom));
+            /* 避開右下角「七股 GPS」小地圖，避免互動／騎車／管理按鈕遮擋 */
+            bottom: calc(124px + env(safe-area-inset-bottom));
             display: flex;
             flex-wrap: wrap;
-            gap: 12px;
             justify-content: flex-end;
-            align-items: flex-end;
-            max-width: 230px;
+            gap: 12px;
+            max-width: 250px;
             pointer-events: auto;
         }
 
         .touch-btn {
             width: 76px;
             height: 76px;
-            border-radius: 50%;
-            border: 1px solid rgba(34, 211, 238, 0.78);
-            background: rgba(15, 23, 42, 0.72);
+            border-radius: 999px;
+            border: 2px solid rgba(255, 255, 255, 0.75);
             color: #fff;
-            font-weight: 800;
+            font-weight: 900;
             font-size: 14px;
-            letter-spacing: 1px;
-            box-shadow: 0 0 18px rgba(34, 211, 238, 0.18);
+            background: rgba(15, 23, 42, 0.72);
+            box-shadow: 0 0 18px rgba(34, 211, 238, 0.25);
             backdrop-filter: blur(6px);
             touch-action: none;
-            user-select: none;
-            -webkit-user-select: none;
         }
 
         .touch-btn:active,
         .touch-btn.active {
+            transform: scale(0.94);
             background: rgba(34, 211, 238, 0.88);
-            color: #020617;
-            transform: scale(0.96);
+            color: #001018;
         }
 
-        @media (hover: none),
-        (pointer: coarse),
-        (max-width: 1024px) {
+        @media (pointer: coarse),
+        (max-width: 900px) {
             #touch-controls {
                 display: block;
             }
@@ -236,8 +233,9 @@
 
             #touch-actions {
                 right: 12px;
+                bottom: calc(108px + env(safe-area-inset-bottom));
                 gap: 10px;
-                max-width: 160px;
+                max-width: 230px;
             }
 
             #touch-tip {
@@ -249,6 +247,24 @@
 </head>
 
 <body>
+
+    <audio id="bgm-morning" preload="auto" loop src="02-第二組資源/02-003-音樂/02-第二組背景音樂(上午).mp3"></audio>
+    <audio id="bgm-afternoon" preload="auto" loop src="02-第二組資源/02-003-音樂/04-七股夕照的慵懶飛行(下午).mp3"></audio>
+
+    <div id="touch-controls" aria-label="手機與平板觸控操作">
+        <div id="touch-steer-zone" aria-label="拖曳控制方向"></div>
+        <div id="touch-joystick" aria-hidden="true">
+            <div id="joystick-base"></div>
+            <div id="joystick-knob"></div>
+        </div>
+        <div id="touch-tip">左側按住拖曳移動｜雙指上下移動、左右轉向</div>
+        <div id="touch-actions">
+            <button id="touch-interact" class="touch-btn" type="button" aria-label="互動抉擇">互動</button>
+            <button id="touch-ride" class="touch-btn" type="button" aria-label="騎車切換">騎車</button>
+            <button id="touch-manage" class="touch-btn" type="button" aria-label="建設管理">管理</button>
+        </div>
+    </div>
+
 
     <div id="intro-screen" class="absolute top-0 left-0 w-full h-full bg-black/80 pointer-auto z-[200] flex flex-col items-center justify-center p-6 text-white backdrop-blur-sm">
         <div class="max-w-3xl bg-gray-900/90 border-2 border-cyan-500 rounded-2xl p-8 md:p-10 shadow-2xl flex flex-col gap-6">
@@ -264,8 +280,10 @@
                     3. 如果營運資金歸零，這片魚塭將被財團徹底併吞！</p>
 
                 <p><strong class="text-blue-400 text-lg">🎮 操作方式：</strong><br>
-                    • 電腦：<kbd class="bg-gray-800 border border-gray-600 px-2 py-1 rounded">WASD</kbd> 移動｜滑鼠左鍵拖曳旋轉視角｜<kbd class="bg-gray-800 border border-gray-600 px-2 py-1 rounded">E</kbd> 互動｜<kbd class="bg-gray-800 border border-gray-600 px-2 py-1 rounded">M</kbd> 管理｜<kbd class="bg-gray-800 border border-gray-600 px-2 py-1 rounded">Shift</kbd> 騎車切換<br>
-                    • 手機／平板：左側按住拖曳移動｜右側按鈕可互動、騎車切換、開啟建設管理</p>
+                    • <kbd class="bg-gray-800 border border-gray-600 px-2 py-1 rounded">WASD</kbd> 移動 | <strong class="text-white">滑鼠左鍵拖曳</strong> 旋轉視角<br>
+                    • 靠近光圈按 <kbd class="bg-gray-800 border border-gray-600 px-2 py-1 rounded">E</kbd> 互動 | 按 <kbd class="bg-gray-800 border border-gray-600 px-2 py-1 rounded">M</kbd> 開啟建設管理<br>
+                    • 按一下或按住 <kbd class="bg-gray-800 border border-gray-600 px-2 py-1 rounded">Shift</kbd> 鍵：<strong class="text-yellow-400">騎乘綠能電動機車 (移動速度快) / 步行切換</strong><br>
+                    • 手機／平板：左側單指拖曳移動；<strong class="text-cyan-300">雙指上下滑動前進／後退、左右滑動轉向</strong></p>
             </div>
 
             <button onclick="startGame()" class="mt-4 px-8 py-3 bg-cyan-700 border border-cyan-400 hover:bg-cyan-600 hover:scale-105 rounded-xl font-bold text-lg transition-all shadow-[0_0_15px_rgba(34,211,238,0.5)]">
@@ -421,90 +439,83 @@
         <div id="notification-area" class="absolute bottom-6 right-6 flex flex-col gap-2 items-end pointer-events-none"></div>
     </div>
 
-
-
-    <div id="touch-controls" aria-label="手機與平板觸控操作">
-        <div id="touch-steer-zone" aria-label="拖曳控制方向"></div>
-        <div id="touch-joystick" aria-hidden="true">
-            <div id="joystick-base"></div>
-            <div id="joystick-knob"></div>
-        </div>
-        <div id="touch-tip">左側按住拖曳移動</div>
-        <div id="touch-actions">
-            <button id="touch-interact" class="touch-btn" data-touch="interact" aria-label="互動抉擇">互動</button>
-            <button id="touch-ride" class="touch-btn" data-touch="ride" aria-label="騎車切換">騎車</button>
-            <button id="touch-manage" class="touch-btn" data-touch="manage" aria-label="建設管理">管理</button>
-        </div>
-    </div>
-
-
     <script>
-        // === 背景音樂與電動機車馬達聲合成器 (Web Audio API) ===
+        // === 背景音樂與電動機車馬達聲合成器 ===
         const AudioManager = {
             ctx: null,
-            gainNode: null,
             isPlaying: false,
-            notes: [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33],
-            sequenceTimer: null,
+            bgAudio: null,
+            currentTrackKey: null,
+            tracks: {
+                morning: {
+                    key: 'morning',
+                    label: '上午背景音樂',
+                    elementId: 'bgm-morning'
+                },
+                afternoon: {
+                    key: 'afternoon',
+                    label: '下午背景音樂',
+                    elementId: 'bgm-afternoon'
+                }
+            },
 
             motorOsc: null,
             motorGain: null,
             isMotorHumming: false,
 
             init() {
-                if (this.ctx) return;
-                try {
-                    this.ctx = new(window.AudioContext || window.webkitAudioContext)();
-                    this.gainNode = this.ctx.createGain();
-                    this.gainNode.gain.setValueAtTime(0.06, this.ctx.currentTime);
-                    this.gainNode.connect(this.ctx.destination);
-                } catch (e) {
-                    console.error("此瀏覽器不支援 Web Audio API");
+                if (!this.ctx) {
+                    try {
+                        this.ctx = new(window.AudioContext || window.webkitAudioContext)();
+                    } catch (e) {
+                        console.error("此瀏覽器不支援 Web Audio API");
+                    }
                 }
             },
-            playNote(freq, startTime, duration) {
-                if (!this.ctx) return;
-                const osc = this.ctx.createOscillator();
-                const noteGain = this.ctx.createGain();
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(freq, startTime);
-                noteGain.gain.setValueAtTime(0, startTime);
-                noteGain.gain.linearRampToValueAtTime(0.12, startTime + 0.1);
-                noteGain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
-                osc.connect(noteGain);
-                noteGain.connect(this.gainNode);
-                osc.start(startTime);
-                osc.stop(startTime + duration);
+            getTrackByTime(timeValue = virtualTime) {
+                return timeValue < 12.0 ? this.tracks.morning : this.tracks.afternoon;
             },
-            playSequence() {
-                if (!this.isPlaying || !this.ctx) return;
-                const now = this.ctx.currentTime;
-                const randomNote = this.notes[Math.floor(Math.random() * this.notes.length)];
-                const octaves = [0.5, 1, 1, 2];
-                const freq = randomNote * octaves[Math.floor(Math.random() * octaves.length)];
-                this.playNote(freq, now, 3.0 + Math.random() * 2);
-                const delay = 1500 + Math.random() * 2500;
-                this.sequenceTimer = setTimeout(() => this.playSequence(), delay);
+            switchBackgroundTrack(timeValue = virtualTime, force = false) {
+                if (!this.isPlaying) return;
+                const track = this.getTrackByTime(timeValue);
+                if (!force && this.currentTrackKey === track.key) return;
+
+                const nextAudio = document.getElementById(track.elementId);
+                if (!nextAudio) {
+                    console.warn(`找不到背景音樂元素：${track.elementId}`);
+                    return;
+                }
+
+                if (this.bgAudio && this.bgAudio !== nextAudio) {
+                    this.bgAudio.pause();
+                    this.bgAudio.currentTime = 0;
+                }
+
+                this.bgAudio = nextAudio;
+                this.bgAudio.volume = 0.45;
+                this.bgAudio.loop = true;
+                this.currentTrackKey = track.key;
+                this.bgAudio.play().catch(err => {
+                    console.warn(`背景音樂播放失敗：${track.label}`, err);
+                });
             },
             start() {
                 this.init();
-                if (!this.ctx) return;
-                if (this.ctx.state === 'suspended') this.ctx.resume();
-                if (!this.isPlaying) {
-                    this.isPlaying = true;
-                    this.playSequence();
-                    document.getElementById('music-icon').style.opacity = '1';
-                }
+                if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+                this.isPlaying = true;
+                this.switchBackgroundTrack(virtualTime, true);
+                document.getElementById('music-icon').style.opacity = '1';
             },
             stop() {
                 this.isPlaying = false;
-                if (this.sequenceTimer) clearTimeout(this.sequenceTimer);
+                if (this.bgAudio) this.bgAudio.pause();
                 document.getElementById('music-icon').style.opacity = '0.4';
             },
 
             startMotorHum() {
                 this.init();
                 if (!this.ctx) return;
+                if (this.ctx.state === 'suspended') this.ctx.resume();
                 if (this.isMotorHumming) return;
                 try {
                     this.motorOsc = this.ctx.createOscillator();
@@ -1392,6 +1403,7 @@
             createPlayer();
             spawnDailyTasks();
             setupEventListeners();
+            setupTouchControls();
             updateCameraPosition();
         }
 
@@ -2174,93 +2186,74 @@
                 camera.updateProjectionMatrix();
                 renderer.setSize(window.innerWidth, window.innerHeight);
             });
-            setupTouchControls();
         }
 
+
         function triggerTouchInteract() {
-            if (isGameOver || !gameStarted) return;
+            if (!gameStarted || isGameOver || isModalOpen) return;
             if (activeQuest && activeQuest.type === 'repair') {
-                if (player.position.distanceTo(new THREE.Vector3(activeQuest.target.x, player.position.y, activeQuest.target.z)) < 6 && !isModalOpen) {
+                if (player.position.distanceTo(new THREE.Vector3(activeQuest.target.x, player.position.y, activeQuest.target.z)) < 6) {
                     completeMobileQuest(true);
                     return;
                 }
             }
-            if (currentActiveZone && !isModalOpen) openChoiceModal(currentActiveZone);
+            if (currentActiveZone) openChoiceModal(currentActiveZone);
+            else showNotification('請先靠近發光事件點', 'info');
         }
 
         function setupTouchControls() {
             const steerZone = document.getElementById('touch-steer-zone');
             const joystick = document.getElementById('touch-joystick');
-            const joystickKnob = document.getElementById('joystick-knob');
-            if (!steerZone || !joystick || !joystickKnob) return;
-
-            const maxRadius = 54;
-            const deadZone = 8;
-            let steerPointerId = null;
-            let steerStart = {
-                x: 0,
-                y: 0
-            };
-
-            const resetSteering = () => {
+            const knob = document.getElementById('joystick-knob');
+            if (!steerZone || !joystick || !knob) return;
+            let activePointerId = null;
+            let startX = 0,
+                startY = 0;
+            const maxRadius = 48;
+            const stopMove = () => {
+                activePointerId = null;
                 touchMoveX = 0;
                 touchMoveZ = 0;
-                steerPointerId = null;
                 joystick.classList.remove('active');
-                joystickKnob.style.transform = 'translate(0px, 0px)';
+                knob.style.transform = 'translate(0px, 0px)';
             };
-
-            const updateSteering = (clientX, clientY) => {
-                let dx = clientX - steerStart.x;
-                let dy = clientY - steerStart.y;
-                const dist = Math.hypot(dx, dy);
-                if (dist < deadZone) {
-                    touchMoveX = 0;
-                    touchMoveZ = 0;
-                    joystickKnob.style.transform = 'translate(0px, 0px)';
-                    return;
-                }
-                const limited = Math.min(dist, maxRadius);
-                const nx = dx / dist;
-                const ny = dy / dist;
-                const knobX = nx * limited;
-                const knobY = ny * limited;
-                touchMoveX = knobX / maxRadius;
-                touchMoveZ = knobY / maxRadius;
-                joystickKnob.style.transform = `translate(${knobX}px, ${knobY}px)`;
+            const updateMove = (e) => {
+                if (activePointerId !== e.pointerId) return;
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                const dist = Math.min(Math.hypot(dx, dy), maxRadius);
+                const angle = Math.atan2(dy, dx);
+                const kx = Math.cos(angle) * dist;
+                const ky = Math.sin(angle) * dist;
+                touchMoveX = kx / maxRadius;
+                touchMoveZ = ky / maxRadius;
+                knob.style.transform = `translate(${kx}px, ${ky}px)`;
             };
-
             steerZone.addEventListener('pointerdown', (e) => {
-                if (!gameStarted || isModalOpen || isGameOver) return;
                 e.preventDefault();
-                steerPointerId = e.pointerId;
-                steerStart = {
-                    x: e.clientX,
-                    y: e.clientY
-                };
+                activePointerId = e.pointerId;
+                startX = e.clientX;
+                startY = e.clientY;
                 joystick.style.left = `${e.clientX}px`;
                 joystick.style.top = `${e.clientY}px`;
                 joystick.style.bottom = 'auto';
                 joystick.classList.add('active');
-                joystickKnob.style.transform = 'translate(0px, 0px)';
+                knob.style.transform = 'translate(0px, 0px)';
                 steerZone.setPointerCapture(e.pointerId);
             });
             steerZone.addEventListener('pointermove', (e) => {
-                if (e.pointerId !== steerPointerId) return;
                 e.preventDefault();
-                updateSteering(e.clientX, e.clientY);
+                updateMove(e);
             });
-            ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(eventName => {
-                steerZone.addEventListener(eventName, (e) => {
-                    if (e.pointerId === steerPointerId || eventName === 'lostpointercapture') resetSteering();
-                });
-            });
-
+            ['pointerup', 'pointercancel', 'pointerleave'].forEach(type => steerZone.addEventListener(type, (e) => {
+                if (activePointerId === e.pointerId) stopMove();
+            }));
             const bindTap = (id, handler) => {
                 const btn = document.getElementById(id);
                 if (!btn) return;
                 btn.addEventListener('pointerdown', (e) => {
                     e.preventDefault();
+                    e.stopPropagation();
                     btn.classList.add('active');
                     handler();
                 });
@@ -2277,8 +2270,72 @@
                 if (gameStarted && !isGameOver && !isModalOpen) openManagementModal();
             });
 
+            // 雙指方向控制：雙指上下滑動控制前進／後退，左右滑動控制視角與前進方向。
+            const dualPointers = new Map();
+            let dualStart = null;
+            const dualMaxMove = 72;
+            const shouldIgnoreDualTouch = (target) => {
+                return target && target.closest && target.closest('#touch-actions, .touch-btn, #ui-layer .pointer-auto, button, input, #intro-screen, #choice-modal, #management-modal, #day-summary-modal, #ending-modal');
+            };
+            const resetDualTouch = () => {
+                dualStart = null;
+                touchMoveX = 0;
+                touchMoveZ = 0;
+            };
+            const updateDualTouch = () => {
+                if (dualPointers.size < 2 || !gameStarted || isGameOver || isModalOpen) return;
+                const pts = Array.from(dualPointers.values()).slice(0, 2);
+                const cx = (pts[0].x + pts[1].x) / 2;
+                const cy = (pts[0].y + pts[1].y) / 2;
+                if (!dualStart) dualStart = {
+                    x: cx,
+                    y: cy,
+                    theta: camTheta
+                };
+                const dx = cx - dualStart.x;
+                const dy = cy - dualStart.y;
+                camTheta = dualStart.theta - dx * 0.006;
+                touchMoveX = 0;
+                touchMoveZ = Math.max(-1, Math.min(1, dy / dualMaxMove));
+            };
+            window.addEventListener('pointerdown', (e) => {
+                if (e.pointerType !== 'touch' || shouldIgnoreDualTouch(e.target)) return;
+                dualPointers.set(e.pointerId, {
+                    x: e.clientX,
+                    y: e.clientY
+                });
+                if (dualPointers.size >= 2) {
+                    e.preventDefault();
+                    stopMove();
+                    dualStart = null;
+                    updateDualTouch();
+                }
+            }, {
+                passive: false
+            });
+            window.addEventListener('pointermove', (e) => {
+                if (!dualPointers.has(e.pointerId)) return;
+                dualPointers.set(e.pointerId, {
+                    x: e.clientX,
+                    y: e.clientY
+                });
+                if (dualPointers.size >= 2) {
+                    e.preventDefault();
+                    updateDualTouch();
+                }
+            }, {
+                passive: false
+            });
+            ['pointerup', 'pointercancel', 'pointerleave'].forEach(type => window.addEventListener(type, (e) => {
+                if (!dualPointers.has(e.pointerId)) return;
+                dualPointers.delete(e.pointerId);
+                if (dualPointers.size < 2) resetDualTouch();
+            }, {
+                passive: false
+            }));
+
             document.addEventListener('touchmove', (e) => {
-                if (e.target.closest('#touch-controls')) e.preventDefault();
+                if (e.target.closest && e.target.closest('#touch-controls')) e.preventDefault();
             }, {
                 passive: false
             });
@@ -2362,6 +2419,7 @@
                     const mins = Math.floor((virtualTime - hours) * 60);
                     document.getElementById('text-time').innerText = `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
                     updateEnvironment();
+                    AudioManager.switchBackgroundTrack(virtualTime);
                 }
 
                 if (aeratorWheels && aeratorWheels.length > 0) {
@@ -2436,7 +2494,7 @@
                             if (player.position.distanceTo(new THREE.Vector3(activeQuest.target.x, player.position.y, activeQuest.target.z)) < 6) completeMobileQuest(true);
                         } else if (activeQuest.type === 'repair') {
                             const dist = player.position.distanceTo(new THREE.Vector3(activeQuest.target.x, player.position.y, activeQuest.target.z));
-                            if (dist < 6) document.getElementById('quest-hud-objective').innerHTML = `<span class="animate-pulse text-yellow-300 font-bold">已抵達！按 [E] 或右側「互動」搶修閘門</span>`;
+                            if (dist < 6) document.getElementById('quest-hud-objective').innerHTML = `<span class="animate-pulse text-yellow-300 font-bold">已抵達！按 [E] 鍵搶修閘門</span>`;
                             else document.getElementById('quest-hud-objective').innerText = `前往：南側防汛水閘門 (${Math.round(activeQuest.target.x)}, ${Math.round(activeQuest.target.z)})`;
                         }
                     }
