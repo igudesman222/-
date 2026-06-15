@@ -1,774 +1,1264 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
-   <meta charset="UTF-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>PONGSO NO TAO：COVENANT REBORN</title>
-   <script src="https://cdn.tailwindcss.com"></script>
-   <style>
-       @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght=700;900&display=swap');
-     
-       :root {
-           --primary: #0ea5e9;
-           --secondary: #f43f5e;
-           --accent: #f59e0b;
-           --bg-dark: #020617;
-       }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PONGSO NO GOJOTAO：COVENANT REBORN</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght=700;900&display=swap');
 
-       body {
-           margin: 0; background: #000; color: #f8fafc;
-           font-family: 'Noto Serif TC', serif; overflow: hidden;
-           display: flex; justify-content: center; align-items: center; min-height: 100vh;
-           user-select: none;
-       }
-     
-       #game-container {
-           position: relative; width: 100vw; height: 100vh;
-           max-width: 1280px; max-height: 720px;
-           background: var(--bg-dark); overflow: hidden;
-           box-shadow: 0 0 100px rgba(0, 0, 0, 1);
-           border: 1px solid #1e293b;
-       }
+        :root {
+            --primary: #0ea5e9;
+            --secondary: #f43f5e;
+            --accent: #f59e0b;
+            --bg-dark: #020617;
+        }
 
-       canvas { width: 100%; height: 100%; display: block; }
+        body {
+            margin: 0;
+            background: #000;
+            color: #f8fafc;
+            font-family: 'Noto Serif TC', serif;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            user-select: none;
+        }
 
-       .glass-panel {
-           background: rgba(15, 23, 42, 0.85);
-           backdrop-filter: blur(16px);
-           border: 1px solid rgba(14, 165, 233, 0.2);
-           border-radius: 4px;
-       }
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            max-width: 1280px;
+            max-height: 720px;
+            background: var(--bg-dark);
+            overflow: hidden;
+            box-shadow: 0 0 100px rgba(0, 0, 0, 1);
+            border: 1px solid #1e293b;
+        }
 
-       .battle-btn {
-           position: relative; padding: 0.8rem 2.5rem;
-           background: rgba(14, 165, 233, 0.1);
-           border: 1px solid var(--primary);
-           color: #fff; font-weight: 900;
-           text-transform: uppercase; letter-spacing: 2px;
-           transition: all 0.2s ease-out;
-           cursor: pointer;
-           clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%);
-           font-size: 0.85rem;
-       }
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
 
-       .battle-btn:hover:not(:disabled) {
-           background: var(--primary);
-           box-shadow: 0 0 30px var(--primary);
-           transform: scale(1.05);
-       }
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(14, 165, 233, 0.2);
+            border-radius: 4px;
+        }
 
-       /* 斬殺狀態特殊的 Hover 與呼吸燈特效 */
-       .battle-btn.execute-ready {
-           animation: executePulse 1.5s infinite alternate;
-       }
+        .battle-btn {
+            position: relative;
+            padding: 0.8rem 2.5rem;
+            background: rgba(14, 165, 233, 0.1);
+            border: 1px solid var(--primary);
+            color: #fff;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.2s ease-out;
+            cursor: pointer;
+            clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%);
+            font-size: 0.85rem;
+        }
 
-       .battle-btn.execute-ready:hover:not(:disabled) {
-           background: #f43f5e !important;
-           box-shadow: 0 0 30px #f43f5e !important;
-           border-color: #f43f5e !important;
-       }
+        .battle-btn:hover:not(:disabled) {
+            background: var(--primary);
+            box-shadow: 0 0 30px var(--primary);
+            transform: scale(1.05);
+        }
 
-       @keyframes executePulse {
-           0% { box-shadow: 0 0 5px rgba(244, 63, 94, 0.4); }
-           100% { box-shadow: 0 0 25px rgba(244, 63, 94, 0.9); }
-       }
+        /* 斬殺狀態特殊的 Hover 與呼吸燈特效 */
+        .battle-btn.execute-ready {
+            animation: executePulse 1.5s infinite alternate;
+        }
 
-       .battle-btn:disabled {
-           opacity: 0.1; filter: grayscale(1); cursor: not-allowed;
-           box-shadow: none !important; border-color: rgba(14, 165, 233, 0.2) !important;
-       }
+        .battle-btn.execute-ready:hover:not(:disabled) {
+            background: #f43f5e !important;
+            box-shadow: 0 0 30px #f43f5e !important;
+            border-color: #f43f5e !important;
+        }
 
-       .hp-bar-container {
-           width: 100%; height: 10px;
-           background: rgba(255,255,255,0.05);
-           border-radius: 2px; overflow: hidden;
-           position: relative;
-       }
+        @keyframes executePulse {
+            0% {
+                box-shadow: 0 0 5px rgba(244, 63, 94, 0.4);
+            }
 
-       .hp-fill { height: 100%; transition: width 0.6s cubic-bezier(0.23, 1, 0.32, 1); position: relative; }
-      
-       .hp-ghost {
-           position: absolute; top: 0; left: 0; height: 100%;
-           background: rgba(255,255,255,0.3); transition: width 1s ease-out;
-       }
+            100% {
+                box-shadow: 0 0 25px rgba(244, 63, 94, 0.9);
+            }
+        }
 
-       .damage-pop {
-           position: absolute; pointer-events: none;
-           font-size: 3rem; font-weight: 900;
-           text-shadow: 2px 2px 0px #000;
-           animation: damageAnim 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-           z-index: 1000; font-style: italic;
-           transform: translate(-50%, -50%);
-       }
+        .battle-btn:disabled {
+            opacity: 0.6;
+            /* 提高透明度讓鎖定時也能看見文字 */
+            filter: grayscale(1);
+            cursor: not-allowed;
+            box-shadow: none !important;
+            border-color: rgba(14, 165, 233, 0.2) !important;
+        }
 
-       @keyframes damageAnim {
-           0% { transform: scale(0.2) rotate(-15deg) translate(-50%, -50%); opacity: 0; }
-           30% { transform: scale(1.1) rotate(5deg) translate(-50%, -50%); opacity: 1; }
-           100% { transform: scale(0.8) translate(-50%, -220px); opacity: 0; }
-       }
+        .hp-bar-container {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 2px;
+            overflow: hidden;
+            position: relative;
+        }
 
-       .shake { animation: screenShake 0.35s cubic-bezier(.36,.07,.19,.97) both; }
-       @keyframes screenShake {
-           10%, 90% { transform: translate3d(-2px, 0, 0); }
-           20%, 80% { transform: translate3d(4px, 0, 0); }
-           30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
-           40%, 60% { transform: translate3d(8px, 0, 0); }
-       }
+        .hp-fill {
+            height: 100%;
+            transition: width 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            position: relative;
+        }
 
-       .flash-white { animation: flashWhite 0.2s forwards; }
-       @keyframes flashWhite {
-           0% { filter: brightness(3); }
-           100% { filter: brightness(1); }
-       }
-   </style>
+        .hp-ghost {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.3);
+            transition: width 1s ease-out;
+        }
+
+        .damage-pop {
+            position: absolute;
+            pointer-events: none;
+            font-size: 3rem;
+            font-weight: 900;
+            text-shadow: 2px 2px 0px #000;
+            animation: damageAnim 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            z-index: 1000;
+            font-style: italic;
+            transform: translate(-50%, -50%);
+        }
+
+        @keyframes damageAnim {
+            0% {
+                transform: scale(0.2) rotate(-15deg) translate(-50%, -50%);
+                opacity: 0;
+            }
+
+            30% {
+                transform: scale(1.1) rotate(5deg) translate(-50%, -50%);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(0.8) translate(-50%, -220px);
+                opacity: 0;
+            }
+        }
+
+        .shake {
+            animation: screenShake 0.35s cubic-bezier(.36, .07, .19, .97) both;
+        }
+
+        @keyframes screenShake {
+
+            10%,
+            90% {
+                transform: translate3d(-2px, 0, 0);
+            }
+
+            20%,
+            80% {
+                transform: translate3d(4px, 0, 0);
+            }
+
+            30%,
+            50%,
+            70% {
+                transform: translate3d(-8px, 0, 0);
+            }
+
+            40%,
+            60% {
+                transform: translate3d(8px, 0, 0);
+            }
+        }
+
+        .flash-white {
+            animation: flashWhite 0.2s forwards;
+        }
+
+        @keyframes flashWhite {
+            0% {
+                filter: brightness(3);
+            }
+
+            100% {
+                filter: brightness(1);
+            }
+        }
+
+        /* 穩定版讀取提示 */
+        #loading-text {
+            display: none;
+            position: absolute;
+            left: 50%;
+            top: 66%;
+            transform: translateX(-50%);
+            color: #7dd3fc;
+            font-size: 0.9rem;
+            letter-spacing: 0.35em;
+            white-space: nowrap;
+            animation: loadingPulse 1s infinite alternate;
+            pointer-events: none;
+        }
+
+        #loading-text.show {
+            display: block;
+        }
+
+        @keyframes loadingPulse {
+            from {
+                opacity: 0.35;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* BGM 狀態提示 */
+        #bgm-status {
+            position: absolute;
+            left: 1.25rem;
+            bottom: 1rem;
+            z-index: 250;
+            font-size: 0.68rem;
+            letter-spacing: 0.16em;
+            color: rgba(125, 211, 252, 0.72);
+            background: rgba(2, 6, 23, 0.55);
+            border: 1px solid rgba(14, 165, 233, 0.16);
+            padding: 0.45rem 0.7rem;
+            pointer-events: none;
+        }
+    </style>
 </head>
+
 <body>
 
-<div id="game-container">
-   <canvas id="mainCanvas"></canvas>
+    <div id="game-container">
+        <canvas id="mainCanvas"></canvas>
 
-   <!-- 啟動畫面 -->
-   <div id="start-screen" class="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-slate-950">
-       <h1 class="text-7xl font-black text-white italic mb-4 tracking-tighter text-center drop-shadow-[0_0_20px_rgba(14,165,233,0.8)]">PONGSO NO TAO</h1>
-       <p class="text-sky-400/60 tracking-[1em] text-[10px] mb-12">DEEP SEA ASCENSION</p>
-       <button id="btn-start" class="battle-btn text-xl px-12 py-5 border-sky-400/50">
-           啟 動 靈 魂 盟 約
-       </button>
-   </div>
+        <!-- 啟動畫面 -->
+        <div id="start-screen" class="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-slate-950">
+            <h1 class="text-7xl font-black text-white italic mb-4 tracking-tighter text-center drop-shadow-[0_0_20px_rgba(14,165,233,0.8)]">PONGSO NO TAO</h1>
+            <p class="text-sky-400/60 tracking-[1em] text-[10px] mb-12">DEEP SEA ASCENSION</p>
+            <!-- 預設為 disabled 狀態 -->
+            <button id="btn-start" class="battle-btn text-xl px-12 py-5 border-sky-400/50" disabled onclick="Game.start()">
+                資 源 載 入 中 ...
+            </button>
+            <div id="loading-text">場景建構中...</div>
+        </div>
 
-   <!-- 遊戲 UI -->
-   <div id="game-ui" class="absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-1000">
-       <!-- 敵方 -->
-       <div class="absolute top-12 right-12 flex flex-col items-end w-96">
-           <div id="e-name" class="text-rose-500 font-black text-xs mb-3 tracking-widest uppercase">Target: Bureaucratic Phantom</div>
-           <div class="hp-bar-container">
-               <div id="e-hp-ghost" class="hp-ghost" style="width: 100%"></div>
-               <div id="e-hp-bar" class="hp-fill bg-gradient-to-r from-rose-600 to-pink-400" style="width: 100%"></div>
-           </div>
-           <div id="e-hp-text" class="text-[10px] mt-2 font-mono text-slate-500 tabular-nums">25,000 / 25,000</div>
-       </div>
+        <!-- 遊戲 UI -->
+        <div id="game-ui" class="absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-1000">
+            <!-- 敵方 -->
+            <div class="absolute top-12 right-12 flex flex-col items-end w-96">
+                <div id="e-name" class="text-rose-500 font-black text-xs mb-3 tracking-widest uppercase">Target: Bureaucratic Phantom</div>
+                <div class="hp-bar-container">
+                    <div id="e-hp-ghost" class="hp-ghost" style="width: 100%"></div>
+                    <div id="e-hp-bar" class="hp-fill bg-gradient-to-r from-rose-600 to-pink-400" style="width: 100%"></div>
+                </div>
+                <div id="e-hp-text" class="text-[10px] mt-2 font-mono text-slate-500 tabular-nums">25,000 / 25,000</div>
+            </div>
 
-       <!-- 玩家 -->
-       <div class="absolute bottom-12 left-12 flex flex-col pointer-events-auto">
-           <div class="glass-panel p-6 w-[450px]">
-               <div class="flex justify-between items-end mb-3">
-                   <div>
-                       <div class="text-sky-400 font-black text-3xl italic">GOJO-TAO</div>
-                       <div id="p-state-label" class="text-[10px] text-sky-600 tracking-widest transition-colors duration-300">ASCENDED STATE</div>
-                   </div>
-                   <div id="p-hp-text" class="text-sm font-mono text-sky-200 tabular-nums">10,000 / 10,000</div>
-               </div>
-               <div class="hp-bar-container h-5">
-                   <div id="p-hp-ghost" class="hp-ghost" style="width: 100%"></div>
-                   <div id="p-hp-bar" class="hp-fill bg-gradient-to-r from-sky-500 to-cyan-300 animate-pulse" style="width: 100%"></div>
-               </div>
-              
-               <div class="mt-6 flex items-center gap-4">
-                   <div class="text-[10px] font-black text-white italic">LIMIT</div>
-                   <div class="flex-1 h-2 bg-slate-900 rounded-full overflow-hidden">
-                       <div id="p-np-bar" class="h-full bg-white shadow-[0_0_10px_#fff] transition-all" style="width: 20%"></div>
-                   </div>
-               </div>
-           </div>
-       </div>
+            <!-- 玩家 -->
+            <div class="absolute bottom-12 left-12 flex flex-col pointer-events-auto">
+                <div class="glass-panel p-6 w-[450px]">
+                    <div class="flex justify-between items-end mb-3">
+                        <div>
+                            <div class="text-sky-400 font-black text-3xl italic">GOJO-TAO</div>
+                            <div id="p-state-label" class="text-[10px] text-sky-600 tracking-widest transition-colors duration-300">ASCENDED STATE</div>
+                        </div>
+                        <div id="p-hp-text" class="text-sm font-mono text-sky-200 tabular-nums">10,000 / 10,000</div>
+                    </div>
+                    <div class="hp-bar-container h-5">
+                        <div id="p-hp-ghost" class="hp-ghost" style="width: 100%"></div>
+                        <div id="p-hp-bar" class="hp-fill bg-gradient-to-r from-sky-500 to-cyan-300 animate-pulse" style="width: 100%"></div>
+                    </div>
 
-       <!-- 選單 -->
-       <div id="command-menu" class="absolute bottom-12 right-12 flex flex-col gap-4 pointer-events-auto items-end">
-           <button id="atk-btn" class="battle-btn w-72 text-right">術式順轉：蒼潮穿 ◈</button>
-           <button id="def-btn" class="battle-btn w-72 text-right border-amber-500 text-amber-200">反擊術式：海神障壁 🛡</button>
-           <button id="ult-btn" class="battle-btn w-72 text-right border-white text-white transition-all duration-300" disabled>終焉術式：深淵海禁 ⚡</button>
-       </div>
+                    <div class="mt-6 flex items-center gap-4">
+                        <div class="text-[10px] font-black text-white italic">LIMIT</div>
+                        <div class="flex-1 h-2 bg-slate-900 rounded-full overflow-hidden">
+                            <div id="p-np-bar" class="h-full bg-white shadow-[0_0_10px_#fff] transition-all" style="width: 20%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-       <!-- 對話 -->
-       <div id="dialog-box" class="absolute bottom-48 left-1/2 -translate-x-1/2 w-[60%] opacity-0 transition-all duration-300">
-           <div class="glass-panel py-5 px-8 border-l-4 border-l-sky-500 text-center">
-               <p id="dialog-text" class="text-xl italic font-bold text-white"></p>
-           </div>
-       </div>
-   </div>
+            <!-- 選單 -->
+            <div id="command-menu" class="absolute bottom-12 right-12 flex flex-col gap-4 pointer-events-auto items-end">
+                <button id="atk-btn" class="battle-btn w-72 text-right">術式順轉：蒼潮穿 ◈</button>
+                <button id="def-btn" class="battle-btn w-72 text-right border-amber-500 text-amber-200">反擊術式：海神障壁 🛡</button>
+                <button id="ult-btn" class="battle-btn w-72 text-right border-white text-white transition-all duration-300" disabled>終焉術式：深淵海禁 ⚡</button>
+            </div>
 
-   <!-- 結算 -->
-   <div id="result-screen" class="absolute inset-0 z-[200] hidden bg-black/95 flex flex-col items-center justify-center text-center">
-       <h2 id="result-title" class="text-9xl font-black mb-4 italic tracking-tighter"></h2>
-       <p id="result-subtitle" class="text-slate-400 mb-12 tracking-[0.5em]"></p>
-       <button onclick="location.reload()" class="battle-btn px-16 py-4">REBOOT</button>
-   </div>
-</div>
+            <!-- 對話 -->
+            <div id="dialog-box" class="absolute bottom-48 left-1/2 -translate-x-1/2 w-[60%] opacity-0 transition-all duration-300">
+                <div class="glass-panel py-5 px-8 border-l-4 border-l-sky-500 text-center">
+                    <p id="dialog-text" class="text-xl italic font-bold text-white"></p>
+                </div>
+            </div>
+        </div>
 
-<script>
-const SFX = {
-   ctx: null,
-   init() { if(!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
-   play(freq, type='sine', dur=0.2, vol=0.1) {
-       if(!this.ctx) return;
-       const o = this.ctx.createOscillator();
-       const g = this.ctx.createGain();
-       o.type = type;
-       o.frequency.setValueAtTime(freq, this.ctx.currentTime);
-       g.gain.setValueAtTime(vol, this.ctx.currentTime);
-       g.gain.linearRampToValueAtTime(0, this.ctx.currentTime + dur);
-       o.connect(g); g.connect(this.ctx.destination);
-       o.start(); o.stop(this.ctx.currentTime + dur);
-   }
-};
+        <div id="bgm-status">BGM：待機</div>
+        <div id="music-source-note" class="sr-only">音樂資料來源：https://github.com/igudesman222/igudesman2012.git</div>
 
-const Game = {
-   canvas: null, ctx: null, state: 'INTRO', frame: 0, particles: [], effects: [],
-   imgPlayer: null, imgEnemy: null,
-   player: {
-       x: 300, y: 550, hp: 10000, maxHp: 10000, np: 20,
-       shield: false, tx: 300,
-       emergencyTriggered: false, emergencyShieldActive: false, atkMultiplier: 1.0
-   },
-   enemy: { x: 980, y: 350, hp: 25000, maxHp: 25000, tx: 980 },
+        <!-- 結算 -->
+        <div id="result-screen" class="absolute inset-0 z-[200] hidden bg-black/95 flex flex-col items-center justify-center text-center">
+            <h2 id="result-title" class="text-9xl font-black mb-4 italic tracking-tighter"></h2>
+            <p id="result-subtitle" class="text-slate-400 mb-12 tracking-[0.5em]"></p>
+            <button onclick="Game.resetToMainMenu()" class="battle-btn px-16 py-4">REBOOT</button>
+        </div>
+    </div>
 
-   init() {
-       this.canvas = document.getElementById('mainCanvas');
-       this.ctx = this.canvas.getContext('2d');
-       this.resize();
-       window.onresize = () => this.resize();
-      
-       // 載入指定的圖床網址
-       this.imgPlayer = new Image();
-       this.imgPlayer.crossOrigin = "Anonymous";
-       this.imgPlayer.src = 'https://i.ibb.co/PGgCPLTg/01.png';
-       
-       this.imgEnemy = new Image();
-       this.imgEnemy.crossOrigin = "Anonymous";
-       this.imgEnemy.src = 'https://i.ibb.co/v69f1sWq/03.png';
+    <script>
+        const SFX = {
+            ctx: null,
+            init() {
+                if (!this.ctx) this.ctx = new(window.AudioContext || window.webkitAudioContext)();
+            },
+            play(freq, type = 'sine', dur = 0.2, vol = 0.1) {
+                if (!this.ctx) return;
+                const o = this.ctx.createOscillator();
+                const g = this.ctx.createGain();
+                o.type = type;
+                o.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                g.gain.setValueAtTime(vol, this.ctx.currentTime);
+                g.gain.linearRampToValueAtTime(0, this.ctx.currentTime + dur);
+                o.connect(g);
+                g.connect(this.ctx.destination);
+                o.start();
+                o.stop(this.ctx.currentTime + dur);
+            }
+        };
 
-       document.getElementById('btn-start').onclick = () => this.start();
-       document.getElementById('atk-btn').onclick = () => this.action('atk');
-       document.getElementById('def-btn').onclick = () => this.action('def');
-       document.getElementById('ult-btn').onclick = () => this.action('ult');
-      
-       this.loop();
-   },
+        const MUSIC_SOURCE_REPO = 'https://github.com/igudesman222/igudesman2012.git';
 
-   resize() {
-       this.canvas.width = 1280;
-       this.canvas.height = 720;
-   },
+        const BGM = {
+            sourceRepo: MUSIC_SOURCE_REPO,
+            volume: 0.42,
+            currentKey: null,
+            audio: null,
+            isUnlocked: false,
+            loadingToken: 0,
 
-   async start() {
-       SFX.init();
-       document.getElementById('start-screen').style.display = 'none';
-       document.getElementById('game-ui').style.opacity = '1';
-       this.updateUI();
-       this.state = 'PLAYER_TURN';
-       await this.msg("「誓約已成。這一次，我將在防禦中徹底粉碎你。」");
-   },
+            tracks: {
+                battle01: {
+                    name: '史詩動漫決戰風',
+                    localSrc: '04-第四組資源/04-003-音樂/第四組小遊戲_戰鬥配樂01.mp3',
+                    rawSrcs: [
+                        'https://raw.githubusercontent.com/igudesman222/igudesman2012/main/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E8%B3%87%E6%BA%90/04-003-%E9%9F%B3%E6%A8%82/%E7%AC%AC%E5%9B%9B%E7%B5%84%E5%B0%8F%E9%81%8A%E6%88%B2_%E6%88%B0%E9%AC%A5%E9%85%8D%E6%A8%8201.mp3',
+                        'https://raw.githubusercontent.com/igudesman222/igudesman2012/master/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E8%B3%87%E6%BA%90/04-003-%E9%9F%B3%E6%A8%82/%E7%AC%AC%E5%9B%9B%E7%B5%84%E5%B0%8F%E9%81%8A%E6%88%B2_%E6%88%B0%E9%AC%A5%E9%85%8D%E6%A8%8201.mp3'
+                    ]
+                },
+                battle02: {
+                    name: '深海賽博部落風',
+                    localSrc: '04-第四組資源/04-003-音樂/第四組小遊戲_戰鬥配樂02.mp3',
+                    rawSrcs: [
+                        'https://raw.githubusercontent.com/igudesman222/igudesman2012/main/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E8%B3%87%E6%BA%90/04-003-%E9%9F%B3%E6%A8%82/%E7%AC%AC%E5%9B%9B%E7%B5%84%E5%B0%8F%E9%81%8A%E6%88%B2_%E6%88%B0%E9%AC%A5%E9%85%8D%E6%A8%8202.mp3',
+                        'https://raw.githubusercontent.com/igudesman222/igudesman2012/master/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E8%B3%87%E6%BA%90/04-003-%E9%9F%B3%E6%A8%82/%E7%AC%AC%E5%9B%9B%E7%B5%84%E5%B0%8F%E9%81%8A%E6%88%B2_%E6%88%B0%E9%AC%A5%E9%85%8D%E6%A8%8202.mp3'
+                    ]
+                },
+                execute03: {
+                    name: '領域展開／斬殺階段',
+                    localSrc: '04-第四組資源/04-003-音樂/第四組小遊戲_戰鬥配樂03.mp3',
+                    rawSrcs: [
+                        'https://raw.githubusercontent.com/igudesman222/igudesman2012/main/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E8%B3%87%E6%BA%90/04-003-%E9%9F%B3%E6%A8%82/%E7%AC%AC%E5%9B%9B%E7%B5%84%E5%B0%8F%E9%81%8A%E6%88%B2_%E6%88%B0%E9%AC%A5%E9%85%8D%E6%A8%8203.mp3',
+                        'https://raw.githubusercontent.com/igudesman222/igudesman2012/master/04-%E7%AC%AC%E5%9B%9B%E7%B5%84%E8%B3%87%E6%BA%90/04-003-%E9%9F%B3%E6%A8%82/%E7%AC%AC%E5%9B%9B%E7%B5%84%E5%B0%8F%E9%81%8A%E6%88%B2_%E6%88%B0%E9%AC%A5%E9%85%8D%E6%A8%8203.mp3'
+                    ]
+                }
+            },
 
-   async msg(txt) {
-       const el = document.getElementById('dialog-box');
-       document.getElementById('dialog-text').innerText = txt;
-       el.style.opacity = '1';
-       await new Promise(r => setTimeout(r, 1500));
-       el.style.opacity = '0';
-   },
+            init() {
+                if (this.audio) return this.audio;
 
-   spawn(x, y, color, n=20, s=10) {
-       for(let i=0; i<n; i++) {
-           this.particles.push({
-               x, y, vx: (Math.random()-0.5)*s, vy: (Math.random()-0.5)*s,
-               r: Math.random()*5+1, l: 1, c: color
-           });
-       }
-   },
+                const audio = document.createElement('audio');
+                audio.id = 'bgm-audio';
+                audio.loop = true;
+                audio.preload = 'auto';
+                audio.volume = this.volume;
+                audio.setAttribute('playsinline', '');
+                audio.setAttribute('webkit-playsinline', '');
+                audio.crossOrigin = 'anonymous';
+                document.body.appendChild(audio);
 
-   pop(txt, x, y, c='#fff') {
-       const container = document.getElementById('game-container');
-       const d = document.createElement('div');
-       d.className = 'damage-pop';
-      
-       const leftPercent = (x / 1280) * 100;
-       const topPercent = (y / 720) * 100;
-      
-       d.style.left = `${leftPercent}%`;
-       d.style.top = `${topPercent}%`;
-       d.style.color = c;
-       d.innerText = txt;
-       container.appendChild(d);
-       setTimeout(() => d.remove(), 800);
-   },
+                audio.addEventListener('playing', () => {
+                    this.isUnlocked = true;
+                    if (this.currentKey && this.tracks[this.currentKey]) {
+                        this.setStatus(`BGM：${this.tracks[this.currentKey].name}`);
+                    }
+                });
 
-   flash() {
-       const container = document.getElementById('game-container');
-       container.classList.add('flash-white', 'shake');
-       setTimeout(() => container.classList.remove('flash-white', 'shake'), 350);
-   },
+                audio.addEventListener('volumechange', () => {
+                    audio.muted = false;
+                });
 
-   async action(type) {
-       if(this.state !== 'PLAYER_TURN') return;
-       this.state = 'BUSY';
-       this.updateBtns(true);
+                this.audio = audio;
+                return audio;
+            },
 
-       const mult = this.player.atkMultiplier || 1.0;
+            setStatus(text) {
+                const el = document.getElementById('bgm-status');
+                if (el) el.innerText = text;
+            },
 
-       if(type === 'atk') {
-           this.player.tx = 850;
-           await new Promise(r => setTimeout(r, 150));
-           this.flash();
-           SFX.play(150, 'square', 0.3, 0.2);
-           const dmg = Math.floor((2500 + Math.floor(Math.random()*1000)) * mult);
-           this.enemy.hp = Math.max(0, this.enemy.hp - dmg);
-           this.player.np = Math.min(100, this.player.np + 25);
-           this.pop(dmg, this.enemy.x, this.enemy.y - 150, '#0ea5e9');
-           this.spawn(this.enemy.x, this.enemy.y, '#0ea5e9', 40, 20);
-           setTimeout(() => this.player.tx = 300, 100);
-       }
-       else if(type === 'def') {
-           this.player.shield = true;
-           this.player.tx = 400;
-           SFX.play(600, 'sine', 0.5, 0.15);
-           const counterPrep = Math.floor((800 + Math.floor(Math.random()*400)) * mult);
-           this.enemy.hp = Math.max(0, this.enemy.hp - counterPrep);
-           this.pop(`REACTION: ${counterPrep}`, this.enemy.x, this.enemy.y - 120, '#f59e0b');
-           this.spawn(this.enemy.x, this.enemy.y, '#f59e0b', 15, 10);
-           await this.msg("「反擊術式...障壁內壓強化。」");
-           setTimeout(() => this.player.tx = 300, 200);
-       }
-       else if(type === 'ult') {
-           // ================= 終焉術式：史詩特效強化版 =================
-           const isExecuteZone = this.enemy.hp <= 5000;
-           const popColor = isExecuteZone ? '#f43f5e' : '#38bdf8';
+            getPhaseKey(enemyHp, emergencyActive) {
+                if (emergencyActive || enemyHp < 5000) return 'execute03';
+                if (enemyHp < 8000) return 'battle02';
+                return 'battle01';
+            },
 
-           // 1. 蓄力前置特效：戰場蓄氣，光流粒子快速收縮吸入
-           SFX.play(100, 'sine', 0.6, 0.3);
-           for (let i = 0; i < 40; i++) {
-               const angle = Math.random() * Math.PI * 2;
-               const dist = 200 + Math.random() * 150;
-               this.particles.push({
-                   x: this.enemy.x + Math.cos(angle) * dist,
-                   y: this.enemy.y - 100 + Math.sin(angle) * dist,
-                   vx: -Math.cos(angle) * 7,
-                   vy: -Math.sin(angle) * 7,
-                   r: Math.random() * 4 + 2,
-                   l: 1.0,
-                   c: popColor
-               });
-           }
-           this.player.tx = 500; // 前壓蓄力
-           await new Promise(r => setTimeout(r, 400));
+            getCandidateSrcs(key) {
+                const track = this.tracks[key];
+                if (!track) return [];
+                const local = track.localSrc;
+                const encodedLocal = encodeURI(local);
+                return [local, encodedLocal, ...track.rawSrcs];
+            },
 
-           // 2. 極速瞬身瞬殺殘影：衝刺貫穿敵方
-           this.player.tx = 1150;
-           await new Promise(r => setTimeout(r, 120));
-           this.flash();
+            async playCandidate(audio, src, token) {
+                return new Promise(resolve => {
+                    let settled = false;
+                    const cleanup = () => {
+                        audio.removeEventListener('canplaythrough', onReady);
+                        audio.removeEventListener('loadeddata', onReady);
+                        audio.removeEventListener('error', onError);
+                    };
 
-           // 3. 次元交錯斬擊 (Dimensional Slashes)：連續觸發多道凌厲的螢光斜切斬切線
-           for (let i = 0; i < 5; i++) {
-               setTimeout(() => {
-                   SFX.play(220 + i * 140, 'sawtooth', 0.18, 0.25);
-                  
-                   // 隨機生成斜切斬線段坐標
-                   const xOffset = (Math.random() - 0.5) * 120;
-                   const yOffset = (Math.random() - 0.5) * 120;
-                   this.effects.push({
-                       type: 'slash',
-                       x1: this.enemy.x - 220 + xOffset,
-                       y1: this.enemy.y - 220 + yOffset,
-                       x2: this.enemy.x + 220 - xOffset,
-                       y2: this.enemy.y + 20 - yOffset,
-                       color: popColor,
-                       width: 14,
-                       l: 1.0
-                   });
+                    const finish = ok => {
+                        if (settled) return;
+                        settled = true;
+                        clearTimeout(timer);
+                        cleanup();
+                        resolve(ok);
+                    };
 
-                   // 伴隨斬擊的衝擊波擴散
-                   this.effects.push({
-                       type: 'shockwave',
-                       x: this.enemy.x,
-                       y: this.enemy.y - 100,
-                       r: 10,
-                       maxR: 260,
-                       color: popColor,
-                       l: 1.0
-                   });
+                    const onReady = async () => {
+                        if (token !== this.loadingToken) return finish(false);
+                        try {
+                            audio.volume = this.volume;
+                            audio.muted = false;
+                            await audio.play();
+                            finish(true);
+                        } catch (err) {
+                            finish(false);
+                        }
+                    };
 
-                   // 濺灑火花
-                   this.spawn(this.enemy.x, this.enemy.y - 100, popColor, 25, 20);
-               }, i * 75);
-           }
+                    const onError = () => finish(false);
+                    const timer = setTimeout(() => finish(false), 3500);
 
-           // 4. 核爆結算與巨型深淵黑洞衝擊波
-           await new Promise(r => setTimeout(r, 450));
-           this.flash();
-          
-           let dmg;
-           let popText;
+                    audio.addEventListener('canplaythrough', onReady, {
+                        once: true
+                    });
+                    audio.addEventListener('loadeddata', onReady, {
+                        once: true
+                    });
+                    audio.addEventListener('error', onError, {
+                        once: true
+                    });
 
-           if (isExecuteZone) {
-               dmg = this.enemy.hp;
-               popText = "EXECUTE: 終 焉 斬 滅";
-               SFX.play(35, 'sawtooth', 2.0, 0.75); // 極重低音
+                    try {
+                        audio.pause();
+                        audio.src = src;
+                        audio.load();
+                    } catch (err) {
+                        finish(false);
+                    }
+                });
+            },
 
-               // 巨大斬滅黑紅衝擊圈
-               this.effects.push({
-                   type: 'shockwave',
-                   x: this.enemy.x,
-                   y: this.enemy.y - 100,
-                   r: 25,
-                   maxR: 520,
-                   color: '#f43f5e',
-                   l: 1.6
-               });
-           } else {
-               dmg = Math.floor(15000 * mult);
-               popText = "ABYSS TERMINUS";
-               SFX.play(45, 'sawtooth', 1.6, 0.55);
+            async play(key) {
+                if (!this.tracks[key]) return;
+                if (this.currentKey === key && this.audio && !this.audio.paused) return;
 
-               // 巨大蔚藍衝擊圈
-               this.effects.push({
-                   type: 'shockwave',
-                   x: this.enemy.x,
-                   y: this.enemy.y - 100,
-                   r: 20,
-                   maxR: 420,
-                   color: '#38bdf8',
-                   l: 1.2
-               });
-           }
+                const audio = this.init();
+                const token = ++this.loadingToken;
+                const oldKey = this.currentKey;
+                this.currentKey = key;
+                this.setStatus(`BGM：載入 ${this.tracks[key].name}...`);
 
-           this.enemy.hp = Math.max(0, this.enemy.hp - dmg);
-           this.player.np = 0;
-          
-           this.pop(popText, this.enemy.x, this.enemy.y - 200, popColor);
-           this.spawn(this.enemy.x, this.enemy.y - 100, popColor, 160, 40); // 漫天粒子
-          
-           await new Promise(r => setTimeout(r, 850));
-           this.player.tx = 300; // 優雅歸位
-       }
+                const candidates = this.getCandidateSrcs(key);
+                for (const src of candidates) {
+                    const ok = await this.playCandidate(audio, src, token);
+                    if (ok && token === this.loadingToken) {
+                        this.setStatus(`BGM：${this.tracks[key].name}`);
+                        return;
+                    }
+                }
+                this.currentKey = oldKey;
+                this.setStatus('BGM：未播放，請確認 MP3 路徑/檔案是否存在');
+            },
 
-       this.updateUI();
-       await new Promise(r => setTimeout(r, 800));
-       if(this.enemy.hp <= 0) return this.end(true);
-       this.enemyTurn();
-   },
+            startBattle(enemyHp, emergencyActive) {
+                this.updatePhase(enemyHp, emergencyActive);
+            },
 
-   async enemyTurn() {
-       this.state = 'ENEMY_TURN';
-       const isEnraged = this.enemy.hp < this.enemy.maxHp * 0.5;
-      
-       const attackRoll = Math.random();
-       let attackName = "";
-       let baseDmg = 0;
-       let pColor = '#f43f5e';
-       let dialogMsg = "";
+            updatePhase(enemyHp, emergencyActive) {
+                if (typeof Game !== 'undefined' && Game.state === 'END') return;
+                const nextKey = this.getPhaseKey(enemyHp, emergencyActive);
+                if (nextKey !== this.currentKey || !this.audio || this.audio.paused) {
+                    this.play(nextKey);
+                }
+            },
 
-       if (isEnraged && attackRoll < 0.35) {
-           attackName = "【終止程序：格式化清洗】";
-           baseDmg = 4000 + Math.floor(Math.random() * 2000);
-           pColor = '#7f1d1d';
-           dialogMsg = "「判定：徹底抹除。執行核心格式化清洗！」";
-       } else if (attackRoll < 0.65) {
-           attackName = "【侵蝕術式：程序污染】";
-           baseDmg = 2200 + Math.floor(Math.random() * 1600);
-           pColor = '#a855f7';
-           dialogMsg = "「系統資源溢流...啟動大範圍程序污染。」";
-       } else {
-           attackName = "【常規審判：標準裁決】";
-           baseDmg = 1500 + Math.floor(Math.random() * 1000);
-           pColor = '#f43f5e';
-           dialogMsg = "「判定：非法實體。依據標準程序進行裁決。」";
-       }
+            stop() {
+                if (this.audio) {
+                    this.audio.pause();
+                    this.audio.currentTime = 0;
+                }
+                this.currentKey = null;
+                this.setStatus('BGM：停止');
+            }
+        };
 
-       await this.msg(dialogMsg);
-       this.enemy.tx = 400;
-       await new Promise(r => setTimeout(r, 400));
-      
-       this.flash();
+        const Game = {
+            canvas: null,
+            ctx: null,
+            state: 'INTRO',
+            frame: 0,
+            particles: [],
+            effects: [],
+            initialized: false,
+            loopStarted: false,
+            isStarting: false,
+            imgPlayer: null,
+            imgEnemy: null,
+            player: {
+                x: 300,
+                y: 550,
+                hp: 10000,
+                maxHp: 10000,
+                np: 20,
+                shield: false,
+                tx: 300,
+                emergencyTriggered: false,
+                emergencyShieldActive: false,
+                atkMultiplier: 1.0
+            },
+            enemy: {
+                x: 980,
+                y: 350,
+                hp: 25000,
+                maxHp: 25000,
+                tx: 980
+            },
 
-       // 核心邏輯：判斷是否在此攻擊中觸發 1,000 HP 以下的「逆轉盟約」
-       const predictedDmg = this.player.shield ? (attackName === "【終止程序：格式化清洗】" ? Math.floor(baseDmg * 0.25) : 0) : baseDmg;
-       const willTriggerEmergency = !this.player.emergencyTriggered && (this.player.hp - predictedDmg <= 1000);
+            init() {
+                if (this.initialized) return;
 
-       if (willTriggerEmergency) {
-           this.player.emergencyTriggered = true;
-           this.player.emergencyShieldActive = true;
-           this.player.atkMultiplier = 1.3;
+                this.canvas = document.getElementById('mainCanvas');
+                if (!this.canvas) return;
+                this.ctx = this.canvas.getContext('2d');
+                this.resize();
+                window.onresize = () => this.resize();
 
-           const healAmount = baseDmg;
-           this.player.hp = Math.min(this.player.maxHp, this.player.hp + healAmount);
+                const startBtn = document.getElementById('btn-start');
+                const atkBtn = document.getElementById('atk-btn');
+                const defBtn = document.getElementById('def-btn');
+                const ultBtn = document.getElementById('ult-btn');
 
-           this.pop("REVERSAL COVENANT!!", this.player.x, this.player.y - 200, '#10b981');
-           this.pop(`+${healAmount} HP (ABSORBED)`, this.player.x, this.player.y - 150, '#10b981');
-           this.spawn(this.player.x, this.player.y, '#10b981', 65, 18);
-           SFX.play(800, 'sine', 0.6, 0.35);
+                // 為了確保安全，一開始如果按鈕存在，預設給它 disabled
+                if (startBtn) startBtn.disabled = true;
 
-           const label = document.getElementById('p-state-label');
-           label.innerText = "COVENANT REBORN (ATK +30%)";
-           label.style.color = "#10b981";
+                if (startBtn) startBtn.addEventListener('click', () => this.start());
+                if (atkBtn) atkBtn.addEventListener('click', () => this.action('atk'));
+                if (defBtn) defBtn.addEventListener('click', () => this.action('def'));
+                if (ultBtn) ultBtn.addEventListener('click', () => this.action('ult'));
 
-           await this.msg("「極限臨界！逆轉之誓：將敵方攻勢轉化為生命潮汐！」");
+                this.initialized = true;
 
-           if (this.player.shield) {
-               const counterDmg = 3500 + Math.floor(Math.random() * 1500);
-               this.enemy.hp = Math.max(0, this.enemy.hp - counterDmg);
-               this.pop(`COUNTER: ${counterDmg}`, this.enemy.x, this.enemy.y - 100, '#f59e0b');
-               this.spawn(this.enemy.x, this.enemy.y, '#f59e0b', 30, 15);
-               this.player.shield = false;
-           }
-       } else {
-           if(this.player.shield) {
-               if (attackName === "【終止程序：格式化清洗】") {
-                   const pierceDmg = Math.floor(baseDmg * 0.25);
-                   this.player.hp = Math.max(0, this.player.hp - pierceDmg);
-                  
-                   const counterDmg = 2500 + Math.floor(Math.random() * 1000);
-                   this.enemy.hp = Math.max(0, this.enemy.hp - counterDmg);
-                  
-                   this.pop(`PIERCED: ${pierceDmg}`, this.player.x, this.player.y - 150, '#ef4444');
-                   this.pop(`COUNTER: ${counterDmg}`, this.enemy.x, this.enemy.y - 100, '#f59e0b');
-                   this.spawn(this.player.x, this.player.y, '#7f1d1d', 20, 10);
-                   this.spawn(this.enemy.x, this.enemy.y, '#f59e0b', 30, 15);
-               } else {
-                   const counterDmg = 3500 + Math.floor(Math.random() * 1500);
-                   this.enemy.hp = Math.max(0, this.enemy.hp - counterDmg);
-                  
-                   this.pop("PERFECT BLOCK!!", this.player.x, this.player.y - 150, '#f59e0b');
-                   this.pop(`COUNTER: ${counterDmg}`, this.enemy.x, this.enemy.y - 100, '#f59e0b');
-                   this.spawn(this.enemy.x, this.enemy.y, '#f59e0b', 60, 25);
-               }
-               SFX.play(400, 'triangle', 0.4, 0.3);
-               this.player.shield = false;
-           } else {
-               this.player.hp = Math.max(0, this.player.hp - baseDmg);
-               this.pop(`${attackName} -${baseDmg}`, this.player.x, this.player.y - 150, pColor);
-               this.spawn(this.player.x, this.player.y, pColor, 40, 20);
-               SFX.play(80, 'square', 0.5, 0.3);
-           }
-       }
+                if (!this.loopStarted) {
+                    this.loopStarted = true;
+                    this.loop();
+                }
 
-       this.updateUI();
-       setTimeout(() => this.enemy.tx = 980, 150);
-       await new Promise(r => setTimeout(r, 1000));
-      
-       if(this.player.hp <= 0) return this.end(false);
-       this.state = 'PLAYER_TURN';
-       this.updateBtns(false);
-   },
+                // 啟動背景圖片載入，載入完畢後才會解鎖 Start 按鈕
+                this.preloadImagesInBackground();
+            },
 
-   updateUI() {
-       const ph = (this.player.hp / this.player.maxHp * 100) + "%";
-       const eh = (this.enemy.hp / this.enemy.maxHp * 100) + "%";
-      
-       document.getElementById('p-hp-bar').style.width = ph;
-       document.getElementById('e-hp-bar').style.width = eh;
-       document.getElementById('p-np-bar').style.width = this.player.np + "%";
-      
-       document.getElementById('p-hp-text').innerText = `${this.player.hp.toLocaleString()} / ${this.player.maxHp.toLocaleString()}`;
-       document.getElementById('e-hp-text').innerText = `${this.enemy.hp.toLocaleString()} / ${this.enemy.maxHp.toLocaleString()}`;
+            resize() {
+                if (!this.canvas) return;
+                this.canvas.width = 1280;
+                this.canvas.height = 720;
+            },
 
-       const hpBar = document.getElementById('p-hp-bar');
-       if (this.player.emergencyShieldActive) {
-           hpBar.className = "hp-fill bg-gradient-to-r from-emerald-500 to-teal-300";
-       } else if (this.player.hp <= 2000) {
-           hpBar.className = "hp-fill bg-gradient-to-r from-amber-500 to-yellow-300";
-       } else {
-           hpBar.className = "hp-fill bg-gradient-to-r from-sky-500 to-cyan-300";
-       }
+            loadImage(src, timeout = 15000) { // 加長超時時間，確保不會過早放棄
+                return new Promise(resolve => {
+                    const img = new Image();
+                    let done = false;
 
-       setTimeout(() => {
-           document.getElementById('p-hp-ghost').style.width = ph;
-           document.getElementById('e-hp-ghost').style.width = eh;
-       }, 300);
-   },
+                    const finish = success => {
+                        if (done) return;
+                        done = true;
+                        clearTimeout(timer);
+                        resolve(success ? img : null);
+                    };
 
-   updateBtns(disabled) {
-       const isExecuteZone = this.enemy.hp <= 5000;
-      
-       ['atk-btn', 'def-btn', 'ult-btn'].forEach(id => {
-           const btn = document.getElementById(id);
-           if(id === 'ult-btn') {
-               btn.disabled = disabled || (!isExecuteZone && this.player.np < 100);
-              
-               if (isExecuteZone && !disabled) {
-                   btn.classList.add('execute-ready');
-                   btn.style.borderColor = '#f43f5e';
-                   btn.style.color = '#ffccd5';
-                   btn.innerText = "終焉術式：深淵海禁 ⚡【斬】";
-               } else {
-                   btn.classList.remove('execute-ready');
-                   btn.style.borderColor = '';
-                   btn.style.color = '';
-                   btn.innerText = "終焉術式：深淵海禁 ⚡";
-               }
-           } else {
-               btn.disabled = disabled;
-           }
-       });
-   },
+                    const timer = setTimeout(() => finish(false), timeout);
+                    img.onload = () => finish(true);
+                    img.onerror = () => finish(false);
+                    img.src = src;
+                });
+            },
 
-   end(win) {
-       this.state = 'END';
-       const scr = document.getElementById('result-screen');
-       scr.classList.remove('hidden');
-       document.getElementById('result-title').innerText = win ? "凱 旋" : "寂 滅";
-       document.getElementById('result-title').style.color = win ? "#0ea5e9" : "#f43f5e";
-       document.getElementById('result-subtitle').innerText = win ? "深淵已被征服，盟約永恆。" : "靈魂已淪為程序的塵埃。";
-   },
+            async preloadImagesInBackground() {
+                const startBtn = document.getElementById('btn-start');
+                if (startBtn) {
+                    startBtn.innerText = '資 源 載 入 中 ...';
+                    startBtn.disabled = true;
+                }
 
-   loop() {
-       this.frame++;
-       this.draw();
-       requestAnimationFrame(() => this.loop());
-   },
+                // 給予充分時間(15秒)等待圖片完整下載
+                const [playerImg, enemyImg] = await Promise.all([
+                    this.loadImage('https://i.ibb.co/PGgCPLTg/01.png', 15000),
+                    this.loadImage('https://i.ibb.co/v69f1sWq/03.png', 15000)
+                ]);
 
-   draw() {
-       const { ctx, canvas, frame } = this;
-       ctx.clearRect(0,0,canvas.width, canvas.height);
+                if (playerImg) this.imgPlayer = playerImg;
+                if (enemyImg) this.imgEnemy = enemyImg;
 
-       const grd = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 0, canvas.width/2, canvas.height/2, canvas.width);
-       grd.addColorStop(0, '#0f172a'); grd.addColorStop(1, '#020617');
-       ctx.fillStyle = grd; ctx.fillRect(0,0,canvas.width, canvas.height);
+                // 圖片都處理完後，正式解鎖按鈕
+                if (startBtn) {
+                    startBtn.innerText = '啟 動 靈 魂 盟 約';
+                    startBtn.disabled = false;
+                }
+            },
 
-       for(let i=0; i<8; i++) {
-           ctx.strokeStyle = `rgba(14, 165, 233, ${0.03 + i*0.01})`;
-           ctx.lineWidth = 1;
-           ctx.beginPath();
-           const x = (frame * (0.5 + i*0.1)) % canvas.width;
-           ctx.moveTo(x, 0); ctx.lineTo(x - 200, canvas.height);
-           ctx.stroke();
-       }
+            async start() {
+                if (!this.initialized) this.init();
+                if (this.state !== 'INTRO') return;
+                if (this.isStarting) return;
+                this.isStarting = true;
 
-       if(this.state !== 'INTRO') {
-           this.player.x += (this.player.tx - this.player.x) * 0.15;
-           this.enemy.x += (this.enemy.tx - this.enemy.x) * 0.15;
-           this.drawChar(this.player, true);
-           this.drawChar(this.enemy, false);
-       }
+                const startBtn = document.getElementById('btn-start');
+                const loadingText = document.getElementById('loading-text');
 
-       // 渲染與更新特技特效
-       this.effects.forEach((eff, i) => {
-           ctx.save();
-           if (eff.type === 'slash') {
-               ctx.strokeStyle = eff.color;
-               ctx.lineWidth = eff.width * eff.l;
-               ctx.shadowBlur = 40;
-               ctx.shadowColor = eff.color;
-               ctx.beginPath();
-               ctx.moveTo(eff.x1, eff.y1);
-               ctx.lineTo(eff.x2, eff.y2);
-               ctx.stroke();
-               eff.l -= 0.05; // 逐漸淡出
-           } else if (eff.type === 'shockwave') {
-               ctx.strokeStyle = eff.color;
-               ctx.lineWidth = 5 * eff.l;
-               ctx.shadowBlur = 30;
-               ctx.shadowColor = eff.color;
-               ctx.beginPath();
-               ctx.arc(eff.x, eff.y, eff.r, 0, Math.PI * 2);
-               ctx.stroke();
-               
-               eff.r += (eff.maxR - eff.r) * 0.12; // 快速擴張
-               eff.l -= 0.035; // 漸漸淡出
-           }
-           ctx.restore();
+                if (startBtn) {
+                    startBtn.innerText = '連 線 中...';
+                    startBtn.style.pointerEvents = 'none';
+                }
+                if (loadingText) {
+                    loadingText.classList.add('show');
+                    loadingText.innerText = '連線中...';
+                }
 
-           if (eff.l <= 0 || eff.r >= eff.maxR) {
-               this.effects.splice(i, 1);
-           }
-       });
+                try {
+                    SFX.init();
+                } catch (e) {}
+                BGM.startBattle(this.enemy.hp, this.player.emergencyShieldActive);
 
-       // 渲染粒子
-       this.particles.forEach((p, i) => {
-           p.x += p.vx; p.y += p.vy; p.l -= 0.02;
-           ctx.globalAlpha = p.l; ctx.fillStyle = p.c;
-           ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 7); ctx.fill();
-           if(p.l <= 0) this.particles.splice(i, 1);
-       });
-       ctx.globalAlpha = 1;
-   },
+                await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
-   drawChar(obj, isPlayer) {
-       const { ctx, frame } = this;
-       const bob = Math.sin(frame * 0.08) * 12;
-       ctx.save();
-       ctx.translate(obj.x, obj.y + bob);
+                // 由於前面已經強制載入過了，這裡只是做最後的確認
+                const [playerImg, enemyImg] = await Promise.all([
+                    this.imgPlayer ? Promise.resolve(this.imgPlayer) : this.loadImage('https://i.ibb.co/PGgCPLTg/01.png', 10000),
+                    this.imgEnemy ? Promise.resolve(this.imgEnemy) : this.loadImage('https://i.ibb.co/v69f1sWq/03.png', 10000)
+                ]);
 
-       if(isPlayer) {
-           ctx.shadowBlur = 20; ctx.shadowColor = obj.emergencyShieldActive ? '#10b981' : '#0ea5e9';
-           
-           // 繪製玩家圖片取代原本的幾何圖形
-           if (this.imgPlayer && this.imgPlayer.complete && this.imgPlayer.naturalWidth > 0) {
-               // 針對武達悟(站姿)調整尺寸與置中座標
-               ctx.drawImage(this.imgPlayer, -150, -350, 300, 400); 
-           } else {
-               // 若圖片載入中或失效，顯示替代色塊
-               ctx.fillStyle = 'rgba(14, 165, 233, 0.2)';
-               ctx.fillRect(-60, -220, 120, 220);
-               ctx.fillStyle = '#fff';
-               ctx.font = '10px monospace';
-               ctx.fillText('LOADING...', -25, -100);
-           }
-          
-           if (obj.emergencyShieldActive) {
-               ctx.save();
-               ctx.shadowColor = '#10b981';
-               ctx.strokeStyle = '#10b981';
-               ctx.lineWidth = 3;
-               ctx.setLineDash([10, 15]);
-              
-               ctx.beginPath();
-               for (let i = 0; i < 6; i++) {
-                   const angle = (i * Math.PI) / 3 + (frame * 0.015);
-                   const r = 160 + Math.sin(frame * 0.1) * 6;
-                   const hx = Math.cos(angle) * r;
-                   const hy = Math.sin(angle) * r - 100;
-                   if (i === 0) ctx.moveTo(hx, hy);
-                   else ctx.lineTo(hx, hy);
-               }
-               ctx.closePath();
-               ctx.stroke();
-               ctx.restore();
+                if (playerImg) this.imgPlayer = playerImg;
+                if (enemyImg) this.imgEnemy = enemyImg;
 
-               if (Math.random() < 0.15) {
-                   this.particles.push({
-                       x: obj.x + (Math.random() - 0.5) * 140,
-                       y: obj.y + bob - 100 + (Math.random() - 0.5) * 100,
-                       vx: (Math.random() - 0.5) * 1.5,
-                       vy: -Math.random() * 2.5 - 1,
-                       r: Math.random() * 3.5 + 1.5,
-                       l: 1.0,
-                       c: '#10b981'
-                   });
-               }
-           }
+                const startScreen = document.getElementById('start-screen');
+                const gameUI = document.getElementById('game-ui');
+                if (startScreen) startScreen.style.display = 'none';
+                if (gameUI) gameUI.style.opacity = '1';
 
-           if(obj.shield) {
-               ctx.shadowColor = '#f59e0b';
-               ctx.strokeStyle = '#f59e0b';
-               ctx.lineWidth = 4;
-               ctx.beginPath(); ctx.arc(0, -100, 140 + Math.sin(frame*0.2)*10, 0, 7); ctx.stroke();
-               ctx.setLineDash([20, 40]);
-               ctx.lineWidth = 2;
-               ctx.save();
-               ctx.rotate(frame * 0.05);
-               ctx.beginPath(); ctx.arc(0, 0, 160, 0, 7); ctx.stroke();
-               ctx.restore();
-           }
-       } else {
-           ctx.shadowBlur = 30; ctx.shadowColor = '#f43f5e';
-           
-           // 繪製敵方圖片取代原本的幾何圖形
-           if (this.imgEnemy && this.imgEnemy.complete && this.imgEnemy.naturalWidth > 0) {
-               // 針對國家公儺(王座)調整尺寸與置中座標
-               ctx.drawImage(this.imgEnemy, -200, -350, 400, 450); 
-           } else {
-               // 若圖片載入中或失效，顯示替代色塊
-               ctx.fillStyle = 'rgba(244, 63, 94, 0.2)';
-               ctx.fillRect(-70, -220, 140, 220);
-               ctx.fillStyle = '#fff';
-               ctx.font = '10px monospace';
-               ctx.fillText('LOADING...', -25, -100);
-           }
-       }
-       ctx.restore();
-   }
-};
+                this.updateUI();
+                this.state = 'PLAYER_TURN';
+                this.updateBtns(false);
+                await this.msg("「誓約已成。這一次，我將在防禦中徹底粉碎你。」");
+            },
 
-window.onload = () => Game.init();
-</script>
+            async msg(txt) {
+                const el = document.getElementById('dialog-box');
+                document.getElementById('dialog-text').innerText = txt;
+                el.style.opacity = '1';
+                await new Promise(r => setTimeout(r, 1500));
+                el.style.opacity = '0';
+            },
+
+            spawn(x, y, color, n = 20, s = 10) {
+                for (let i = 0; i < n; i++) {
+                    this.particles.push({
+                        x,
+                        y,
+                        vx: (Math.random() - 0.5) * s,
+                        vy: (Math.random() - 0.5) * s,
+                        r: Math.random() * 5 + 1,
+                        l: 1,
+                        c: color
+                    });
+                }
+            },
+
+            pop(txt, x, y, c = '#fff') {
+                const container = document.getElementById('game-container');
+                const d = document.createElement('div');
+                d.className = 'damage-pop';
+
+                const leftPercent = (x / 1280) * 100;
+                const topPercent = (y / 720) * 100;
+
+                d.style.left = `${leftPercent}%`;
+                d.style.top = `${topPercent}%`;
+                d.style.color = c;
+                d.innerText = txt;
+                container.appendChild(d);
+                setTimeout(() => d.remove(), 800);
+            },
+
+            flash() {
+                const container = document.getElementById('game-container');
+                container.classList.add('flash-white', 'shake');
+                setTimeout(() => container.classList.remove('flash-white', 'shake'), 350);
+            },
+
+            async action(type) {
+                if (this.state !== 'PLAYER_TURN') return;
+                this.state = 'BUSY';
+                this.updateBtns(true);
+
+                const mult = this.player.atkMultiplier || 1.0;
+
+                if (type === 'atk') {
+                    this.player.tx = 850;
+                    await new Promise(r => setTimeout(r, 150));
+                    this.flash();
+                    SFX.play(150, 'square', 0.3, 0.2);
+                    const dmg = Math.floor((2500 + Math.floor(Math.random() * 1000)) * mult);
+                    this.enemy.hp = Math.max(0, this.enemy.hp - dmg);
+                    this.player.np = Math.min(100, this.player.np + 25);
+                    this.pop(dmg, this.enemy.x, this.enemy.y - 150, '#0ea5e9');
+                    this.spawn(this.enemy.x, this.enemy.y, '#0ea5e9', 40, 20);
+                    setTimeout(() => this.player.tx = 300, 100);
+                } else if (type === 'def') {
+                    this.player.shield = true;
+                    this.player.tx = 400;
+                    SFX.play(600, 'sine', 0.5, 0.15);
+                    const counterPrep = Math.floor((800 + Math.floor(Math.random() * 400)) * mult);
+                    this.enemy.hp = Math.max(0, this.enemy.hp - counterPrep);
+                    this.pop(`REACTION: ${counterPrep}`, this.enemy.x, this.enemy.y - 120, '#f59e0b');
+                    this.spawn(this.enemy.x, this.enemy.y, '#f59e0b', 15, 10);
+                    await this.msg("「反擊術式...障壁內壓強化。」");
+                    setTimeout(() => this.player.tx = 300, 200);
+                } else if (type === 'ult') {
+                    const isExecuteZone = this.enemy.hp <= 5000;
+                    const popColor = isExecuteZone ? '#f43f5e' : '#38bdf8';
+
+                    SFX.play(100, 'sine', 0.6, 0.3);
+                    for (let i = 0; i < 40; i++) {
+                        const angle = Math.random() * Math.PI * 2;
+                        const dist = 200 + Math.random() * 150;
+                        this.particles.push({
+                            x: this.enemy.x + Math.cos(angle) * dist,
+                            y: this.enemy.y - 100 + Math.sin(angle) * dist,
+                            vx: -Math.cos(angle) * 7,
+                            vy: -Math.sin(angle) * 7,
+                            r: Math.random() * 4 + 2,
+                            l: 1.0,
+                            c: popColor
+                        });
+                    }
+                    this.player.tx = 500;
+                    await new Promise(r => setTimeout(r, 400));
+
+                    this.player.tx = 1150;
+                    await new Promise(r => setTimeout(r, 120));
+                    this.flash();
+
+                    for (let i = 0; i < 5; i++) {
+                        setTimeout(() => {
+                            SFX.play(220 + i * 140, 'sawtooth', 0.18, 0.25);
+
+                            const xOffset = (Math.random() - 0.5) * 120;
+                            const yOffset = (Math.random() - 0.5) * 120;
+                            this.effects.push({
+                                type: 'slash',
+                                x1: this.enemy.x - 220 + xOffset,
+                                y1: this.enemy.y - 220 + yOffset,
+                                x2: this.enemy.x + 220 - xOffset,
+                                y2: this.enemy.y + 20 - yOffset,
+                                color: popColor,
+                                width: 14,
+                                l: 1.0
+                            });
+
+                            this.effects.push({
+                                type: 'shockwave',
+                                x: this.enemy.x,
+                                y: this.enemy.y - 100,
+                                r: 10,
+                                maxR: 260,
+                                color: popColor,
+                                l: 1.0
+                            });
+
+                            this.spawn(this.enemy.x, this.enemy.y - 100, popColor, 25, 20);
+                        }, i * 75);
+                    }
+
+                    await new Promise(r => setTimeout(r, 450));
+                    this.flash();
+
+                    let dmg;
+                    let popText;
+
+                    if (isExecuteZone) {
+                        dmg = this.enemy.hp;
+                        popText = "EXECUTE: 終 焉 斬 滅";
+                        SFX.play(35, 'sawtooth', 2.0, 0.75);
+
+                        this.effects.push({
+                            type: 'shockwave',
+                            x: this.enemy.x,
+                            y: this.enemy.y - 100,
+                            r: 25,
+                            maxR: 520,
+                            color: '#f43f5e',
+                            l: 1.6
+                        });
+                    } else {
+                        dmg = Math.floor(15000 * mult);
+                        popText = "ABYSS TERMINUS";
+                        SFX.play(45, 'sawtooth', 1.6, 0.55);
+
+                        this.effects.push({
+                            type: 'shockwave',
+                            x: this.enemy.x,
+                            y: this.enemy.y - 100,
+                            r: 20,
+                            maxR: 420,
+                            color: '#38bdf8',
+                            l: 1.2
+                        });
+                    }
+
+                    this.enemy.hp = Math.max(0, this.enemy.hp - dmg);
+                    this.player.np = 0;
+
+                    this.pop(popText, this.enemy.x, this.enemy.y - 200, popColor);
+                    this.spawn(this.enemy.x, this.enemy.y - 100, popColor, 160, 40);
+
+                    await new Promise(r => setTimeout(r, 850));
+                    this.player.tx = 300;
+                }
+
+                this.updateUI();
+                await new Promise(r => setTimeout(r, 800));
+                if (this.enemy.hp <= 0) return this.end(true);
+                this.enemyTurn();
+            },
+
+            async enemyTurn() {
+                this.state = 'ENEMY_TURN';
+                const isEnraged = this.enemy.hp < this.enemy.maxHp * 0.5;
+
+                const attackRoll = Math.random();
+                let attackName = "";
+                let baseDmg = 0;
+                let pColor = '#f43f5e';
+                let dialogMsg = "";
+
+                if (isEnraged && attackRoll < 0.35) {
+                    attackName = "【終止程序：格式化清洗】";
+                    baseDmg = 4000 + Math.floor(Math.random() * 2000);
+                    pColor = '#7f1d1d';
+                    dialogMsg = "「判定：徹底抹除。執行核心格式化清洗！」";
+                } else if (attackRoll < 0.65) {
+                    attackName = "【侵蝕術式：程序污染】";
+                    baseDmg = 2200 + Math.floor(Math.random() * 1600);
+                    pColor = '#a855f7';
+                    dialogMsg = "「系統資源溢流...啟動大範圍程序污染。」";
+                } else {
+                    attackName = "【常規審判：標準裁決】";
+                    baseDmg = 1500 + Math.floor(Math.random() * 1000);
+                    pColor = '#f43f5e';
+                    dialogMsg = "「判定：非法實體。依據標準程序進行裁決。」";
+                }
+
+                await this.msg(dialogMsg);
+                this.enemy.tx = 400;
+                await new Promise(r => setTimeout(r, 400));
+
+                this.flash();
+
+                const predictedDmg = this.player.shield ? (attackName === "【終止程序：格式化清洗】" ? Math.floor(baseDmg * 0.25) : 0) : baseDmg;
+                const willTriggerEmergency = !this.player.emergencyTriggered && (this.player.hp - predictedDmg <= 1000);
+
+                if (willTriggerEmergency) {
+                    this.player.emergencyTriggered = true;
+                    this.player.emergencyShieldActive = true;
+                    this.player.atkMultiplier = 1.3;
+
+                    const healAmount = baseDmg;
+                    this.player.hp = Math.min(this.player.maxHp, this.player.hp + healAmount);
+
+                    this.pop("REVERSAL COVENANT!!", this.player.x, this.player.y - 200, '#10b981');
+                    this.pop(`+${healAmount} HP (ABSORBED)`, this.player.x, this.player.y - 150, '#10b981');
+                    this.spawn(this.player.x, this.player.y, '#10b981', 65, 18);
+                    SFX.play(800, 'sine', 0.6, 0.35);
+
+                    const label = document.getElementById('p-state-label');
+                    label.innerText = "COVENANT REBORN (ATK +30%)";
+                    label.style.color = "#10b981";
+
+                    await this.msg("「極限臨界！逆轉之誓：將敵方攻勢轉化為生命潮汐！」");
+
+                    if (this.player.shield) {
+                        const counterDmg = 3500 + Math.floor(Math.random() * 1500);
+                        this.enemy.hp = Math.max(0, this.enemy.hp - counterDmg);
+                        this.pop(`COUNTER: ${counterDmg}`, this.enemy.x, this.enemy.y - 100, '#f59e0b');
+                        this.spawn(this.enemy.x, this.enemy.y, '#f59e0b', 30, 15);
+                        this.player.shield = false;
+                    }
+                } else {
+                    if (this.player.shield) {
+                        if (attackName === "【終止程序：格式化清洗】") {
+                            const pierceDmg = Math.floor(baseDmg * 0.25);
+                            this.player.hp = Math.max(0, this.player.hp - pierceDmg);
+
+                            const counterDmg = 2500 + Math.floor(Math.random() * 1000);
+                            this.enemy.hp = Math.max(0, this.enemy.hp - counterDmg);
+
+                            this.pop(`PIERCED: ${pierceDmg}`, this.player.x, this.player.y - 150, '#ef4444');
+                            this.pop(`COUNTER: ${counterDmg}`, this.enemy.x, this.enemy.y - 100, '#f59e0b');
+                            this.spawn(this.player.x, this.player.y, '#7f1d1d', 20, 10);
+                            this.spawn(this.enemy.x, this.enemy.y, '#f59e0b', 30, 15);
+                        } else {
+                            const counterDmg = 3500 + Math.floor(Math.random() * 1500);
+                            this.enemy.hp = Math.max(0, this.enemy.hp - counterDmg);
+
+                            this.pop("PERFECT BLOCK!!", this.player.x, this.player.y - 150, '#f59e0b');
+                            this.pop(`COUNTER: ${counterDmg}`, this.enemy.x, this.enemy.y - 100, '#f59e0b');
+                            this.spawn(this.enemy.x, this.enemy.y, '#f59e0b', 60, 25);
+                        }
+                        SFX.play(400, 'triangle', 0.4, 0.3);
+                        this.player.shield = false;
+                    } else {
+                        this.player.hp = Math.max(0, this.player.hp - baseDmg);
+                        this.pop(`${attackName} -${baseDmg}`, this.player.x, this.player.y - 150, pColor);
+                        this.spawn(this.player.x, this.player.y, pColor, 40, 20);
+                        SFX.play(80, 'square', 0.5, 0.3);
+                    }
+                }
+
+                this.updateUI();
+                setTimeout(() => this.enemy.tx = 980, 150);
+                await new Promise(r => setTimeout(r, 1000));
+
+                if (this.player.hp <= 0) return this.end(false);
+                this.state = 'PLAYER_TURN';
+                this.updateBtns(false);
+            },
+
+            updateUI() {
+                const ph = (this.player.hp / this.player.maxHp * 100) + "%";
+                const eh = (this.enemy.hp / this.enemy.maxHp * 100) + "%";
+
+                document.getElementById('p-hp-bar').style.width = ph;
+                document.getElementById('e-hp-bar').style.width = eh;
+                document.getElementById('p-np-bar').style.width = this.player.np + "%";
+
+                document.getElementById('p-hp-text').innerText = `${this.player.hp.toLocaleString()} / ${this.player.maxHp.toLocaleString()}`;
+                document.getElementById('e-hp-text').innerText = `${this.enemy.hp.toLocaleString()} / ${this.enemy.maxHp.toLocaleString()}`;
+
+                const hpBar = document.getElementById('p-hp-bar');
+                if (this.player.emergencyShieldActive) {
+                    hpBar.className = "hp-fill bg-gradient-to-r from-emerald-500 to-teal-300";
+                } else if (this.player.hp <= 2000) {
+                    hpBar.className = "hp-fill bg-gradient-to-r from-amber-500 to-yellow-300";
+                } else {
+                    hpBar.className = "hp-fill bg-gradient-to-r from-sky-500 to-cyan-300";
+                }
+
+                BGM.updatePhase(this.enemy.hp, this.player.emergencyShieldActive);
+
+                setTimeout(() => {
+                    document.getElementById('p-hp-ghost').style.width = ph;
+                    document.getElementById('e-hp-ghost').style.width = eh;
+                }, 300);
+            },
+
+            updateBtns(disabled) {
+                const isExecuteZone = this.enemy.hp <= 5000;
+
+                ['atk-btn', 'def-btn', 'ult-btn'].forEach(id => {
+                    const btn = document.getElementById(id);
+                    if (id === 'ult-btn') {
+                        btn.disabled = disabled || (!isExecuteZone && this.player.np < 100);
+
+                        if (isExecuteZone && !disabled) {
+                            btn.classList.add('execute-ready');
+                            btn.style.borderColor = '#f43f5e';
+                            btn.style.color = '#ffccd5';
+                            btn.innerText = "終焉術式：深淵海禁 ⚡【斬】";
+                        } else {
+                            btn.classList.remove('execute-ready');
+                            btn.style.borderColor = '';
+                            btn.style.color = '';
+                            btn.innerText = "終焉術式：深淵海禁 ⚡";
+                        }
+                    } else {
+                        btn.disabled = disabled;
+                    }
+                });
+            },
+
+            end(win) {
+                this.state = 'END';
+                BGM.stop();
+                const scr = document.getElementById('result-screen');
+                scr.classList.remove('hidden');
+                document.getElementById('result-title').innerText = win ? "凱 旋" : "寂 滅";
+                document.getElementById('result-title').style.color = win ? "#0ea5e9" : "#f43f5e";
+                document.getElementById('result-subtitle').innerText = win ? "深淵已被征服，盟約永恆。" : "靈魂已淪為程序的塵埃。";
+            },
+
+            resetToMainMenu() {
+                // 隱藏結算與遊戲介面，顯示啟動畫面
+                document.getElementById('result-screen').classList.add('hidden');
+                document.getElementById('game-ui').style.opacity = '0';
+                document.getElementById('start-screen').style.display = 'flex';
+
+                // 重置遊戲核心狀態
+                this.state = 'INTRO';
+                this.isStarting = false;
+                this.particles = [];
+                this.effects = [];
+
+                // 重置玩家與敵方數值
+                this.player = {
+                    x: 300,
+                    y: 550,
+                    hp: 10000,
+                    maxHp: 10000,
+                    np: 20,
+                    shield: false,
+                    tx: 300,
+                    emergencyTriggered: false,
+                    emergencyShieldActive: false,
+                    atkMultiplier: 1.0
+                };
+                this.enemy = {
+                    x: 980,
+                    y: 350,
+                    hp: 25000,
+                    maxHp: 25000,
+                    tx: 980
+                };
+
+                // 重置 UI 標籤狀態
+                const label = document.getElementById('p-state-label');
+                if (label) {
+                    label.innerText = "ASCENDED STATE";
+                    label.style.color = ""; // 清除內聯樣式，恢復預設
+                }
+
+                // 恢復啟動按鈕狀態（因為圖片已載入，直接解鎖）
+                const startBtn = document.getElementById('btn-start');
+                if (startBtn) {
+                    startBtn.innerText = '啟 動 靈 魂 盟 約';
+                    startBtn.style.pointerEvents = 'auto';
+                    startBtn.disabled = false;
+                }
+
+                const loadingText = document.getElementById('loading-text');
+                if (loadingText) loadingText.classList.remove('show');
+
+                // 立即更新 UI 顯示滿血狀態
+                this.updateUI();
+            },
+
+            loop() {
+                this.frame++;
+                this.draw();
+                requestAnimationFrame(() => this.loop());
+            },
+
+            draw() {
+                const {
+                    ctx,
+                    canvas,
+                    frame
+                } = this;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                const grd = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, 0, canvas.width / 2, canvas.height / 2, canvas.width);
+                grd.addColorStop(0, '#0f172a');
+                grd.addColorStop(1, '#020617');
+                ctx.fillStyle = grd;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                for (let i = 0; i < 8; i++) {
+                    ctx.strokeStyle = `rgba(14, 165, 233, ${0.03 + i*0.01})`;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    const x = (frame * (0.5 + i * 0.1)) % canvas.width;
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x - 200, canvas.height);
+                    ctx.stroke();
+                }
+
+                if (this.state !== 'INTRO') {
+                    this.player.x += (this.player.tx - this.player.x) * 0.15;
+                    this.enemy.x += (this.enemy.tx - this.enemy.x) * 0.15;
+                    this.drawChar(this.player, true);
+                    this.drawChar(this.enemy, false);
+                }
+
+                this.effects.forEach((eff, i) => {
+                    ctx.save();
+                    if (eff.type === 'slash') {
+                        ctx.strokeStyle = eff.color;
+                        ctx.lineWidth = eff.width * eff.l;
+                        ctx.shadowBlur = 40;
+                        ctx.shadowColor = eff.color;
+                        ctx.beginPath();
+                        ctx.moveTo(eff.x1, eff.y1);
+                        ctx.lineTo(eff.x2, eff.y2);
+                        ctx.stroke();
+                        eff.l -= 0.05;
+                    } else if (eff.type === 'shockwave') {
+                        ctx.strokeStyle = eff.color;
+                        ctx.lineWidth = 5 * eff.l;
+                        ctx.shadowBlur = 30;
+                        ctx.shadowColor = eff.color;
+                        ctx.beginPath();
+                        ctx.arc(eff.x, eff.y, eff.r, 0, Math.PI * 2);
+                        ctx.stroke();
+
+                        eff.r += (eff.maxR - eff.r) * 0.12;
+                        eff.l -= 0.035;
+                    }
+                    ctx.restore();
+
+                    if (eff.l <= 0 || eff.r >= eff.maxR) {
+                        this.effects.splice(i, 1);
+                    }
+                });
+
+                this.particles.forEach((p, i) => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.l -= 0.02;
+                    ctx.globalAlpha = p.l;
+                    ctx.fillStyle = p.c;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r, 0, 7);
+                    ctx.fill();
+                    if (p.l <= 0) this.particles.splice(i, 1);
+                });
+                ctx.globalAlpha = 1;
+            },
+
+            drawChar(obj, isPlayer) {
+                const {
+                    ctx,
+                    frame
+                } = this;
+                const bob = Math.sin(frame * 0.08) * 12;
+                ctx.save();
+                ctx.translate(obj.x, obj.y + bob);
+
+                if (isPlayer) {
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = obj.emergencyShieldActive ? '#10b981' : '#0ea5e9';
+
+                    if (this.imgPlayer && this.imgPlayer.complete && this.imgPlayer.naturalWidth > 0) {
+                        ctx.drawImage(this.imgPlayer, -150, -350, 300, 400);
+                    } else {
+                        ctx.fillStyle = 'rgba(14, 165, 233, 0.2)';
+                        ctx.fillRect(-60, -220, 120, 220);
+                        ctx.fillStyle = '#fff';
+                        ctx.font = '10px monospace';
+                        ctx.fillText('LOADING...', -25, -100);
+                    }
+
+                    if (obj.emergencyShieldActive) {
+                        ctx.save();
+                        ctx.shadowColor = '#10b981';
+                        ctx.strokeStyle = '#10b981';
+                        ctx.lineWidth = 3;
+                        ctx.setLineDash([10, 15]);
+
+                        ctx.beginPath();
+                        for (let i = 0; i < 6; i++) {
+                            const angle = (i * Math.PI) / 3 + (frame * 0.015);
+                            const r = 160 + Math.sin(frame * 0.1) * 6;
+                            const hx = Math.cos(angle) * r;
+                            const hy = Math.sin(angle) * r - 100;
+                            if (i === 0) ctx.moveTo(hx, hy);
+                            else ctx.lineTo(hx, hy);
+                        }
+                        ctx.closePath();
+                        ctx.stroke();
+                        ctx.restore();
+
+                        if (Math.random() < 0.15) {
+                            this.particles.push({
+                                x: obj.x + (Math.random() - 0.5) * 140,
+                                y: obj.y + bob - 100 + (Math.random() - 0.5) * 100,
+                                vx: (Math.random() - 0.5) * 1.5,
+                                vy: -Math.random() * 2.5 - 1,
+                                r: Math.random() * 3.5 + 1.5,
+                                l: 1.0,
+                                c: '#10b981'
+                            });
+                        }
+                    }
+
+                    if (obj.shield) {
+                        ctx.shadowColor = '#f59e0b';
+                        ctx.strokeStyle = '#f59e0b';
+                        ctx.lineWidth = 4;
+                        ctx.beginPath();
+                        ctx.arc(0, -100, 140 + Math.sin(frame * 0.2) * 10, 0, 7);
+                        ctx.stroke();
+                        ctx.setLineDash([20, 40]);
+                        ctx.lineWidth = 2;
+                        ctx.save();
+                        ctx.rotate(frame * 0.05);
+                        ctx.beginPath();
+                        ctx.arc(0, 0, 160, 0, 7);
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+                } else {
+                    ctx.shadowBlur = 30;
+                    ctx.shadowColor = '#f43f5e';
+
+                    if (this.imgEnemy && this.imgEnemy.complete && this.imgEnemy.naturalWidth > 0) {
+                        ctx.drawImage(this.imgEnemy, -200, -350, 400, 450);
+                    } else {
+                        ctx.fillStyle = 'rgba(244, 63, 94, 0.2)';
+                        ctx.fillRect(-70, -220, 140, 220);
+                        ctx.fillStyle = '#fff';
+                        ctx.font = '10px monospace';
+                        ctx.fillText('LOADING...', -25, -100);
+                    }
+                }
+                ctx.restore();
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => Game.init());
+        if (document.readyState !== 'loading') Game.init();
+        setTimeout(() => Game.init(), 0);
+    </script>
 </body>
+
 </html>
