@@ -474,7 +474,8 @@
                 }
             },
             getTrackByTime(timeValue = virtualTime) {
-                return timeValue < 12.0 ? this.tracks.morning : this.tracks.afternoon;
+                // 12.016 約等於 12:01 (12 + 1/60)，在此之前為上午音樂，之後為下午音樂
+                return timeValue < 12.016 ? this.tracks.morning : this.tracks.afternoon;
             },
             switchBackgroundTrack(timeValue = virtualTime, force = false) {
                 if (!this.isPlaying) return;
@@ -493,6 +494,9 @@
                 }
 
                 this.bgAudio = nextAudio;
+                if (force) {
+                    this.bgAudio.currentTime = 0; // 若強制切換（例如新的一天），將音樂重置為開頭
+                }
                 this.bgAudio.volume = 0.45;
                 this.bgAudio.loop = true;
                 this.currentTrackKey = track.key;
@@ -2112,6 +2116,12 @@
             spawnDailyTasks();
             updateUI();
             isModalOpen = false;
+
+            // 強制重置並從頭播放上午的音樂
+            if (AudioManager.isPlaying) {
+                AudioManager.switchBackgroundTrack(virtualTime, true);
+            }
+
             if (player && player.userData && player.userData.isRiding) AudioManager.startMotorHum();
         }
 
