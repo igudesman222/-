@@ -443,6 +443,309 @@
             color: #f1f5f9 !important;
         }
 
+
+
+        /* ＝＝＝ 角色立繪層：僅在角色對話時顯示，不改原字幕與時間軸 ＝＝＝ */
+        #character-portrait {
+            position: absolute;
+            right: clamp(24px, 7vw, 132px);
+            bottom: clamp(88px, 10vh, 126px);
+            width: min(40vw, 520px);
+            height: min(66vh, 660px);
+            z-index: 92;
+            pointer-events: none;
+            opacity: 0;
+            transform: translateX(42px) scale(0.96);
+            transition: opacity 0.45s ease, transform 0.55s cubic-bezier(0.16, 1, 0.3, 1), filter 0.45s ease, left 0.45s ease, right 0.45s ease;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            filter: saturate(1.06);
+        }
+
+        #character-portrait.portrait-right {
+            right: clamp(24px, 7vw, 132px);
+            left: auto;
+            transform: translateX(42px) scale(0.96);
+        }
+
+        #character-portrait.portrait-left {
+            left: clamp(24px, 6vw, 112px);
+            right: auto;
+            transform: translateX(-42px) scale(0.96);
+        }
+
+        #character-portrait.active {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+        }
+
+        #character-portrait.portrait-missing {
+            display: none;
+        }
+
+        #character-portrait .portrait-aura {
+            position: absolute;
+            inset: 11% 3% 2% 3%;
+            border-radius: 46% 54% 18% 18%;
+            background: radial-gradient(circle at 52% 42%, rgba(45, 212, 191, 0.22), rgba(1, 4, 9, 0) 62%);
+            filter: blur(18px);
+            opacity: 0.76;
+            transform: scale(0.94);
+        }
+
+        #character-portrait .portrait-ring {
+            position: absolute;
+            width: 78%;
+            aspect-ratio: 1 / 1;
+            top: 8%;
+            border-radius: 999px;
+            border: 1px solid rgba(45, 212, 191, 0.24);
+            box-shadow: 0 0 36px rgba(45, 212, 191, 0.18), inset 0 0 34px rgba(45, 212, 191, 0.08);
+            opacity: 0.55;
+            animation: portrait-ring-pulse 3.8s ease-in-out infinite;
+        }
+
+        #character-portrait .portrait-img {
+            position: relative;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            object-position: bottom center;
+            filter: drop-shadow(0 28px 34px rgba(0, 0, 0, 0.72)) drop-shadow(0 0 24px rgba(45, 212, 191, 0.26));
+            transform-origin: bottom center;
+        }
+
+        #character-portrait .portrait-nameplate {
+            position: absolute;
+            right: 0;
+            bottom: 9%;
+            padding: 7px 13px;
+            background: rgba(1, 4, 9, 0.72);
+            border: 1px solid rgba(45, 212, 191, 0.32);
+            border-left: 3px solid var(--sea-glow);
+            color: rgba(231, 255, 253, 0.76);
+            font-size: 10px;
+            letter-spacing: 0.28em;
+            font-family: 'JetBrains Mono', 'Noto Sans TC', monospace;
+            text-transform: uppercase;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+        }
+
+
+        #character-portrait.portrait-left .portrait-nameplate {
+            left: 0;
+            right: auto;
+            border-left: 1px solid rgba(45, 212, 191, 0.32);
+            border-right: 3px solid var(--sea-glow);
+        }
+
+        #character-portrait.portrait-left .portrait-ring {
+            transform-origin: center center;
+        }
+
+        #character-portrait.effect-portrait-angry .portrait-img,
+        #character-portrait.effect-portrait-furious .portrait-img {
+            animation: portrait-shake 0.26s infinite;
+            filter: drop-shadow(0 28px 34px rgba(0, 0, 0, 0.78)) drop-shadow(0 0 26px rgba(239, 68, 68, 0.62));
+        }
+
+        #character-portrait.effect-portrait-furious .portrait-aura,
+        #character-portrait.effect-portrait-angry .portrait-aura {
+            background: radial-gradient(circle at 52% 42%, rgba(239, 68, 68, 0.28), rgba(1, 4, 9, 0) 64%);
+        }
+
+        #character-portrait.effect-portrait-arrogant .portrait-img {
+            animation: portrait-bob 2.1s ease-in-out infinite;
+            filter: drop-shadow(0 28px 34px rgba(0, 0, 0, 0.72)) drop-shadow(0 0 28px rgba(250, 204, 21, 0.56));
+        }
+
+        #character-portrait.effect-portrait-mocking .portrait-img {
+            animation: portrait-taunt 2.5s ease-in-out infinite;
+            filter: drop-shadow(0 28px 34px rgba(0, 0, 0, 0.72)) drop-shadow(0 0 28px rgba(168, 85, 247, 0.58));
+        }
+
+        #character-portrait.effect-portrait-weak .portrait-img {
+            animation: portrait-weak 2.4s ease-in-out infinite;
+            opacity: 0.82;
+            filter: drop-shadow(0 28px 34px rgba(0, 0, 0, 0.72)) drop-shadow(0 0 20px rgba(148, 163, 184, 0.44));
+        }
+
+        #character-portrait.effect-portrait-anxious .portrait-img {
+            animation: portrait-pulse 0.72s ease-in-out infinite alternate;
+            filter: drop-shadow(0 28px 34px rgba(0, 0, 0, 0.72)) drop-shadow(0 0 25px rgba(94, 234, 212, 0.58));
+        }
+
+        #character-portrait.effect-portrait-firm .portrait-img {
+            animation: portrait-resolve 2.9s ease-in-out infinite;
+            filter: drop-shadow(0 28px 34px rgba(0, 0, 0, 0.72)) drop-shadow(0 0 28px rgba(16, 185, 129, 0.58));
+        }
+
+        #character-portrait.effect-portrait-narrator .portrait-img {
+            animation: portrait-narrator-float 4.3s ease-in-out infinite;
+            filter: drop-shadow(0 28px 34px rgba(0, 0, 0, 0.72)) drop-shadow(0 0 26px rgba(125, 211, 252, 0.46));
+        }
+
+        @keyframes portrait-ring-pulse {
+
+            0%,
+            100% {
+                transform: scale(0.94);
+                opacity: 0.42;
+            }
+
+            50% {
+                transform: scale(1.02);
+                opacity: 0.72;
+            }
+        }
+
+        @keyframes portrait-shake {
+
+            0%,
+            100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+
+            25% {
+                transform: translate(-3px, 2px) rotate(-0.8deg);
+            }
+
+            50% {
+                transform: translate(3px, -2px) rotate(0.8deg);
+            }
+
+            75% {
+                transform: translate(2px, 2px) rotate(-0.4deg);
+            }
+        }
+
+        @keyframes portrait-bob {
+
+            0%,
+            100% {
+                transform: translateY(0) scale(1);
+            }
+
+            50% {
+                transform: translateY(-10px) scale(1.015);
+            }
+        }
+
+        @keyframes portrait-taunt {
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-7px) rotate(-1.8deg);
+            }
+        }
+
+        @keyframes portrait-weak {
+
+            0%,
+            100% {
+                transform: translateY(0) scale(0.985);
+                opacity: 0.72;
+            }
+
+            50% {
+                transform: translateY(7px) scale(1);
+                opacity: 0.9;
+            }
+        }
+
+        @keyframes portrait-pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            100% {
+                transform: scale(1.028);
+            }
+        }
+
+        @keyframes portrait-resolve {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        @keyframes portrait-narrator-float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-9px);
+            }
+        }
+
+
+
+        /* 角色立繪避讓：對話時，對話框會依立繪所在側稍微移到相反側，避免遮住立繪 */
+        .dialogue-window.portrait-dialogue-shift-left,
+        .dialogue-window.portrait-dialogue-shift-right {
+            width: min(60vw, 780px);
+            max-width: min(60vw, 780px);
+            transition: all 0.8s cubic-bezier(0.19, 1, 0.22, 1), width 0.55s ease, max-width 0.55s ease;
+        }
+
+        .dialogue-window.portrait-dialogue-shift-left.active {
+            transform: translateX(clamp(-260px, -16vw, -120px)) translateY(0) rotateX(0deg);
+        }
+
+        .dialogue-window.portrait-dialogue-shift-right.active {
+            transform: translateX(clamp(120px, 16vw, 260px)) translateY(0) rotateX(0deg);
+        }
+
+        /* 第二大段遊戲介紹：立繪跟隨關卡字幕同步縮小到左下角，避免遮住遊戲畫面 */
+        #character-portrait.portrait-gameplay-guide {
+            z-index: 126;
+            width: min(34vw, 420px);
+            height: min(58vh, 560px);
+        }
+
+        #character-portrait.portrait-gameplay-guide.portrait-compact {
+            left: max(42px, env(safe-area-inset-left)) !important;
+            right: auto !important;
+            bottom: max(26px, calc(env(safe-area-inset-bottom) + 24px)) !important;
+            width: min(170px, 16vw) !important;
+            height: min(190px, 25vh) !important;
+            opacity: 0.58 !important;
+            filter: saturate(0.72) brightness(0.72) contrast(0.95) !important;
+        }
+
+        #character-portrait.portrait-gameplay-guide.portrait-compact.active {
+            transform: translateX(0) scale(0.74) !important;
+        }
+
+        #character-portrait.portrait-gameplay-guide.portrait-compact .portrait-img {
+            filter: drop-shadow(0 18px 22px rgba(0, 0, 0, 0.72)) drop-shadow(0 0 12px rgba(45, 212, 191, 0.18)) !important;
+        }
+
+        #character-portrait.portrait-gameplay-guide.portrait-compact .portrait-aura {
+            opacity: 0.26 !important;
+            filter: blur(14px) !important;
+        }
+
+        #character-portrait.portrait-gameplay-guide.portrait-compact .portrait-ring,
+        #character-portrait.portrait-gameplay-guide.portrait-compact .portrait-nameplate {
+            opacity: 0.22 !important;
+        }
+
         @keyframes text-shake {
 
             0%,
@@ -1125,6 +1428,83 @@
             }
         }
 
+
+
+        @media (max-width: 1024px) {
+            #character-portrait {
+                right: clamp(8px, 2.5vw, 28px);
+                bottom: max(96px, calc(env(safe-area-inset-bottom) + 92px));
+                width: min(42vw, 360px);
+                height: min(52vh, 470px);
+                opacity: 0.88;
+            }
+
+            #character-portrait .portrait-nameplate {
+                font-size: 8px;
+                letter-spacing: 0.14em;
+                padding: 5px 9px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            #character-portrait {
+                width: min(46vw, 240px);
+                height: min(42vh, 330px);
+                right: 4px;
+                bottom: max(120px, calc(env(safe-area-inset-bottom) + 118px));
+            }
+
+            #character-portrait .portrait-ring,
+            #character-portrait .portrait-nameplate {
+                display: none;
+            }
+        }
+
+
+
+        @media (max-width: 1024px) {
+
+            .dialogue-window.portrait-dialogue-shift-left,
+            .dialogue-window.portrait-dialogue-shift-right {
+                width: min(72vw, 720px);
+                max-width: min(72vw, 720px);
+            }
+
+            .dialogue-window.portrait-dialogue-shift-left.active {
+                transform: translateX(clamp(-120px, -8vw, -54px)) translateY(0) rotateX(0deg);
+            }
+
+            .dialogue-window.portrait-dialogue-shift-right.active {
+                transform: translateX(clamp(54px, 8vw, 120px)) translateY(0) rotateX(0deg);
+            }
+
+            #character-portrait.portrait-gameplay-guide.portrait-compact {
+                left: max(18px, env(safe-area-inset-left)) !important;
+                bottom: max(18px, calc(env(safe-area-inset-bottom) + 16px)) !important;
+                width: min(120px, 22vw) !important;
+                height: min(145px, 24vh) !important;
+            }
+        }
+
+        @media (max-width: 600px) {
+
+            .dialogue-window.portrait-dialogue-shift-left,
+            .dialogue-window.portrait-dialogue-shift-right {
+                width: 90vw;
+                max-width: 90vw;
+            }
+
+            .dialogue-window.portrait-dialogue-shift-left.active,
+            .dialogue-window.portrait-dialogue-shift-right.active {
+                transform: translateY(0) rotateX(0deg);
+            }
+
+            #character-portrait.portrait-gameplay-guide.portrait-compact {
+                width: min(92px, 26vw) !important;
+                height: min(112px, 20vh) !important;
+            }
+        }
+
         @media (prefers-reduced-motion: reduce) {
 
             .grid-3d,
@@ -1347,6 +1727,13 @@
         <canvas id="sea-canvas"></canvas>
         <div id="flash" class="scene-flash"></div>
         <div id="sonar-container" class="absolute inset-0 overflow-hidden pointer-events-none"></div>
+
+        <div id="character-portrait" aria-hidden="true">
+            <div class="portrait-aura"></div>
+            <div class="portrait-ring"></div>
+            <img id="character-portrait-img" class="portrait-img" alt="" decoding="async" referrerpolicy="no-referrer">
+            <div id="character-portrait-name" class="portrait-nameplate"></div>
+        </div>
         <div id="final-fade" class="final-fade-overlay"></div>
 
         <div class="absolute inset-0 flex flex-col justify-center items-center z-50 pointer-events-none px-10">
@@ -2016,6 +2403,241 @@
             '沉思': 'effect-normal'
         };
 
+
+
+        const CHARACTER_ASSET_BASE = 'https://cdn.jsdelivr.net/gh/igudesman222/igudesman2012/07-第七組資源/07-002-圖片/';
+        const CHARACTER_GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/igudesman222/igudesman2012/main/07-第七組資源/07-002-圖片/';
+        let portraitLoadToken = 0;
+        let activePortraitKey = '';
+
+        const portraitMap = {
+            '旁白|陳述': {
+                files: ['15-旁白.png'],
+                label: '旁白',
+                side: 'right'
+            },
+            '旁白|引導': {
+                files: ['15-旁白.png'],
+                label: '旁白',
+                side: 'right'
+            },
+            '旁白|沉思': {
+                files: ['15-旁白.png'],
+                label: '旁白',
+                side: 'right'
+            },
+            '阿建|得意大笑': {
+                files: ['2- 阿建（笑到哭出來） .png', '02-阿建（笑到哭出來）.png', '12-阿建（笑到哭出來）.png', '12-阿建(笑到哭出來).png', '08-阿建(奸笑）.png', '08-阿建（奸笑）.png', '08-阿建(奸笑).png'],
+                label: '阿建',
+                side: 'right'
+            },
+            '遠德|憤怒': {
+                files: ['03- 遠德（咬牙切齒） .png', '03-遠德（咬牙切齒）.png', '03-遠德(咬牙切齒).png'],
+                label: '遠德',
+                side: 'left'
+            },
+            '白海豚|虛弱': {
+                files: ['14-白海豚（委屈）.png', '14-白海豚(委屈).png'],
+                label: '白海豚',
+                side: 'left'
+            },
+            '遠德|急切': {
+                files: ['06-遠德（憐憫）.png', '06-遠德(憐憫).png'],
+                label: '遠德',
+                side: 'left'
+            },
+            '遠德|拍桌怒吼': {
+                files: ['04-遠德（浩克）.png', '04-遠德(浩克).png'],
+                label: '遠德',
+                side: 'left'
+            },
+            '阿建|冷笑': {
+                files: ['09-阿建（自信）.png', '09-阿建(自信).png'],
+                label: '阿建',
+                side: 'right'
+            },
+            '遠德|質問': {
+                files: ['03- 遠德（咬牙切齒） .png', '03-遠德（咬牙切齒）.png', '03-遠德(咬牙切齒).png'],
+                label: '遠德',
+                side: 'left'
+            },
+            '阿建|狂妄': {
+                files: ['12-阿建（笑到哭出來）.png', '12-阿建(笑到哭出來).png', '2- 阿建（笑到哭出來） .png'],
+                label: '阿建',
+                side: 'right'
+            },
+            '遠德|堅定': {
+                files: ['03-遠德（咬牙切齒）.png', '03-遠德(咬牙切齒).png'],
+                label: '遠德',
+                side: 'left'
+            },
+            '阿建|嘲諷': {
+                files: ['13-阿建（嘲諷笑）.png', '13-阿建(嘲諷笑).png'],
+                label: '阿建',
+                side: 'right'
+            },
+            '遠德|宣示': {
+                files: ['05-遠德（得意笑）.png', '05-遠德(得意笑).png'],
+                label: '遠德',
+                side: 'left'
+            },
+            '阿建|氣急敗壞': {
+                files: ['11-阿建（咬牙切齒）.png', '11-阿建(咬牙切齒).png'],
+                label: '阿建',
+                side: 'right'
+            },
+            '遠德|守護': {
+                files: ['02- 遠德（自信） .png', '02-遠德（自信）.png', '02-遠德(自信).png', '2-遠德（自信）.png'],
+                label: '遠德',
+                side: 'left'
+            },
+            '遊戲指導|關卡': {
+                files: ['15-旁白.png'],
+                label: '旁白｜指導者',
+                side: 'right'
+            }
+        };
+
+        const portraitEmotionClasses = {
+            '憤怒': 'effect-portrait-angry',
+            '拍桌怒吼': 'effect-portrait-furious',
+            '氣急敗壞': 'effect-portrait-angry',
+            '得意大笑': 'effect-portrait-arrogant',
+            '狂妄': 'effect-portrait-arrogant',
+            '冷笑': 'effect-portrait-mocking',
+            '嘲諷': 'effect-portrait-mocking',
+            '虛弱': 'effect-portrait-weak',
+            '急切': 'effect-portrait-anxious',
+            '質問': 'effect-portrait-anxious',
+            '宣示': 'effect-portrait-firm',
+            '堅定': 'effect-portrait-firm',
+            '守護': 'effect-portrait-firm',
+            '陳述': 'effect-portrait-narrator',
+            '引導': 'effect-portrait-narrator',
+            '沉思': 'effect-portrait-narrator'
+        };
+
+        function buildPortraitUrls(files) {
+            const list = Array.isArray(files) ? files : [files];
+            const urls = [];
+            list.forEach(file => {
+                urls.push(CHARACTER_ASSET_BASE + encodeURIComponent(file).replace(/%2F/g, '/'));
+                urls.push(CHARACTER_GITHUB_RAW_BASE + encodeURIComponent(file).replace(/%2F/g, '/'));
+            });
+            return urls;
+        }
+
+        function getPortraitInfo(step) {
+            if (!step) return null;
+            if (step.type === 'talk') {
+                return portraitMap[`${step.who}|${step.emotion}`] || portraitMap[`${step.who}|`] || null;
+            }
+            if (isGameplayStageStep(step) || (step.type === 'visual' && step.label && step.label.includes('CLEAR CONDITION'))) {
+                return portraitMap['遊戲指導|關卡'];
+            }
+            return null;
+        }
+
+        function getPortraitKey(step, info) {
+            if (!step || !info) return '';
+            const files = Array.isArray(info.files) ? info.files.join('|') : String(info.files || '');
+            return `${step.t}|${step.type}|${step.who || step.main || ''}|${step.emotion || ''}|${files}|${info.side || 'right'}`;
+        }
+
+        function updateDialoguePortraitAvoidance(step, info) {
+            const dialogueBox = document.getElementById('dialogue-box');
+            if (!dialogueBox) return;
+            dialogueBox.classList.remove('portrait-dialogue-shift-left', 'portrait-dialogue-shift-right');
+            if (!step || step.type !== 'talk' || !info) return;
+            // 立繪在右側時，對話框往左；立繪在左側時，對話框往右。
+            dialogueBox.classList.add(info.side === 'left' ? 'portrait-dialogue-shift-right' : 'portrait-dialogue-shift-left');
+        }
+
+        function hideCharacterPortrait() {
+            const wrap = document.getElementById('character-portrait');
+            if (!wrap) return;
+            activePortraitKey = '';
+            wrap.classList.remove('active');
+            wrap.classList.remove('portrait-gameplay-guide', 'portrait-compact');
+            wrap.classList.remove('effect-portrait-angry', 'effect-portrait-furious', 'effect-portrait-arrogant', 'effect-portrait-mocking', 'effect-portrait-weak', 'effect-portrait-anxious', 'effect-portrait-firm', 'effect-portrait-narrator');
+            updateDialoguePortraitAvoidance(null, null);
+        }
+
+        function showCharacterPortrait(step) {
+            const wrap = document.getElementById('character-portrait');
+            const img = document.getElementById('character-portrait-img');
+            const name = document.getElementById('character-portrait-name');
+            if (!wrap || !img || !name) return;
+            const info = getPortraitInfo(step);
+            if (!info) {
+                hideCharacterPortrait();
+                return;
+            }
+
+            const portraitKey = getPortraitKey(step, info);
+            const effectClass = portraitEmotionClasses[step.emotion] || (step.type === 'visual' ? 'effect-portrait-narrator' : 'effect-portrait-narrator');
+            const sideClass = info.side === 'left' ? 'portrait-left' : 'portrait-right';
+            const isGameplayGuide = isGameplayStageStep(step) || (step.type === 'visual' && step.label && step.label.includes('CLEAR CONDITION'));
+            wrap.classList.remove('portrait-left', 'portrait-right');
+            wrap.classList.add(sideClass);
+            wrap.classList.toggle('portrait-gameplay-guide', isGameplayGuide);
+            if (!isGameplayGuide) wrap.classList.remove('portrait-compact');
+            updateDialoguePortraitAvoidance(step, info);
+            wrap.classList.remove('effect-portrait-angry', 'effect-portrait-furious', 'effect-portrait-arrogant', 'effect-portrait-mocking', 'effect-portrait-weak', 'effect-portrait-anxious', 'effect-portrait-firm', 'effect-portrait-narrator');
+            wrap.classList.add(effectClass);
+            name.innerText = `${info.label || step.who || step.main || '角色'} // ${step.emotion || (step.type === 'visual' ? 'Guide' : 'Normal')}`;
+            img.alt = info.label || step.who || step.main || '';
+
+            if (activePortraitKey === portraitKey && img.getAttribute('src')) {
+                wrap.classList.remove('portrait-missing');
+                wrap.classList.add('active');
+                return;
+            }
+
+            activePortraitKey = portraitKey;
+            const urls = buildPortraitUrls(info.files);
+            const token = ++portraitLoadToken;
+            let idx = 0;
+            wrap.classList.remove('active');
+            wrap.classList.remove('portrait-missing');
+
+            img.onload = () => {
+                if (token !== portraitLoadToken) return;
+                wrap.classList.add('active');
+            };
+            img.onerror = () => {
+                if (token !== portraitLoadToken) return;
+                if (idx < urls.length) {
+                    img.src = urls[idx++];
+                } else {
+                    wrap.classList.add('portrait-missing');
+                    wrap.classList.remove('active');
+                }
+            };
+            img.src = urls[idx++];
+        }
+
+        const PORTRAIT_LEAD_SECONDS = 0.3;
+
+        function getPortraitStepForElapsed(elapsed) {
+            if (elapsed < 0) return null;
+            if (elapsed >= 233) return null;
+            let chosen = null;
+            for (let i = 0; i < script.length; i++) {
+                const step = script[i];
+                if (!getPortraitInfo(step)) continue;
+                if (elapsed >= step.t - PORTRAIT_LEAD_SECONDS) chosen = step;
+                else break;
+            }
+            return chosen;
+        }
+
+        function updateCharacterPortraitByTime(elapsed) {
+            const step = getPortraitStepForElapsed(elapsed);
+            if (step) showCharacterPortrait(step);
+            else hideCharacterPortrait();
+        }
+
         function updateEmotionUI(emotion) {
             const emotionTag = document.getElementById('emotion-tag');
             if (emotion) {
@@ -2083,6 +2705,10 @@
                 el.classList.toggle('gameplay-compact', shouldCompact);
             });
             document.body.classList.toggle('gameplay-focus-mode', shouldCompact);
+            const portrait = document.getElementById('character-portrait');
+            if (portrait) {
+                portrait.classList.toggle('portrait-compact', !!(shouldCompact && portrait.classList.contains('portrait-gameplay-guide')));
+            }
         }
 
         function updateUI(step) {
@@ -2099,6 +2725,7 @@
             const openingVisual = document.getElementById('opening-visual');
             const openingVideo = document.getElementById('opening-video');
             const textContent = document.getElementById('text-content');
+            hideCharacterPortrait();
 
             bigTitle.classList.remove('team-title', 'final-tagline', 'gameplay-main', 'title-pop', 'gameplay-compact');
             subTitle.classList.remove('gameplay-subtitle', 'subtitle-pop', 'gameplay-compact');
@@ -2259,6 +2886,7 @@
             updatePlayPauseButton();
             document.getElementById('status-tag').innerText = 'IDLE';
             updateEmotionUI(null);
+            hideCharacterPortrait();
             document.body.classList.remove('gameplay-focus-mode');
 
             const fade = document.getElementById('final-fade');
@@ -2317,6 +2945,7 @@
                 updateUI(script[idx]);
             }
             updateGameplayCaptionPlacement(clamped);
+            updateCharacterPortraitByTime(clamped);
         }
 
         function seekToTime(targetTime, autoplayMedia = true) {
