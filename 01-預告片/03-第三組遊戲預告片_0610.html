@@ -3,2571 +3,1076 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>七股風雲 - 互動敘事體驗</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght=400;500;700;900&display=swap" rel="stylesheet">
-    <link rel="preconnect" href="https://igudesman222.github.io" crossorigin>
-    <link rel="preconnect" href="https://raw.githubusercontent.com" crossorigin>
-    <link rel="preconnect" href="https://media.githubusercontent.com" crossorigin>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>深海的抉擇：四接風雲</title>
     <style>
-        /* Apps Script / iframe / Tailwind CDN fallback: 確保即便 Tailwind 載入延遲，版面依然正常運作 */
-        .hidden {
-            display: none !important;
-        }
-
-        .fixed {
-            position: fixed !important;
-        }
-
-        .absolute {
-            position: absolute !important;
-        }
-
-        .relative {
-            position: relative !important;
-        }
-
-        .inset-0 {
-            top: 0 !important;
-            right: 0 !important;
-            bottom: 0 !important;
-            left: 0 !important;
-        }
-
-        .flex {
-            display: flex !important;
-        }
-
-        .flex-col {
-            flex-direction: column !important;
-        }
-
-        .items-center {
-            align-items: center !important;
-        }
-
-        .justify-center {
-            justify-content: center !important;
-        }
-
-        .justify-between {
-            justify-content: space-between !important;
-        }
-
-        .text-center {
-            text-align: center !important;
-        }
-
-        .w-full {
-            width: 100% !important;
-        }
-
-        .h-full {
-            height: 100% !important;
-        }
-
-        /* 避免 .flex 和 .absolute 覆蓋 .hidden 的顯示設定 */
-        .hidden,
-        .hidden.flex,
-        .hidden.absolute,
-        .hidden.fixed,
-        .hidden.inset-0,
-        .flex.hidden,
-        .absolute.hidden,
-        .fixed.hidden {
-            display: none !important;
-            visibility: hidden !important;
-            opacity: 0 !important;
-            pointer-events: none !important;
-        }
-
         :root {
-            --char-wen: #60a5fa;
-            --char-mei: #f87171;
-            --char-hui: #34d399;
-            --char-nar: #e2e8f0;
+            --ui-cyan: #22d3ee;
+            --ui-red: #f43f5e;
+            --ui-gold: #fbbf24;
+            --bg-blur: rgba(15, 23, 42, 0.85);
         }
 
-        body {
-            font-family: 'Noto Serif TC', serif;
-            background: #020617;
-            color: white;
+        /* 加入 outline: none 避免點擊畫面出現藍色外框 */
+        body,
+        html {
             margin: 0;
-            overflow: hidden;
-            user-select: none;
-        }
-
-        .trailer-overlay {
-            position: fixed;
-            inset: 0;
-            z-index: 1000;
+            padding: 0;
+            height: 100%;
             background: #000;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 1s ease-in-out;
+            color: #fff;
+            font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
+            overflow: hidden;
+            outline: none;
         }
 
-        .trailer-overlay.active {
-            opacity: 1;
-        }
-
-        /* 平台安全模式：錨點開啟備援 */
-        #trailer-mode:target {
-            display: flex !important;
-            opacity: 1 !important;
-        }
-
-        #trailer-mode:target~#intro-screen {
-            opacity: 0 !important;
-            visibility: hidden !important;
-            pointer-events: none !important;
-        }
-
-        #trailer-mode:target #video-container {
-            display: flex !important;
-            opacity: 1 !important;
-        }
-
-        .js-diagnostic {
-            position: fixed;
+        /* 頂部數據儀 */
+        #hud-top {
+            position: absolute;
+            top: 20px;
             left: 50%;
-            bottom: 1rem;
             transform: translateX(-50%);
-            z-index: 3000;
-            padding: 0.55rem 0.9rem;
-            border-radius: 999px;
-            border: 1px solid rgba(248, 113, 113, 0.35);
-            background: rgba(15, 23, 42, 0.82);
-            color: #fecaca;
-            font-size: 0.78rem;
-            letter-spacing: 0.08em;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            display: flex;
+            gap: 15px;
+            z-index: 100;
             pointer-events: none;
         }
 
-        .js-enabled .js-diagnostic {
-            display: none;
-        }
-
-        .fallback-hint {
-            position: absolute;
-            bottom: 2rem;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1100;
-            color: rgba(226, 232, 240, 0.72);
-            font-size: 0.9rem;
-            background: rgba(0, 0, 0, 0.42);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 999px;
-            padding: 0.5rem 1rem;
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-        }
-
-        .js-enabled .fallback-hint {
-            display: none;
-        }
-
-        .top-bar {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            padding: 1.5rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 1010;
-            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.8), transparent);
-        }
-
-        .trailer-timer {
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 1.25rem;
-            color: #ef4444;
-            font-weight: bold;
-            letter-spacing: 2px;
-            text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
-        }
-
-        .progress-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.1);
-            z-index: 1020;
-        }
-
-        .progress-bar {
-            height: 100%;
-            width: 0%;
-            background: #ef4444;
-            transition: width 1s linear;
-            box-shadow: 0 0 10px #ef4444;
-        }
-
-        #video-container {
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            align-items: stretch;
-            justify-content: stretch;
-            position: relative;
-            overflow: hidden;
-            background: #000;
-        }
-
-        .yt-wrapper {
-            position: absolute;
-            inset: 0;
-            width: 100vw;
-            height: 100vh;
-            max-width: none;
-            aspect-ratio: auto;
-            overflow: hidden;
-            border-radius: 0;
-            box-shadow: none;
-            background: #000;
-        }
-
-        .yt-wrapper video {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            max-width: none;
-            object-fit: contain;
-            object-position: center center;
-            border: none;
-            background: #000;
-        }
-
-        .video-fallback {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: radial-gradient(circle at center, #1e293b, #000);
+        .meter-box {
+            background: var(--bg-blur);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            padding: 8px 15px;
+            border-radius: 4px;
+            min-width: 120px;
             text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
         }
 
-        .scene-sim {
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            inset: 0;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            transition: opacity 1.5s ease-in-out;
-            opacity: 0;
-            overflow: hidden;
-        }
-
-        .scene-sim.active {
-            opacity: 1;
-        }
-
-        .subtitle-box {
-            position: absolute;
-            left: 50%;
-            bottom: 4%;
-            width: min(92vw, 1120px);
-            max-height: 20vh;
-            box-sizing: border-box;
-            background: rgba(10, 15, 30, 0.82);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-left: 6px solid transparent;
-            padding: clamp(0.75rem, 1.4vw, 1.15rem) clamp(1rem, 2.2vw, 2rem);
-            border-radius: 1rem;
-            z-index: 1005;
-            transform: translate(-50%, 24px) scale(0.96);
-            opacity: 0;
-            transition: all 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 18px 42px -12px rgba(0, 0, 0, 0.78), inset 0 0 16px rgba(255, 255, 255, 0.045);
-            overflow: visible;
-        }
-
-        .subtitle-box.visible {
-            transform: translate(-50%, 0) scale(1);
-            opacity: 1;
-        }
-
-        .subtitle-content {
-            display: flex;
-            align-items: center;
-            gap: clamp(0.8rem, 1.6vw, 1.5rem);
-            min-height: 0;
-        }
-
-        .subtitle-avatar-wrap {
-            flex: 0 0 clamp(92px, 12vw, 165px);
-            height: clamp(105px, 15vw, 190px);
-            display: flex;
-            align-items: flex-end;
-            justify-content: center;
-            margin: -3.3rem 0 -0.8rem -1.15rem;
-            pointer-events: none;
-            transition: all 0.3s ease-in-out;
-        }
-
-        .subtitle-avatar-wrap.hidden {
-            display: none;
-        }
-
-        .subtitle-avatar {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-            filter: drop-shadow(0 18px 24px rgba(0, 0, 0, 0.75));
-        }
-
-        .subtitle-copy {
-            flex: 1 1 auto;
-            min-width: 0;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            text-align: left;
-            max-height: calc(20vh - 1.6rem);
-            overflow: hidden;
-        }
-
-        /* 角色去背樣式 */
-        .subtitle-avatar.is-processing {
-            opacity: 0.88;
-        }
-
-        .subtitle-avatar.cutout-ready {
-            mix-blend-mode: normal;
-            background: transparent;
-        }
-
-        .subtitle-avatar.soft-key {
-            mix-blend-mode: multiply;
-            filter: contrast(1.12) saturate(1.08) drop-shadow(0 18px 24px rgba(0, 0, 0, 0.75));
-        }
-
-        .char-label {
-            font-weight: 900;
-            font-size: clamp(0.88rem, 1.35vw, 1.15rem);
-            margin-bottom: 0.35rem;
-            display: block;
-            letter-spacing: 0.1em;
+        .meter-label {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-bottom: 2px;
             text-transform: uppercase;
         }
 
-        .sub-text {
-            font-size: clamp(1.08rem, 2.05vw, 1.62rem);
-            line-height: 1.38;
-            font-weight: 500;
-            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.9);
-            transition: color 0.3s;
-        }
-
-        .action {
-            opacity: 0.72;
-            font-size: 0.74em;
-        }
-
-        /* 劇本演出動態特效 */
-        .eff-sad {
-            animation: breath 3s infinite alternate;
-        }
-
-        .eff-sad .hl {
-            color: #cbd5e1;
-            text-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
-        }
-
-        .eff-angry {
-            animation: slight-shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
-            font-weight: 700;
-        }
-
-        .eff-angry .hl {
-            color: #fca5a5;
-            text-shadow: 0 0 20px rgba(248, 113, 113, 0.6);
-        }
-
-        .eff-tech {
-            letter-spacing: 0.05em;
-        }
-
-        .eff-tech .hl {
-            color: #6ee7b7;
-            font-family: monospace;
-            text-shadow: 0 0 10px rgba(52, 211, 153, 0.8);
-            animation: glitch 2s infinite;
-        }
-
-        .eff-firm {
-            letter-spacing: 0.08em;
-            font-weight: 700;
-        }
-
-        .eff-firm .hl {
-            color: #fde047;
-            text-shadow: 0 0 25px rgba(250, 204, 21, 0.5);
-        }
-
-        .sub-text .action {
-            color: rgba(226, 232, 240, 0.78);
-            font-size: 0.74em;
-            letter-spacing: 0.03em;
-        }
-
-        .sub-text .hl,
-        .sub-text .emotion-word,
-        .sub-text .danger-word,
-        .sub-text .memory-word,
-        .sub-text .hope-word,
-        .sub-text .tech-word,
-        .sub-text .impact-word {
-            display: inline-block;
-            position: relative;
-            padding: 0 0.05em;
-            transform-origin: center;
-        }
-
-        .sub-text .impact-word {
-            font-size: 1.2em;
-            font-weight: 900;
-            color: #fff7ed;
-            text-shadow: 0 0 18px rgba(251, 146, 60, 0.72);
-            animation: impactPop 0.75s ease-in-out infinite alternate;
-        }
-
-        .sub-text .danger-word {
-            font-size: 1.16em;
-            font-weight: 900;
-            color: #fb7185;
-            text-shadow: 0 0 18px rgba(244, 63, 94, 0.72);
-            animation: alarmShake 0.42s steps(2, end) infinite;
-        }
-
-        .sub-text .memory-word {
-            font-size: 1.15em;
-            font-weight: 900;
-            color: #bae6fd;
-            text-shadow: 0 0 18px rgba(56, 189, 248, 0.7);
-            animation: memoryFloat 2.25s ease-in-out infinite;
-        }
-
-        .sub-text .hope-word {
-            font-size: 1.13em;
-            font-weight: 900;
-            color: #fef08a;
-            text-shadow: 0 0 22px rgba(250, 204, 21, 0.75);
-            animation: hopeGlow 1.6s ease-in-out infinite alternate;
-        }
-
-        .sub-text .tech-word {
-            font-size: 1.12em;
-            font-weight: 900;
-            color: #86efac;
-            font-family: 'Courier New', monospace;
-            text-shadow: 0 0 14px rgba(74, 222, 128, 0.85);
-            animation: techFlicker 1.1s linear infinite;
-        }
-
-        .sub-text .whisper-word {
-            transform: scale(0.92);
-            opacity: 0.86;
-            color: #cbd5e1;
-            animation: whisperBreath 2.4s ease-in-out infinite alternate;
-        }
-
-        .sub-text .cry-word {
-            color: #bfdbfe;
-            text-shadow: 0 0 18px rgba(147, 197, 253, 0.62);
-            animation: tearDrop 1.8s ease-in-out infinite;
-        }
-
-        .sub-text .big-word {
-            font-size: 1.25em;
-            font-weight: 950;
-        }
-
-        .eff-sad .hl {
-            color: #bfdbfe;
-            font-size: 1.13em;
-            text-shadow: 0 0 15px rgba(147, 197, 253, 0.65);
-            animation: whisperBreath 2s ease-in-out infinite alternate;
-        }
-
-        .eff-angry {
-            animation: slight-shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
+        .meter-val {
+            font-size: 20px;
             font-weight: 800;
+            font-family: 'Courier New', monospace;
         }
 
-        .eff-angry .hl {
-            color: #fca5a5;
-            font-size: 1.18em;
-            text-shadow: 0 0 20px rgba(248, 113, 113, 0.78);
-            animation: alarmShake 0.36s steps(2, end) infinite;
-        }
-
-        .eff-tech {
-            letter-spacing: 0.05em;
-        }
-
-        .eff-tech .hl {
-            color: #6ee7b7;
-            font-size: 1.14em;
-            font-family: monospace;
-            text-shadow: 0 0 10px rgba(52, 211, 153, 0.8);
-            animation: glitch 2s infinite, techFlicker 1.2s linear infinite;
-        }
-
-        .eff-firm .hl {
-            color: #fde047;
-            font-size: 1.18em;
-            text-shadow: 0 0 25px rgba(250, 204, 21, 0.6);
-            animation: hopeGlow 1.45s ease-in-out infinite alternate;
-        }
-
-        @keyframes breath {
-            0% {
-                opacity: 0.85;
-                filter: blur(0px);
-            }
-
-            100% {
-                opacity: 1;
-                filter: blur(0.5px);
-                text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
-            }
-        }
-
-        @keyframes slight-shake {
-
-            10%,
-            90% {
-                transform: translate3d(-1px, 0, 0);
-            }
-
-            20%,
-            80% {
-                transform: translate3d(2px, 0, 0);
-            }
-
-            30%,
-            50%,
-            70% {
-                transform: translate3d(-3px, 0, 0);
-            }
-
-            40%,
-            60% {
-                transform: translate3d(3px, 0, 0);
-            }
-        }
-
-        @keyframes glitch {
-
-            0%,
-            100% {
-                opacity: 1;
-            }
-
-            95% {
-                opacity: 0.5;
-            }
-
-            98% {
-                opacity: 1;
-                text-shadow: 0 0 20px #6ee7b7;
-            }
-        }
-
-        @keyframes impactPop {
-            0% {
-                transform: scale(0.98) translateY(0);
-            }
-
-            100% {
-                transform: scale(1.16) translateY(-2px);
-            }
-        }
-
-        @keyframes alarmShake {
-
-            0%,
-            100% {
-                transform: translate(0, 0) rotate(0deg) scale(1.06);
-            }
-
-            25% {
-                transform: translate(-2px, 1px) rotate(-1deg) scale(1.1);
-            }
-
-            50% {
-                transform: translate(2px, -1px) rotate(1deg) scale(1.08);
-            }
-
-            75% {
-                transform: translate(-1px, -1px) rotate(-0.6deg) scale(1.12);
-            }
-        }
-
-        @keyframes memoryFloat {
-
-            0%,
-            100% {
-                transform: translateY(0) scale(1);
-                filter: brightness(1);
-            }
-
-            50% {
-                transform: translateY(-4px) scale(1.08);
-                filter: brightness(1.24);
-            }
-        }
-
-        @keyframes hopeGlow {
-            0% {
-                transform: scale(1);
-                filter: brightness(1);
-            }
-
-            100% {
-                transform: scale(1.12);
-                filter: brightness(1.35);
-            }
-        }
-
-        @keyframes techFlicker {
-
-            0%,
-            100% {
-                opacity: 1;
-            }
-
-            32% {
-                opacity: 0.76;
-            }
-
-            33% {
-                opacity: 1;
-            }
-
-            64% {
-                transform: skewX(0deg);
-            }
-
-            65% {
-                transform: skewX(-7deg);
-            }
-
-            66% {
-                transform: skewX(0deg);
-            }
-        }
-
-        @keyframes whisperBreath {
-            0% {
-                transform: scale(0.98);
-                opacity: 0.82;
-            }
-
-            100% {
-                transform: scale(1.06);
-                opacity: 1;
-            }
-        }
-
-        @keyframes tearDrop {
-
-            0%,
-            100% {
-                transform: translateY(0);
-            }
-
-            50% {
-                transform: translateY(3px);
-            }
-        }
-
-        .v-tech {
-            background: radial-gradient(circle at center, #064e3b 0%, #020617 70%);
-        }
-
-        .v-dark {
-            background: #000;
-        }
-
-        .scripted-stage {
+        /* 噴射條 */
+        #boost-container {
             position: absolute;
-            inset: 0;
-            z-index: 0;
-            background: #020617;
-            overflow: hidden;
-        }
-
-        .scripted-stage:not(.hidden),
-        .scripted-stage.is-active {
-            display: block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-        }
-
-        #scripted-bg {
-            opacity: 1 !important;
-            display: block !important;
-            visibility: visible !important;
-        }
-
-        .scripted-bg {
-            position: absolute;
-            inset: 0;
-            background-size: cover;
-            background-position: center center;
-            opacity: 1;
-            transform: scale(1.04);
-            transition: background-image 0.45s ease-in-out, opacity 0.45s ease-in-out, transform 5s ease-out;
-            filter: saturate(0.95) contrast(1.04);
-        }
-
-        .scripted-bg.bg-pulse {
-            transform: scale(1.1);
-        }
-
-        .scripted-vignette {
-            position: absolute;
-            inset: 0;
-            background:
-                linear-gradient(to top, rgba(2, 6, 23, 0.88) 0%, rgba(2, 6, 23, 0.25) 42%, rgba(2, 6, 23, 0.15) 100%),
-                radial-gradient(circle at 50% 40%, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.62));
-            z-index: 1;
-        }
-
-        .scene-caption {
-            display: none !important;
-            position: absolute;
-            top: 6rem;
+            bottom: 120px;
             left: 50%;
             transform: translateX(-50%);
-            z-index: 2;
-            color: rgba(226, 232, 240, 0.92);
-            background: rgba(0, 0, 0, 0.42);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 999px;
-            padding: 0.65rem 1.4rem;
-            font-size: clamp(0.9rem, 1.4vw, 1.15rem);
-            letter-spacing: 0.18em;
-            font-weight: 700;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            white-space: nowrap;
-            box-shadow: 0 18px 36px rgba(0, 0, 0, 0.36);
-        }
-
-        .gameplay-full {
-            position: absolute;
-            inset: 0;
-            z-index: 0;
-            background: #000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 200px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
             overflow: hidden;
+            display: none;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        .gameplay-full video {
+        #boost-fill {
             width: 100%;
             height: 100%;
-            object-fit: contain;
-            background: #000;
+            background: var(--ui-cyan);
+            transition: width 0.1s;
+            box-shadow: 0 0 10px var(--ui-cyan);
         }
 
-        .gameplay-film-overlay {
+        /* 立場分析儀 */
+        #stance-panel {
             position: absolute;
-            inset: 0;
-            pointer-events: none;
-            background: linear-gradient(to top, rgba(0, 0, 0, 0.42), transparent 36%, rgba(0, 0, 0, 0.28));
-            z-index: 1;
+            left: 20px;
+            top: 20px;
+            width: 180px;
+            background: var(--bg-blur);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--ui-cyan);
+            backdrop-filter: blur(4px);
         }
 
-        .gameplay-title-badge {
+        .stance-row {
+            margin-bottom: 10px;
+        }
+
+        .s-label {
+            font-size: 11px;
+            color: #94a3b8;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .s-bar {
+            height: 4px;
+            background: #334155;
+            margin-top: 4px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .s-fill {
+            height: 100%;
+            width: 50%;
+            transition: 0.5s;
+        }
+
+        /* 對話窗口 */
+        #dialog-box {
             position: absolute;
-            top: 6rem;
+            bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
-            z-index: 2;
-            padding: 0.65rem 1.35rem;
-            border-radius: 999px;
-            background: rgba(2, 6, 23, 0.62);
-            border: 1px solid rgba(125, 211, 252, 0.32);
-            color: #e0f2fe;
-            font-weight: 900;
-            letter-spacing: 0.2em;
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            box-shadow: 0 0 32px rgba(14, 165, 233, 0.18);
-        }
-
-        .gameplay-fallback {
-            position: absolute;
-            inset: 0;
+            width: 90%;
+            max-width: 700px;
+            background: var(--bg-blur);
+            border: 1px solid var(--ui-cyan);
+            border-radius: 8px;
+            padding: 25px;
             display: none;
-            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 0 30px rgba(34, 211, 238, 0.2);
+        }
+
+        .choice-btn {
+            background: rgba(34, 211, 238, 0.1);
+            border: 1px solid var(--ui-cyan);
+            color: white;
+            padding: 12px 15px;
+            margin-top: 10px;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            transition: 0.2s;
+            border-radius: 4px;
+        }
+
+        .choice-btn:hover {
+            background: var(--ui-cyan);
+            color: #000;
+            font-weight: bold;
+        }
+
+        /* 提示資訊 */
+        #hint-text {
+            position: absolute;
+            bottom: 150px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--ui-cyan);
+            text-shadow: 0 0 10px #000;
+            font-weight: bold;
+            pointer-events: none;
+            font-size: 18px;
+        }
+
+        #intro {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle, #0f172a 0%, #000 100%);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
             justify-content: center;
-            text-align: center;
-            padding: 2rem;
-            background: radial-gradient(circle at center, rgba(14, 165, 233, 0.16), rgba(0, 0, 0, 0.94));
-            z-index: 3;
+            align-items: center;
         }
 
-        /* 當影片加載失敗時，改用 scripted-stage 作為背景 */
-        .gameplay-full.video-error {
-            background: transparent !important;
-            pointer-events: none;
+        #btn-start {
+            padding: 15px 50px;
+            font-size: 18px;
+            background: transparent;
+            border: 2px solid var(--ui-cyan);
+            color: var(--ui-cyan);
+            cursor: pointer;
+            margin-top: 30px;
+            letter-spacing: 4px;
+            transition: 0.3s;
         }
 
-        .gameplay-full.video-error video,
-        .gameplay-full.video-error .gameplay-film-overlay {
-            display: none !important;
+        #btn-start:hover {
+            background: var(--ui-cyan);
+            color: #000;
+            box-shadow: 0 0 20px var(--ui-cyan);
         }
 
-        .gameplay-full.video-error .gameplay-fallback {
-            display: none !important;
-        }
-
-        .gameplay-full.video-error .gameplay-title-badge {
-            background: rgba(2, 6, 23, 0.74);
-            border-color: rgba(251, 191, 36, 0.45);
-            color: #fde68a;
-        }
-
-        .blue-glow-ext {
-            position: absolute;
+        /* 落石警報紅幕 */
+        #hit-overlay {
+            position: fixed;
             inset: 0;
-            background: radial-gradient(circle at center, rgba(14, 165, 233, 0.5) 0%, transparent 60%);
-            z-index: 1015;
-            opacity: 0;
-            transform: scale(0.8);
-            transition: opacity 1s ease-out, transform 1.5s ease-out;
+            background: rgba(244, 63, 94, 0.25);
             pointer-events: none;
-            mix-blend-mode: screen;
-        }
-
-        .blue-glow-ext.active {
-            opacity: 1;
-            transform: scale(1.3);
-        }
-
-        .black-transition {
-            position: absolute;
-            inset: 0;
-            background: #000;
-            z-index: 1016;
-            opacity: 0;
-            transition: opacity 1s ease-in-out;
-            pointer-events: none;
-        }
-
-        .black-transition.active {
-            opacity: 1;
-        }
-
-        @media (max-width: 768px) {
-            .subtitle-box {
-                padding: 0.72rem 0.95rem;
-                bottom: 6%;
-                width: 92%;
-                max-height: 22vh;
-                border-radius: 0.9rem;
-            }
-
-            .subtitle-content {
-                align-items: center;
-                gap: 0.65rem;
-            }
-
-            .subtitle-avatar-wrap {
-                flex-basis: clamp(62px, 19vw, 92px);
-                height: clamp(74px, 23vw, 108px);
-                margin: -1.9rem 0 -0.55rem -0.55rem;
-            }
-
-            .subtitle-copy {
-                max-height: calc(22vh - 1.1rem);
-                justify-content: center;
-                text-align: left;
-            }
-
-            .sub-text {
-                font-size: clamp(1rem, 4.5vw, 1.32rem);
-                line-height: 1.34;
-            }
-
-            .char-label {
-                font-size: clamp(0.82rem, 3.6vw, 1rem);
-                margin-bottom: 0.25rem;
-            }
-
-            .sub-text .impact-word,
-            .sub-text .danger-word,
-            .sub-text .memory-word,
-            .sub-text .hope-word,
-            .sub-text .tech-word,
-            .sub-text .big-word {
-                font-size: 1.04em;
-            }
+            z-index: 1500;
+            display: none;
         }
     </style>
 </head>
+<!-- 賦予 body tabindex="0" 使其能夠接收鍵盤焦點 -->
 
-<body class="antialiased">
-    <script>
-        document.documentElement.classList.add("js-enabled");
-    </script>
+<body tabindex="0">
 
-    <!-- 預載音訊與配音 -->
-    <audio id="bgm-act1" preload="metadata" loop crossorigin="anonymous"></audio>
-    <audio id="bgm-act2" preload="metadata" loop crossorigin="anonymous"></audio>
-    <audio id="bgm-act3" preload="metadata" loop crossorigin="anonymous"></audio>
-    <audio id="bgm-act4" preload="metadata" loop crossorigin="anonymous"></audio>
-    <audio id="voiceover" preload="auto" crossorigin="anonymous"></audio>
+    <!-- 碰撞視覺回饋 -->
+    <div id="hit-overlay"></div>
 
-    <!-- 預告片播放主圖層 -->
-    <div id="trailer-mode" class="trailer-overlay">
+    <!-- 音樂元件 -->
+    <audio id="bgm-p1" loop preload="auto">
+        <source src="https://suno.com/song/107e7f26-bb9a-426b-a14a-dbe6fc780b69" type="audio/mpeg"></audio>
+    <audio id="bgm-p2" loop preload="auto">
+        <source src="https://suno.com/song/474d5fcd-c8b2-420f-89a4-657c670b408a" type="audio/mpeg"></audio>
+    <audio id="bgm-p3" loop preload="auto">
+        <source src="https://suno.com/song/40da9f03-6ee2-4b9b-a394-d560510f339f" type="audio/mpeg"></audio>
 
-        <div class="progress-container">
-            <div id="progress-bar" class="progress-bar"></div>
+    <div id="intro">
+        <h1 style="color: var(--ui-cyan); letter-spacing: 8px; text-shadow: 0 0 20px rgba(34,211,238,0.5);">深海的抉擇：四接風雲</h1>
+        <p style="color: #94a3b8; text-align: center; max-width: 600px; line-height: 1.6;">
+            操作說明：<br>
+            [WASD] 移動潛水艇 | [Shift] 噴射加速 (小心紊流與落石)<br>
+            [Space] 與發光點互動<br><br>
+            <span style="color: #f87171">⚠️ 任務限制：3分鐘（180秒）之內，調查完全部 5 個環評爭議點，否則救援失敗。</span><br>
+            <span style="color: var(--ui-cyan)">※ 啟動後將開啟環境音效與背景音樂</span>
+        </p>
+        <button id="btn-start" onclick="initGame()">啟動潛航系統</button>
+    </div>
+
+    <div id="hud-top">
+        <div class="meter-box">
+            <div class="meter-label">生態完整度</div>
+            <div id="val-eco" class="meter-val" style="color: #4ade80;">100.0</div>
         </div>
-
-        <div class="top-bar">
-            <div class="text-slate-400 text-sm tracking-widest font-bold">七股風雲 PROLOGUE</div>
-            <a id="skip-trailer-btn" href="#intro-screen" role="button" class="text-white hover:text-red-400 transition-colors text-sm font-bold tracking-widest px-4 py-2 rounded-full border border-white/30 hover:border-red-400 backdrop-blur-sm bg-black/30">
-                跳過預告 SKIP
-            </a>
+        <div class="meter-box">
+            <div class="meter-label">剩餘時間</div>
+            <div id="val-timer" class="meter-val" style="color: #60a5fa;">03:00</div>
         </div>
-
-        <div id="video-container">
-            <div class="yt-wrapper" id="yt-wrapper">
-                <video id="main-video" playsinline preload="metadata" crossorigin="anonymous"></video>
-                <div class="fallback-hint">若畫面沒有自動播放，請點影片上的播放鍵；若按鈕無效，代表平台正在阻擋 JavaScript。</div>
-            </div>
-            <div id="video-fallback" class="video-fallback hidden">
-                <h2 class="text-5xl md:text-7xl font-black italic text-slate-200 tracking-widest mb-6 animate-pulse">七股風雲</h2>
-                <p class="text-xl text-slate-400 tracking-[0.5em]">正在載入視覺畫面...</p>
-            </div>
+        <div class="meter-box">
+            <div class="meter-label">探勘進度</div>
+            <div id="val-explored" class="meter-val" style="color: var(--ui-cyan);">0 / 5</div>
         </div>
+        <div class="meter-box">
+            <div class="meter-label">開發進度</div>
+            <div id="val-prog" class="meter-val" style="color: var(--ui-gold);">0.0%</div>
+        </div>
+    </div>
 
-        <!-- 劇本演出主舞台 -->
-        <div id="scene-sim" class="scene-sim">
-            <!-- 1. 背景劇本層 -->
-            <div id="scripted-stage" class="scripted-stage hidden">
-                <div id="scripted-bg" class="scripted-bg"></div>
-                <div class="scripted-vignette"></div>
-                <div id="scene-caption" class="scene-caption"></div>
-            </div>
-
-            <!-- 2. 小遊戲演示層 -->
-            <div id="gameplay-stage" class="gameplay-full hidden">
-                <video id="gameplay-video" playsinline muted preload="metadata" crossorigin="anonymous"></video>
-                <div class="gameplay-film-overlay"></div>
-                <div id="gameplay-title-badge" class="gameplay-title-badge">互動模擬系統</div>
-                <div id="gameplay-fallback" class="gameplay-fallback">
-                    <div class="p-6 max-w-lg bg-slate-900/90 rounded-2xl border border-sky-500/30 shadow-2xl">
-                        <h3 class="text-2xl font-bold text-sky-400 mb-2">試玩畫面載入中...</h3>
-                        <p class="text-sm text-slate-400">正在重試影像來源，或請確認您的瀏覽器允許播放 mp4 素材。</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 3. 團隊介紹簡報層 -->
-            <div id="team-stage" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 text-center p-6 hidden">
-                <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(circle, #3b82f6 1px, transparent 1px); background-size: 24px 24px;"></div>
-                <div class="w-16 h-1 bg-sky-500 mb-6 rounded-full animate-pulse"></div>
-                <h3 class="text-sm tracking-[0.4em] text-sky-400 font-bold mb-3">七股風雲 ‧ 製作團隊</h3>
-                <h2 class="text-3xl md:text-5xl font-black tracking-widest text-slate-100 mb-8 leading-snug">
-                    高雄市立瑞祥高中 海洋探險隊<br>
-                    <span class="text-slate-400 text-2xl md:text-3xl font-medium">芊聿、綵宸、冠誼</span>
-                </h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-2xl text-left border border-white/10 rounded-xl p-6 bg-slate-900/40 backdrop-blur-sm">
-                    <div>
-                        <h4 class="text-sky-300 font-bold mb-1">陳芊聿</h4>
-                        <p class="text-xs text-slate-400">飾演：阿文伯 / 小慧</p>
-                    </div>
-                    <div>
-                        <h4 class="text-sky-300 font-bold mb-1">謝綵宸</h4>
-                        <p class="text-xs text-slate-400">飾演：阿美 / 旁白</p>
-                    </div>
-                    <div>
-                        <h4 class="text-sky-300 font-bold mb-1">冠誼</h4>
-                        <p class="text-xs text-slate-400">職責：劇組研發、後勤</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 4. 結束尾章畫面 -->
-            <div id="outro-stage" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 text-center p-6 hidden">
-                <div class="w-24 h-1 bg-red-600 mb-8 rounded-full"></div>
-                <h2 class="text-5xl md:text-8xl font-black italic tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-slate-100 to-slate-400 drop-shadow-2xl mb-4">七股風雲</h2>
-                <p class="text-xl md:text-2xl text-slate-400 font-medium tracking-[0.4em] mb-12">故事未完 ‧ 敬請期待</p>
-                <div class="flex flex-col sm:flex-row gap-4">
-                    <a id="home-trailer-btn" href="#intro-screen" role="button" class="px-8 py-3 bg-slate-700 hover:bg-slate-600 text-white font-bold tracking-widest rounded-full transition-all hover:scale-105 border border-white/20">
-                        回到主畫面 HOME
-                    </a>
-                </div>
+    <div id="stance-panel">
+        <div class="stance-row">
+            <div class="s-label"><span>台電/能源商</span><span id="txt-corp">10</span></div>
+            <div class="s-bar">
+                <div id="bar-corp" class="s-fill" style="background: var(--ui-gold); width: 10%;"></div>
             </div>
         </div>
-
-        <!-- 視覺特效層 -->
-        <div id="blue-glow-ext" class="blue-glow-ext hidden"></div>
-        <div id="black-transition" class="black-transition hidden"></div>
-
-        <!-- 劇本字幕對話框 -->
-        <div id="sub-display" class="subtitle-box">
-            <div class="subtitle-content">
-                <div id="sub-avatar-wrap" class="subtitle-avatar-wrap hidden">
-                    <img id="sub-avatar" class="subtitle-avatar" alt="" loading="eager" crossorigin="anonymous">
-                </div>
-                <div class="subtitle-copy">
-                    <span id="sub-char" class="char-label"></span>
-                    <p id="sub-text" class="sub-text"></p>
-                </div>
+        <div class="stance-row">
+            <div class="s-label"><span>環團/居民</span><span id="txt-green">10</span></div>
+            <div class="s-bar">
+                <div id="bar-green" class="s-fill" style="background: var(--ui-cyan); width: 10%;"></div>
             </div>
         </div>
     </div>
 
-    <!-- 起始登入畫面 -->
-    <div id="intro-screen" class="fixed inset-0 z-[200] bg-slate-950 flex flex-col items-center justify-center p-6 text-center transition-opacity duration-1000" style="background-image: radial-gradient(circle at 15% 50%, rgba(56, 189, 248, 0.05), transparent 25%), radial-gradient(circle at 85% 30%, rgba(248, 113, 113, 0.05), transparent 25%);">
-        <div class="max-w-3xl mx-auto flex flex-col items-center">
-            <div class="w-24 h-1 bg-red-600 mb-8 rounded-full"></div>
-            <h1 class="text-6xl md:text-8xl font-black mb-4 italic tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-slate-100 to-slate-500 drop-shadow-2xl">七股風雲</h1>
-            <p class="text-xl md:text-2xl text-slate-400 mb-12 font-medium tracking-widest">互動敘事體驗</p>
+    <div id="boost-container">
+        <div id="boost-fill"></div>
+    </div>
+    <div id="hint-text"></div>
 
-            <div class="flex flex-col sm:flex-row gap-6 w-full justify-center">
-                <a id="start-trailer-btn" href="#trailer-mode" role="button" class="group relative bg-red-600 hover:bg-red-500 text-white px-12 py-5 rounded-full font-black text-xl tracking-widest transition-all duration-300 shadow-[0_0_20px_rgba(220,38,38,0.4)] hover:shadow-[0_0_40px_rgba(220,38,38,0.6)] transform hover:-translate-y-1 overflow-hidden">
-                    <span class="relative z-10">進入體驗</span>
-                    <div class="absolute inset-0 h-full w-full bg-white/20 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300"></div>
-                </a>
-            </div>
-            <p class="mt-12 text-sm text-slate-600 font-mono">建議開啟音效以獲得最佳體驗</p>
-        </div>
+    <div id="dialog-box">
+        <div id="d-speaker" style="color: var(--ui-cyan); font-weight: bold; margin-bottom: 8px; font-size: 18px;"></div>
+        <div id="d-content" style="font-size: 16px; margin-bottom: 20px; line-height: 1.5; color: #e2e8f0;"></div>
+        <div id="d-choices"></div>
     </div>
 
-    <div class="js-diagnostic">平台可能已停用 JavaScript；已啟用備援開啟模式，但完整互動需允許腳本執行。</div>
+    <script type="importmap">
+        { "imports": { "three": "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.min.js" } }
+</script>
 
-    <script>
-        const COMMIT_ID = "11e779ccbe2e1567b7b194b4aa1c47634652bcb7";
-        const GAME_REF = "main";
-        const ROOT_DIR = "03-第三組資源";
-        const RAW_BASE_URL = `https://raw.githubusercontent.com/igudesman222/igudesman2012/${COMMIT_ID}/`;
-        const MEDIA_BASE_URL = `https://media.githubusercontent.com/media/igudesman222/igudesman2012/${COMMIT_ID}/`;
-        const RAW_GAME_BASE_URL = `https://raw.githubusercontent.com/igudesman222/igudesman2012/${GAME_REF}/`;
-        const MEDIA_GAME_BASE_URL = `https://media.githubusercontent.com/media/igudesman222/igudesman2012/${GAME_REF}/`;
-        const PAGES_BASE_URL = "https://igudesman222.github.io/igudesman2012/";
+    <script type="module">
+        import * as THREE from 'three';
 
-        const encodePath = (...parts) => parts.map(part => encodeURIComponent(part)).join('/');
-        const asset = (...parts) => RAW_BASE_URL + encodePath(ROOT_DIR, ...parts);
-        const mediaAsset = (...parts) => MEDIA_BASE_URL + encodePath(ROOT_DIR, ...parts);
-        const gameAsset = (...parts) => RAW_GAME_BASE_URL + encodePath(ROOT_DIR, ...parts);
-        const mediaGameAsset = (...parts) => MEDIA_GAME_BASE_URL + encodePath(ROOT_DIR, ...parts);
-        const pagesAsset = (...parts) => PAGES_BASE_URL + encodePath(ROOT_DIR, ...parts);
+        // --- 遊戲邏輯變數 ---
+        const game = {
+            eco: 100.0,
+            prog: 0.0,
+            corp: 10,
+            green: 10,
+            isBoosting: false,
+            energy: 100,
+            phase: 0,
+            activeBgm: null,
 
-        // 角色資源探測與去背處理
-        function characterAssetSources(baseName, fallbackExt = "jpg") {
-            const extList = ["png", "jpg", "jpeg", "webp"];
-            const transparentBases = [
-                `${baseName}(去背)`,
-                `${baseName}（去背）`,
-                `${baseName}-去背`,
-                `${baseName}_去背`,
-                `${baseName} 去背`,
-                `${baseName}去背`
-            ];
-
-            if (/\)$/.test(baseName)) {
-                transparentBases.push(
-                    baseName.replace(/\)$/, "去背)"),
-                    baseName.replace(/\)$/, " 去背)"),
-                    baseName.replace(/\)$/, "-去背)")
-                );
-            }
-
-            const transparentNames = [...new Set(
-                transparentBases.flatMap(name => extList.map(ext => `${name}.${ext}`))
-            )];
-            const fallbackName = `${baseName}.${fallbackExt}`;
-
-            const preferredSources = fileName => [
-                pagesAsset("002-背景圖片", fileName),
-                mediaGameAsset("002-背景圖片", fileName),
-                gameAsset("002-背景圖片", fileName)
-            ];
-            const legacySources = fileName => [
-                mediaAsset("002-背景圖片", fileName),
-                asset("002-背景圖片", fileName)
-            ];
-
-            return [
-                ...transparentNames.flatMap(preferredSources),
-                ...transparentNames.flatMap(legacySources),
-                ...preferredSources(fallbackName),
-                ...legacySources(fallbackName)
-            ];
-        }
-
-        // 背景多重備源機制
-        function backgroundAssetSources(fileName) {
-            return [
-                pagesAsset("002-背景圖片", fileName),
-                mediaGameAsset("002-背景圖片", fileName),
-                gameAsset("002-背景圖片", fileName),
-                mediaAsset("002-背景圖片", fileName),
-                asset("002-背景圖片", fileName)
-            ];
-        }
-
-        const MAIN_VIDEO_PARTS = ["001-影片主視覺", "03-第三組主視覺動畫(new).mp4"];
-        const GAMEPLAY_CLIP_PARTS = [{
-                label: "第一關｜回憶拼圖",
-                parts: ["001-影片主視覺", "第一關.mp4"],
-                startAt: 8,
-                endAt: 22
-            },
-            {
-                label: "第二關｜病變之水",
-                parts: ["001-影片主視覺", "第二關.mp4"],
-                startAt: 0,
-                endAt: 17
-            },
-            {
-                label: "第三關｜極限校準",
-                parts: ["001-影片主視覺", "第三關.mp4"],
-                startAt: 0,
-                endAt: 19
-            },
-            {
-                label: "第四關｜通關成果",
-                parts: ["001-影片主視覺", "第四關.mp4"],
-                startAt: 1,
-                endAt: 8
-            }
-        ];
-        const VO_PARTS = ["03-預告片(配音)", "01-配音MP3", "03-瑞祥高中-第三組配音(修).mp3"];
-
-        // 主要影音資源定義
-        const ASSETS = {
-            mainVideo: pagesAsset(...MAIN_VIDEO_PARTS),
-            mainVideoSources: [pagesAsset(...MAIN_VIDEO_PARTS), mediaAsset(...MAIN_VIDEO_PARTS), asset(...MAIN_VIDEO_PARTS)],
-            gameplayClips: GAMEPLAY_CLIP_PARTS.map(clip => ({
-                label: clip.label,
-                startAt: clip.startAt,
-                endAt: clip.endAt,
-                sources: [pagesAsset(...clip.parts), mediaGameAsset(...clip.parts), gameAsset(...clip.parts)]
-            })),
-            bgmAct1: pagesAsset("003-背景音樂", "01-海潮微光（第一幕）.mp3"),
-            bgmAct2: pagesAsset("003-背景音樂", "02-遮天板（第二幕）.mp3"),
-            bgmAct3: pagesAsset("003-背景音樂", "03-未知樣本（第三幕）.mp3"),
-            bgmAct4: pagesAsset("003-背景音樂", "04-霧海天亮（第四幕）.mp3"),
-            voiceoverSources: [
-                `https://igudesman222.github.io/-/${encodePath(...VO_PARTS)}`,
-                `https://raw.githubusercontent.com/igudesman222/-/main/${encodePath(...VO_PARTS)}`,
-                `https://media.githubusercontent.com/media/igudesman222/-/main/${encodePath(...VO_PARTS)}`
-            ],
-            backgrounds: {
-                solar01: backgroundAssetSources("01-太陽能板.jpg"),
-                solar02: backgroundAssetSources("02-太陽能板.jpg"),
-                fisher03: backgroundAssetSources("03-魚電共生漁民.jpg"),
-                fry04: backgroundAssetSources("04-魚苗.jpg"),
-                fisher05: backgroundAssetSources("05-魚電共生漁民.png"),
-                fisher06: backgroundAssetSources("06-魚電共生漁民.png"),
-                fisher07: backgroundAssetSources("07-魚電共生漁民.jpg"),
-                lagoon08: backgroundAssetSources("08-七股潟湖生態.jpg"),
-                spoonbill09: backgroundAssetSources("09-飛翔中的黑面琵鷺.png"),
-                spoonbill10: backgroundAssetSources("10-黑面琵鷺 繁殖羽1 台南七股 台南鳥會郭東輝攝.jpg"),
-                brokenSolar11: backgroundAssetSources("11-被破壞的太陽能板.jpg"),
-                dryPond12: backgroundAssetSources("12-魚塭抽乾.jpg")
-            },
-            characters: {
-                wenPoint: characterAssetSources("角色01-阿文伯(右手指)"),
-                wenHappy: characterAssetSources("角色01-阿文伯(喜)"),
-                wenStand: characterAssetSources("角色01-阿文伯(站)"),
-                wenBlank: characterAssetSources("角色01-阿文伯(茫然)"),
-                meiSad: characterAssetSources("角色02-阿美(哀)"),
-                meiAngry: characterAssetSources("角色02-阿美(怒)"),
-                meiNormal: characterAssetSources("角色02-阿美"),
-                meiSupport: characterAssetSources("阿美扶著阿文伯", "png"),
-                huiNormal: characterAssetSources("角色03-小慧")
-            }
+            // 計時器與探勘追蹤
+            timeRemaining: 180, // 3分鐘 = 180 秒
+            exploredPoints: new Set(), // 記錄已互動的節點 ID
+            isGameOver: false
         };
 
-        const GAMEPLAY_FALLBACK_BG_BY_CLIP = ['lagoon08', 'dryPond12', 'solar02', 'fisher05'];
-        const gameplayClipFailed = {};
-
-        function getGameplayFallbackBgKey(clipIndex) {
-            return GAMEPLAY_FALLBACK_BG_BY_CLIP[Number(clipIndex) || 0] || 'lagoon08';
-        }
-
-        function isGameplayClipFailed(clipIndex) {
-            return !!gameplayClipFailed[String(Number(clipIndex) || 0)];
-        }
-
-        function markGameplayClipFailed(clipIndex) {
-            gameplayClipFailed[String(Number(clipIndex) || 0)] = true;
-        }
-
-        function clearGameplayClipFailed(clipIndex) {
-            delete gameplayClipFailed[String(Number(clipIndex) || 0)];
-        }
-
-        function resetGameplayFallbackState() {
-            Object.keys(gameplayClipFailed).forEach(key => delete gameplayClipFailed[key]);
-        }
-
-        // 預告片劇本分鏡表
-        const trailerScript = [{
-                start: 0,
-                end: 10,
-                type: 'video'
-            },
-            {
-                start: 11,
-                end: 15,
-                type: 'team'
-            },
-
-            // 【第一幕：議題交代爭議與故事背景】
-            {
-                start: 16,
-                end: 19,
-                char: '阿文伯',
-                effect: 'eff-sad',
-                bg: 'solar01',
-                avatar: 'wenBlank',
-                sceneLabel: '01-太陽能板',
-                text: '<span class="action">（眼神渙散，望著漆黑的水面喃喃自語）</span> 阿美啊…<span class="hl">魚呢？</span>怎麼攏無半隻？'
-            },
-            {
-                start: 20,
-                end: 21,
-                char: '阿美',
-                effect: 'eff-sad',
-                bg: 'solar01',
-                avatar: 'meiSupport',
-                sceneLabel: '01-太陽能板',
-                text: '<span class="action">（輕拍阿文伯的背，強顏歡笑）</span> 爺爺，那些魚…'
-            },
-            {
-                start: 22,
-                end: 2,
-                char: '阿文伯',
-                effect: 'eff-sad',
-                bg: 'dryPond12',
-                avatar: 'wenPoint',
-                sceneLabel: '12-魚塭抽乾',
-                text: '<span class="action">（突然打斷阿美的話，茫然指著乾涸的埤塘）</span> 以前水面會閃閃發光的，怎麼現在烏鴉鴉的一片啊？'
-            },
-            {
-                start: 30,
-                end: 36,
-                char: '阿文伯',
-                effect: 'eff-sad',
-                bg: 'solar02',
-                avatar: 'wenBlank',
-                sceneLabel: '02-太陽能板',
-                text: '<span class="action">（眉頭緊皺，用力敲著自己的腦袋）</span> 是誰拿黑布把我們的魚塭蓋起來了？疑？我的魚苗勒？'
-            },
-            {
-                start: 37,
-                end: 41,
-                char: '阿美',
-                effect: 'eff-angry',
-                bg: 'brokenSolar11',
-                avatar: 'meiAngry',
-                sceneLabel: '11-被破壞的太陽能板',
-                text: '<span class="action">（轉頭看向玩家，語氣轉為憤怒）</span> 你看到了嗎？這難道就是政府口中的「進步」？'
-            },
-            {
-                start: 42,
-                end: 47,
-                char: '阿美',
-                effect: 'eff-angry',
-                bg: 'brokenSolar11',
-                avatar: 'meiSad',
-                sceneLabel: '11-被破壞的太陽能板',
-                text: '<span class="action">（指著水面上的太陽能板）</span> 硬生生把我們的家鄉，塞滿這些冷冰冰的黑色玻璃！'
-            },
-            {
-                start: 48,
-                end: 52,
-                char: '阿美',
-                effect: 'eff-sad',
-                bg: 'dryPond12',
-                avatar: 'meiSad',
-                sceneLabel: '12-魚塭抽乾',
-                text: '<span class="action">（聲音開始顫抖，帶有哭腔）</span> 這些東西不僅讓魚活不了……還快把我爺爺逼瘋了！'
-            },
-            {
-                start: 53,
-                end: 66,
-                char: '阿美',
-                effect: 'eff-sad',
-                bg: 'lagoon08',
-                avatar: 'meiSad',
-                sceneLabel: '08-七股潟湖生態',
-                text: '<span class="action">（淚水滑落，再次看向玩家）</span> 他以前最愛這片魚塭了。我不能眼睜睜看著他，連自己是誰、連我們生活的記憶都「忘記了」！拜託你……你一定有辦法幫我們，對不對？'
-            },
-
-            // 【第二幕：介紹遊戲玩法與敘事推進】
-            {
-                start: 68,
-                end: 76,
-                char: '旁白',
-                effect: 'eff-tech',
-                type: 'gameplay',
-                clip: 0,
-                text: '進入「回憶拼圖」關卡。點擊專屬七股的文字，幫阿文伯找回 <span class="hl">3 塊</span> 珍貴的土地記憶！'
-            },
-            {
-                start: 77,
-                end: 83,
-                char: '阿美',
-                effect: 'eff-sad',
-                type: 'gameplay',
-                clip: 0,
-                avatar: 'meiNormal',
-                text: '<span class="action">（指向前方的關卡/遞出道具）</span> 請你幫我找回阿公那些散落的記憶碎片，幫助他重新拼回來，好嗎？'
-            },
-            {
-                start: 84,
-                end: 87,
-                char: '小慧',
-                effect: 'eff-tech',
-                type: 'gameplay',
-                clip: 1,
-                avatar: 'huiNormal',
-                text: '<span class="action">（看著螢幕閃爍紅光，語氣急促）</span> 糟糕！工程廢料正在嚴重污染魚塭。'
-            },
-            {
-                start: 88,
-                end: 98,
-                char: '旁白',
-                effect: 'eff-angry',
-                type: 'gameplay',
-                clip: 1,
-                text: '<span class="action">（系統提示音）</span> 啟動「病變之水」！考驗你的極限反應力，請在 <span class="hl">20 秒內</span> 避開有毒垃圾，點擊滑鼠搶救 <span class="hl">7 尾</span> 驚慌的魚苗！'
-            },
-            {
-                start: 99,
-                end: 102,
-                char: '阿美',
-                effect: 'eff-sad',
-                type: 'gameplay',
-                clip: 1,
-                avatar: 'meiSad',
-                text: '<span class="action">（乞求眼神）</span> 拜託你們救救魚塭中生病的魚！'
-            },
-            {
-                start: 103,
-                end: 115,
-                char: '旁白',
-                effect: 'eff-tech',
-                type: 'gameplay',
-                clip: 2,
-                text: '進入「極限校準」。化身數據監測員，動態點擊注入純氧與強化輸出，將水質與發電效率維持在黃金比例 <span class="hl">3 秒鐘</span> '
-            },
-            {
-                start: 116,
-                end: 121,
-                char: '小慧',
-                effect: 'eff-tech',
-                type: 'gameplay',
-                clip: 2,
-                avatar: 'huiNormal',
-                text: '<span class="action">（冷靜）</span> 別驚慌！在指定時間內拯救完成就好，偏離的數據也會校正回來！'
-            },
-            {
-                start: 122,
-                end: 127,
-                char: '旁白',
-                effect: 'eff-firm',
-                type: 'gameplay',
-                clip: 3,
-                text: '恭喜過關！你的努力將帶給這片土地不同的色彩！'
-            },
-
-            // 【第三幕：議題喚醒與遊戲宣傳語】
-            {
-                start: 128,
-                end: 137,
-                char: '小慧',
-                effect: 'eff-firm',
-                bg: 'spoonbill09',
-                avatar: 'huiNormal',
-                sceneLabel: '09-飛翔中的黑面琵鷺',
-                text: '<span class="action">（看著遠處飛過的黑面琵鷺）</span> 雖然七股的樣貌正在改變，但請相信我們的把關，我們一定能在經濟與生態之間找到出路。'
-            },
-            {
-                start: 138,
-                end: 150,
-                char: '阿文伯',
-                effect: 'eff-firm',
-                bg: 'fisher05',
-                avatar: 'wenHappy',
-                sceneLabel: '05-魚電共生漁民',
-                text: '<span class="action">（拍拍阿美的手，語氣欣慰）</span> 對啦！希望政府的「規矩」也能說到做到。讓這些烏板阿，不只可以發電，也能為底下的魚仔遮風擋雨。'
-            },
-            {
-                start: 151,
-                end: 157,
-                char: '小慧',
-                effect: 'eff-tech',
-                bg: 'lagoon08',
-                avatar: 'huiNormal',
-                sceneLabel: '08-七股潟湖生態',
-                text: '<span class="action">（記錄數據）</span> 短期收益不應該是唯一標準，我們正在寫一段，讓未來不會後悔的故事。'
-            },
-            {
-                start: 158,
-                end: 166,
-                char: '阿美',
-                effect: 'eff-firm',
-                bg: 'lagoon08',
-                avatar: 'meiNormal',
-                sceneLabel: '08-七股潟湖生態',
-                text: '<span class="action">（充滿希望）</span> 沒錯！雖然魚塭的樣子變了，但希望這塊土地更好的心——永遠不會變！'
-            },
-            {
-                start: 167,
-                end: 173,
-                type: 'logo'
-            }
-        ];
-
-        const TOTAL_DURATION = 172;
-        let timerInterval;
-        let currentSeconds = 0;
-        let currentMainScene = '';
-        let carouselInterval;
-        let trailerStarting = false;
-        let trailerPlaying = false;
-        let lastButtonRun = 0;
-
-        // DOM 物件抓取
-        const introScreen = document.getElementById('intro-screen');
-        const trailerOverlay = document.getElementById('trailer-mode');
-        const timerUI = document.getElementById('t-timer');
-        const progressBar = document.getElementById('progress-bar');
-        const videoContainer = document.getElementById('video-container');
-        const videoFallback = document.getElementById('video-fallback');
-        const sceneSim = document.getElementById('scene-sim');
-        const subUI = document.getElementById('sub-display');
-        const charUI = document.getElementById('sub-char');
-        const textUI = document.getElementById('sub-text');
-        const avatarWrap = document.getElementById('sub-avatar-wrap');
-        const avatarImg = document.getElementById('sub-avatar');
-
-        const mainVideo = document.getElementById('main-video');
-        const gameplayVideo = document.getElementById('gameplay-video');
-        const voiceoverAudio = document.getElementById('voiceover');
-
-        const bgmAct1 = document.getElementById('bgm-act1');
-        const bgmAct2 = document.getElementById('bgm-act2');
-        const bgmAct3 = document.getElementById('bgm-act3');
-        const bgmAct4 = document.getElementById('bgm-act4');
-        const allBgms = [bgmAct1, bgmAct2, bgmAct3, bgmAct4];
-
-        let mainVideoSourceIndex = 0;
-        let mainVideoAutoplayRequested = false;
-        let mainVideoShutdownRequested = false;
-
-        let activeGameplayClipIndex = null;
-        let gameVideoSourceIndex = 0;
-        let gameVideoAutoplayRequested = false;
-
-        let voiceoverSourceIndex = 0;
-
-        let synthCtx = null; // 用於生成本機音訊 arpeggio 的 Web Audio Context
-
-        function initSynth() {
-            try {
-                if (!synthCtx) {
-                    synthCtx = new(window.AudioContext || window.webkitAudioContext)();
-                }
-                if (synthCtx.state === 'suspended') {
-                    synthCtx.resume();
-                }
-            } catch (e) {
-                console.warn('AudioContext 初始化失敗或受阻:', e);
-            }
-        }
-
-        function playCustomChime() {
-            initSynth();
-            if (!synthCtx) return;
-            const now = synthCtx.currentTime;
-
-            // 1. 生成溫暖的環境低頻墊音 (Ambient Pad) - C3 Root
-            const padOsc = synthCtx.createOscillator();
-            const padGain = synthCtx.createGain();
-            const padFilter = synthCtx.createBiquadFilter();
-
-            padOsc.type = 'triangle';
-            padOsc.frequency.setValueAtTime(130.81, now); // C3
-
-            padFilter.type = 'lowpass';
-            padFilter.frequency.setValueAtTime(150, now);
-            padFilter.frequency.exponentialRampToValueAtTime(500, now + 1.5);
-            padFilter.frequency.exponentialRampToValueAtTime(120, now + 3.5);
-
-            padGain.gain.setValueAtTime(0, now);
-            padGain.gain.linearRampToValueAtTime(0.18, now + 1.0);
-            padGain.gain.exponentialRampToValueAtTime(0.001, now + 4.0); // 4秒後完美淡出
-
-            padOsc.connect(padFilter);
-            padFilter.connect(padGain);
-            padGain.connect(synthCtx.destination);
-
-            padOsc.start(now);
-            padOsc.stop(now + 4.0);
-
-            // 2. 漸進往上的 Cadd9 水晶琶音 arpeggio: C3 (130.81Hz), G3 (196.00Hz), D4 (293.66Hz), E4 (329.63Hz), G4 (392.00Hz), C5 (523.25Hz)
-            const notes = [130.81, 196.00, 293.66, 329.63, 392.00, 523.25];
-            notes.forEach((freq, index) => {
-                const noteTime = now + index * 0.14; // 微秒級琶音間隔
-
-                // 基音 (Fundamental) - 溫和的正弦波模擬鋼琴基音
-                const osc = synthCtx.createOscillator();
-                const oscGain = synthCtx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(freq, noteTime);
-
-                // 泛音 (Overtone) - 高頻正弦波模擬水晶/風鈴清脆感
-                const overtone = synthCtx.createOscillator();
-                const overtoneGain = synthCtx.createGain();
-                overtone.type = 'sine';
-                overtone.frequency.setValueAtTime(freq * 2.0, noteTime); // 雙倍頻率 (八度音程)
-
-                // 設定基波音量與包絡 (Envelope)
-                oscGain.gain.setValueAtTime(0, now);
-                oscGain.gain.setValueAtTime(0, noteTime);
-                oscGain.gain.linearRampToValueAtTime(0.12, noteTime + 0.03); // 極快攻擊音 (Attack)
-                oscGain.gain.exponentialRampToValueAtTime(0.001, noteTime + 2.8); // 緩慢釋放 (Release)
-
-                // 設定泛波音量與包絡 (泛音通常衰減較快)
-                overtoneGain.gain.setValueAtTime(0, now);
-                overtoneGain.gain.setValueAtTime(0, noteTime);
-                overtoneGain.gain.linearRampToValueAtTime(0.04, noteTime + 0.01);
-                overtoneGain.gain.exponentialRampToValueAtTime(0.001, noteTime + 1.2);
-
-                osc.connect(oscGain);
-                overtone.connect(overtoneGain);
-
-                oscGain.connect(synthCtx.destination);
-                overtoneGain.connect(synthCtx.destination);
-
-                osc.start(now);
-                overtone.start(now);
-
-                osc.stop(noteTime + 3.0);
-                overtone.stop(noteTime + 1.5);
-            });
-        }
-
-        function setVideoFallbackMessage(message) {
-            if (!videoFallback) return;
-            const msg = videoFallback.querySelector('p');
-            if (msg) msg.textContent = message;
-            videoFallback.classList.remove('hidden');
-        }
-
-        // 主視覺影片加載與控制
-        function loadMainVideoSource(index = 0, autoplay = false) {
-            if (!mainVideo) return;
-            const sources = ASSETS.mainVideoSources || [ASSETS.mainVideo];
-            if (index >= sources.length) {
-                setVideoFallbackMessage('主視覺影片載入失敗，請確認網路連線。');
-                return;
-            }
-            mainVideoShutdownRequested = false;
-            mainVideoSourceIndex = index;
-            mainVideoAutoplayRequested = autoplay;
-            videoFallback.classList.add('hidden');
-            mainVideo.dataset.sourceIndex = String(index);
-            mainVideo.src = sources[index];
-            mainVideo.load();
-            if (autoplay) {
-                setTimeout(() => playMainVisual(), 80);
-            }
-        }
-
-        function tryNextMainVideoSource() {
-            if (mainVideoShutdownRequested) return;
-            const nextIndex = mainVideoSourceIndex + 1;
-            const sources = ASSETS.mainVideoSources || [ASSETS.mainVideo];
-            if (nextIndex < sources.length) {
-                loadMainVideoSource(nextIndex, mainVideoAutoplayRequested);
-            } else {
-                setVideoFallbackMessage('主視覺影片無法顯示，將自動切換為備份靜態簡報。');
-            }
-        }
-
-        async function playMainVisual() {
-            if (!mainVideo) return;
-            mainVideoAutoplayRequested = true;
-            videoFallback.classList.add('hidden');
-            if (!mainVideo.getAttribute('src')) loadMainVideoSource(0, false);
-            try {
-                mainVideo.currentTime = 0;
-            } catch (e) {}
-            mainVideo.volume = 0.85;
-            mainVideo.muted = false;
-            try {
-                await mainVideo.play();
-            } catch (e) {
-                console.log('主視覺影片有聲播放受阻，改用靜音備援播放...', e);
-                try {
-                    mainVideo.muted = true;
-                    mainVideo.volume = 0;
-                    await mainVideo.play();
-                } catch (fallbackError) {
-                    console.log('主視覺影片播放失敗，嘗試備用來源...', fallbackError);
-                    tryNextMainVideoSource();
-                }
-            }
-        }
-
-        function loadVoiceoverSource(index = 0) {
-            if (!voiceoverAudio) return;
-            const sources = ASSETS.voiceoverSources;
-            if (index >= sources.length) {
-                console.error("所有配音來源均載入失敗。");
-                return;
-            }
-            voiceoverSourceIndex = index;
-            voiceoverAudio.src = sources[index];
-            voiceoverAudio.load();
-        }
-
-        function getActiveGameplayClip() {
-            if (activeGameplayClipIndex === null) return null;
-            return (ASSETS.gameplayClips || [])[activeGameplayClipIndex] || null;
-        }
-
-        function updateGameplayBadge(clip) {
-            const badge = document.getElementById('gameplay-title-badge');
-            if (badge) badge.textContent = clip?.label || '互動模擬系統';
-        }
-
-        // 演示影片加載與控制
-        function loadGameVideoSource(clipIndex = 0, sourceIndex = 0, autoplay = false) {
-            if (!gameplayVideo) return;
-            const clips = ASSETS.gameplayClips || [];
-            const clip = clips[clipIndex];
-            if (!clip) return;
-            const sources = clip.sources || [];
-            if (sourceIndex >= sources.length) {
-                activateGameplayImageFallback(clipIndex, '試玩影片來源無法載入，已切換為照片背景。');
-                return;
-            }
-            if (sourceIndex === 0) clearGameplayClipFailed(clipIndex);
-            activeGameplayClipIndex = clipIndex;
-            gameVideoSourceIndex = sourceIndex;
-            gameVideoAutoplayRequested = autoplay;
-            updateGameplayBadge(clip);
-            const stage = document.getElementById('gameplay-stage');
-            if (stage) stage.classList.remove('video-error');
-            gameplayVideo.dataset.clipIndex = String(clipIndex);
-            gameplayVideo.src = sources[sourceIndex];
-            gameplayVideo.load();
-            if (autoplay) {
-                setTimeout(() => playGameplayVideo(), 80);
-            }
-        }
-
-        function tryNextGameVideoSource() {
-            const clip = getActiveGameplayClip();
-            const nextIndex = gameVideoSourceIndex + 1;
-            const sources = clip?.sources || [];
-            if (nextIndex < sources.length) {
-                loadGameVideoSource(activeGameplayClipIndex, nextIndex, gameVideoAutoplayRequested);
-            } else {
-                activateGameplayImageFallback(activeGameplayClipIndex, '試玩影片載入失敗，已切換為照片背景。');
-            }
-        }
-
-        // 影片加載失敗時的圖片與文字備援 fallback
-        function activateGameplayImageFallback(clipIndex = 0, reason = '') {
-            const safeClipIndex = Number.isInteger(clipIndex) ? clipIndex : Number(clipIndex) || 0;
-            markGameplayClipFailed(safeClipIndex);
-
-            const bgKey = getGameplayFallbackBgKey(safeClipIndex);
-            if (ASSETS.backgrounds?. [bgKey]) {
-                setScriptedBackground(bgKey);
-            } else {
-                forceShowScriptedStage();
-            }
-
-            const stage = document.getElementById('gameplay-stage');
-            if (stage) {
-                stage.classList.add('video-error');
-            }
-            showGameplayFallbackScene(safeClipIndex);
-
-            if (gameplayVideo) {
-                try {
-                    gameplayVideo.pause();
-                } catch (e) {}
-                gameplayVideo.removeAttribute('src');
-                try {
-                    gameplayVideo.load();
-                } catch (e) {}
-            }
-
-            const captionEl = document.getElementById('scene-caption');
-            if (captionEl) {
-                const clip = (ASSETS.gameplayClips || [])[safeClipIndex];
-                captionEl.innerText = reason || `${clip?.label || '試玩影片'} 無法載入，已改用照片背景`;
-                captionEl.classList.remove('hidden');
-            }
-        }
-
-        function setGameplayClip(clipIndex = 0) {
-            if (isGameplayClipFailed(clipIndex)) {
-                activateGameplayImageFallback(clipIndex, '試玩影片無法載入，已改用照片背景。');
-                return;
-            }
-            if (!gameplayVideo) {
-                activateGameplayImageFallback(clipIndex, '瀏覽器不支援試玩影片，已改用照片背景。');
-                return;
-            }
-            if (activeGameplayClipIndex !== clipIndex || !gameplayVideo.getAttribute('src')) {
-                loadGameVideoSource(clipIndex, 0, true);
-            } else if (gameplayVideo.paused) {
-                playGameplayVideo();
-            }
-        }
-
-        function enforceGameplaySegment() {
-            const clip = getActiveGameplayClip();
-            if (!clip || !gameplayVideo || isGameplayClipFailed(activeGameplayClipIndex)) return;
-            const startAt = Number(clip.startAt || 0);
-            const endAt = Number(clip.endAt || 0);
-            if (endAt > startAt && gameplayVideo.currentTime >= endAt) {
-                gameplayVideo.currentTime = startAt;
-                gameplayVideo.play().catch(e => console.log('試玩片段循環播放受阻:', e));
-            }
-        }
-
-        async function playGameplayVideo() {
-            if (!gameplayVideo) return;
-            const clip = getActiveGameplayClip() || (ASSETS.gameplayClips || [])[0];
-            gameVideoAutoplayRequested = true;
-            try {
-                gameplayVideo.currentTime = Number(clip?.startAt || 0);
-                gameplayVideo.volume = 0;
-                gameplayVideo.muted = true;
-                await gameplayVideo.play();
-            } catch (e) {
-                console.log('試玩影片播放失敗', e);
-                tryNextGameVideoSource();
-            }
-        }
-
-        // 處理角色頭像載入與去背邊緣修飾
-        function processAvatarCutout(imgElement, srcCandidates) {
-            if (!srcCandidates) return;
-
-            const sources = Array.isArray(srcCandidates) ? srcCandidates : [srcCandidates];
-            let index = 0;
-
-            imgElement.classList.remove('is-processing', 'soft-key');
-            imgElement.classList.add('cutout-ready');
-            imgElement.style.backgroundColor = 'transparent';
-
-            const tryLoad = () => {
-                if (index >= sources.length) {
-                    imgElement.removeAttribute('src');
-                    imgElement.classList.add('soft-key');
-                    return;
-                }
-
-                const candidate = sources[index++];
-                const probe = new Image();
-                probe.crossOrigin = 'anonymous';
-                probe.onload = () => {
-                    imgElement.src = candidate;
-                    imgElement.classList.remove('is-processing', 'soft-key');
-                    imgElement.classList.add('cutout-ready');
-                };
-                probe.onerror = tryLoad;
-                probe.src = candidate;
+        // --- 3D 場景變數 ---
+        let scene, camera, renderer, player, clock;
+        let corals = [],
+            pois = [],
+            moveDir = {
+                x: 0,
+                z: 0
             };
-
-            tryLoad();
-        }
-
-        function safelyRunControl(handler, fallbackHash) {
-            try {
-                handler();
-            } catch (err) {
-                console.error('預告片控制流程失敗，改用備援入口：', err);
-                if (fallbackHash) location.hash = fallbackHash;
-            }
-        }
-
-        // 點擊防抖與點擊穿透修補
-        function bindRobustButton(buttonId, handler) {
-            const button = document.getElementById(buttonId);
-            if (!button) return;
-
-            const run = event => {
-                const now = Date.now();
-                if (now - lastButtonRun < 600) {
-                    if (event) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        event.stopImmediatePropagation?.();
-                    }
-                    return false;
-                }
-                lastButtonRun = now;
-
-                if (event) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    event.stopImmediatePropagation?.();
-                }
-
-                const fallbackHash = buttonId === 'start-trailer-btn' ? 'trailer-mode' : 'intro-screen';
-                safelyRunControl(handler, fallbackHash);
-                return false;
-            };
-
-            button.addEventListener('click', run, {
-                passive: false,
-                capture: true
-            });
-            button.addEventListener('keydown', event => {
-                if (event.key === 'Enter' || event.key === ' ') run(event);
-            }, {
-                passive: false,
-                capture: true
-            });
-        }
-
-        // 事件委託備援入口
-        document.addEventListener('click', event => {
-            const startBtn = event.target.closest?.('#start-trailer-btn, [href="#trailer-mode"]');
-            const skipBtn = event.target.closest?.('#skip-trailer-btn');
-            const homeBtn = event.target.closest?.('#home-trailer-btn');
-            const replayBtn = event.target.closest?.('#replay-trailer-btn');
-            if (!startBtn && !skipBtn && !homeBtn && !replayBtn) return;
-
-            const now = Date.now();
-            if (now - lastButtonRun < 600) {
-                event.preventDefault();
-                event.stopPropagation();
-                event.stopImmediatePropagation?.();
-                return;
-            }
-            lastButtonRun = now;
-
-            event.preventDefault();
-            event.stopPropagation();
-            event.stopImmediatePropagation?.();
-
-            if (startBtn) safelyRunControl(startTrailer, 'trailer-mode');
-            else if (skipBtn) safelyRunControl(endTrailer, 'intro-screen');
-            else if (homeBtn) safelyRunControl(returnToHome, 'intro-screen');
-            else if (replayBtn) safelyRunControl(restartTrailer, 'trailer-mode');
-        }, {
-            capture: true,
-            passive: false
-        });
-
-
-        function addResourceHint(rel, href, asType) {
-            if (!href || document.querySelector(`link[rel="${rel}"][href="${href}"]`)) return;
-            const link = document.createElement('link');
-            link.rel = rel;
-            link.href = href;
-            if (asType) link.as = asType;
-            link.crossOrigin = 'anonymous';
-            document.head.appendChild(link);
-        }
-
-        function preloadImageQuietly(urlOrUrls) {
-            if (!urlOrUrls) return;
-            const urls = Array.isArray(urlOrUrls) ? urlOrUrls : [urlOrUrls];
-            urls.slice(0, 2).forEach(url => {
-                if (!url) return;
-                const img = new Image();
-                img.decoding = 'async';
-                img.loading = 'eager';
-                img.crossOrigin = 'anonymous';
-                img.src = url;
-            });
-        }
-
-        function firstSource(value) {
-            return Array.isArray(value) ? value[0] : value;
-        }
-
-        const backgroundLoadState = {};
-
-        function cssUrl(url) {
-            return `url("${String(url).replace(/"/g, '%22')}")`;
-        }
-
-        function forceShowScriptedStage() {
-            const scriptedStage = document.getElementById('scripted-stage');
-            const bgEl = document.getElementById('scripted-bg');
-            if (scriptedStage) {
-                scriptedStage.classList.remove('hidden');
-                scriptedStage.classList.add('is-active');
-                scriptedStage.style.display = 'block';
-                scriptedStage.style.visibility = 'visible';
-                scriptedStage.style.opacity = '1';
-                scriptedStage.style.position = 'absolute';
-                scriptedStage.style.top = '0';
-                scriptedStage.style.right = '0';
-                scriptedStage.style.bottom = '0';
-                scriptedStage.style.left = '0';
-                scriptedStage.style.width = '100%';
-                scriptedStage.style.height = '100%';
-                scriptedStage.style.zIndex = '0';
-            }
-            if (bgEl) {
-                bgEl.style.display = 'block';
-                bgEl.style.visibility = 'visible';
-                bgEl.style.opacity = '1';
-                bgEl.style.position = 'absolute';
-                bgEl.style.top = '0';
-                bgEl.style.right = '0';
-                bgEl.style.bottom = '0';
-                bgEl.style.left = '0';
-                bgEl.style.width = '100%';
-                bgEl.style.height = '100%';
-                bgEl.style.backgroundSize = 'cover';
-                bgEl.style.backgroundPosition = 'center center';
-                bgEl.style.backgroundRepeat = 'no-repeat';
-            }
-        }
-
-        function hideScriptedStage() {
-            const scriptedStage = document.getElementById('scripted-stage');
-            if (!scriptedStage) return;
-            scriptedStage.classList.remove('is-active');
-            scriptedStage.classList.add('hidden');
-            scriptedStage.style.display = 'none';
-        }
-
-
-        // 靜態舞台層顯示與隱藏（防止 Tailwind CDN 覆蓋）
-        const VISUAL_STAGE_IDS = ['video-container', 'scripted-stage', 'gameplay-stage', 'team-stage', 'outro-stage'];
-
-        function setStageHidden(id) {
-            const el = document.getElementById(id);
-            if (!el) return;
-            el.classList.remove('is-active', 'active');
-            el.classList.add('hidden');
-            el.style.display = 'none';
-            el.style.visibility = 'hidden';
-            el.style.opacity = '0';
-            el.style.pointerEvents = 'none';
-        }
-
-        function setStageVisible(id, displayType = 'block', zIndex = '') {
-            const el = document.getElementById(id);
-            if (!el) return;
-            el.classList.remove('hidden');
-            if (id === 'scripted-stage') el.classList.add('is-active');
-            el.style.display = displayType;
-            el.style.visibility = 'visible';
-            el.style.opacity = '1';
-            el.style.pointerEvents = id === 'video-container' ? 'auto' : 'none';
-            if (zIndex !== '') el.style.zIndex = String(zIndex);
-        }
-
-        function hideAllVisualStages(options = {}) {
-            const keep = new Set(options.keep || []);
-            VISUAL_STAGE_IDS.forEach(id => {
-                if (!keep.has(id)) setStageHidden(id);
-            });
-        }
-
-        function prepareSceneSim() {
-            sceneSim.style.display = 'flex';
-            sceneSim.style.opacity = '1';
-            sceneSim.style.visibility = 'visible';
-            sceneSim.classList.add('active');
-        }
-
-        function showOpeningVideoScene() {
-            hideAllVisualStages({
-                keep: ['video-container']
-            });
-            sceneSim.style.display = 'none';
-            sceneSim.classList.remove('active');
-            setStageVisible('video-container', 'flex', '0');
-        }
-
-        function showTeamScene() {
-            prepareSceneSim();
-            hideAllVisualStages({
-                keep: ['team-stage']
-            });
-            setStageVisible('team-stage', 'flex', '2');
-        }
-
-        function showScriptedScene() {
-            prepareSceneSim();
-            hideAllVisualStages({
-                keep: ['scripted-stage']
-            });
-            setStageVisible('scripted-stage', 'block', '0');
-        }
-
-        function showGameplayScene(clipIndex = 0) {
-            prepareSceneSim();
-            hideAllVisualStages({
-                keep: ['scripted-stage', 'gameplay-stage']
-            });
-            const fallbackBgKey = getGameplayFallbackBgKey(clipIndex);
-            if (ASSETS.backgrounds?. [fallbackBgKey]) setScriptedBackground(fallbackBgKey);
-            else forceShowScriptedStage();
-            setStageVisible('scripted-stage', 'block', '0');
-            setStageVisible('gameplay-stage', 'flex', '1');
-        }
-
-        function showGameplayFallbackScene(clipIndex = 0) {
-            prepareSceneSim();
-            hideAllVisualStages({
-                keep: ['scripted-stage']
-            });
-            const fallbackBgKey = getGameplayFallbackBgKey(clipIndex);
-            if (ASSETS.backgrounds?. [fallbackBgKey]) setScriptedBackground(fallbackBgKey);
-            else forceShowScriptedStage();
-            setStageVisible('scripted-stage', 'block', '0');
-        }
-
-        function showOutroScene() {
-            prepareSceneSim();
-            hideAllVisualStages({
-                keep: ['outro-stage']
-            });
-            setStageVisible('outro-stage', 'flex', '2');
-        }
-
-        function setScriptedBackground(bgKey) {
-            const bgEl = document.getElementById('scripted-bg');
-            if (!bgEl || !bgKey || !ASSETS.backgrounds?. [bgKey]) return;
-
-            forceShowScriptedStage();
-
-            const sources = Array.isArray(ASSETS.backgrounds[bgKey]) ?
-                ASSETS.backgrounds[bgKey].filter(Boolean) :
-                [ASSETS.backgrounds[bgKey]].filter(Boolean);
-
-            if (!sources.length) {
-                bgEl.style.backgroundImage = 'radial-gradient(circle at center, rgba(14,165,233,0.18), rgba(2,6,23,1) 70%)';
-                return;
-            }
-
-            const layeredImages = sources.map(cssUrl).join(', ');
-            const safeFallback = 'radial-gradient(circle at center, rgba(14,165,233,0.18), rgba(2,6,23,1) 72%)';
-            const nextImage = `${layeredImages}, ${safeFallback}`;
-
-            if (backgroundLoadState[bgKey] === nextImage && bgEl.style.backgroundImage) return;
-            backgroundLoadState[bgKey] = nextImage;
-
-            bgEl.classList.remove('bg-pulse');
-            bgEl.style.backgroundImage = nextImage;
-            bgEl.style.backgroundColor = '#020617';
-            bgEl.style.filter = 'saturate(0.95) contrast(1.04)';
-            void bgEl.offsetWidth;
-            setTimeout(() => bgEl.classList.add('bg-pulse'), 50);
-        }
-
-        function applyScriptedBackground(url) {
-            const bgEl = document.getElementById('scripted-bg');
-            if (!bgEl || !url) return;
-            forceShowScriptedStage();
-            bgEl.classList.remove('bg-pulse');
-            bgEl.style.backgroundImage = `${cssUrl(url)}, radial-gradient(circle at center, rgba(14,165,233,0.18), rgba(2,6,23,1) 72%)`;
-            bgEl.style.backgroundColor = '#020617';
-            void bgEl.offsetWidth;
-            setTimeout(() => bgEl.classList.add('bg-pulse'), 50);
-        }
-
-        function runWhenIdle(fn, timeout = 900) {
-            if ('requestIdleCallback' in window) {
-                window.requestIdleCallback(fn, {
-                    timeout
-                });
-            } else {
-                setTimeout(fn, Math.min(timeout, 600));
-            }
-        }
-
-        function warmupCriticalAssets() {
-            addResourceHint('preload', ASSETS.mainVideoSources?. [0] || ASSETS.mainVideo, 'video');
-            addResourceHint('preload', ASSETS.voiceoverSources?. [0], 'audio');
-
-            const earlyEntries = trailerScript.filter(entry => entry.start <= 24);
-            earlyEntries.forEach(entry => {
-                if (entry.bg) preloadImageQuietly(ASSETS.backgrounds?. [entry.bg]);
-                if (entry.avatar) preloadImageQuietly(firstSource(ASSETS.characters?. [entry.avatar]));
-            });
-        }
-
-        function warmupSecondaryAssets() {
-            const imageUrls = new Set();
-            trailerScript.forEach(entry => {
-                if (entry.bg && ASSETS.backgrounds?. [entry.bg]) {
-                    const bgSources = Array.isArray(ASSETS.backgrounds[entry.bg]) ? ASSETS.backgrounds[entry.bg] : [ASSETS.backgrounds[entry.bg]];
-                    bgSources.slice(0, 2).forEach(url => imageUrls.add(url));
-                }
-                if (entry.avatar && ASSETS.characters?. [entry.avatar]) imageUrls.add(firstSource(ASSETS.characters[entry.avatar]));
-            });
-
-            const urls = [...imageUrls];
-            let i = 0;
-            const batch = () => {
-                urls.slice(i, i + 3).forEach(preloadImageQuietly);
-                i += 3;
-                if (i < urls.length) setTimeout(batch, 450);
-            };
-            runWhenIdle(batch, 1200);
-
-            runWhenIdle(() => {
-                (ASSETS.gameplayClips || []).slice(0, 2).forEach(clip => addResourceHint('prefetch', clip.sources?. [0], 'video'));
-                [ASSETS.bgmAct1, ASSETS.bgmAct2, ASSETS.bgmAct3, ASSETS.bgmAct4].forEach(url => addResourceHint('prefetch', url, 'audio'));
-            }, 1800);
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            warmupCriticalAssets();
-            bindRobustButton('start-trailer-btn', startTrailer);
-            bindRobustButton('skip-trailer-btn', endTrailer);
-            bindRobustButton('home-trailer-btn', returnToHome);
-            bindRobustButton('replay-trailer-btn', restartTrailer);
-
-            if (mainVideo) {
-                mainVideo.addEventListener('loadeddata', () => videoFallback.classList.add('hidden'));
-                mainVideo.addEventListener('canplay', () => videoFallback.classList.add('hidden'));
-                mainVideo.addEventListener('error', () => tryNextMainVideoSource());
-                loadMainVideoSource(0, false);
-            }
-            if (gameplayVideo) {
-                gameplayVideo.addEventListener('error', () => tryNextGameVideoSource());
-                gameplayVideo.addEventListener('timeupdate', () => enforceGameplaySegment());
-                loadGameVideoSource(0, 0, false);
-            }
-            if (voiceoverAudio) {
-                voiceoverAudio.addEventListener('error', () => {
-                    loadVoiceoverSource(voiceoverSourceIndex + 1);
-                });
-                loadVoiceoverSource(0);
-            }
-
-            bgmAct1.src = ASSETS.bgmAct1;
-            bgmAct2.src = ASSETS.bgmAct2;
-            bgmAct3.src = ASSETS.bgmAct3;
-            bgmAct4.src = ASSETS.bgmAct4;
-            runWhenIdle(() => {
-                bgmAct1.load();
-                bgmAct2.load();
-                bgmAct3.load();
-                bgmAct4.load();
-            }, 1500);
-        });
-
-        function playBGM(audioElement) {
-            if (!audioElement) return;
-            audioElement.volume = 0;
-            audioElement.play().catch(e => console.log('BGM 播放受阻:', e));
-            let vol = 0;
-            const fadeIn = setInterval(() => {
-                vol += 0.02;
-                if (vol >= 0.2) {
-                    audioElement.volume = 0.2;
-                    clearInterval(fadeIn);
-                } else {
-                    audioElement.volume = vol;
-                }
-            }, 100);
-        }
-
-        function stopBGM(audioElement) {
-            if (!audioElement) return;
-            let vol = audioElement.volume;
-            const fadeOut = setInterval(() => {
-                vol -= 0.05;
-                if (vol <= 0) {
-                    audioElement.volume = 0;
-                    audioElement.pause();
-                    clearInterval(fadeOut);
-                } else {
-                    audioElement.volume = vol;
-                }
-            }, 100);
-        }
-
-        // 預告片啟動
-        function startTrailer() {
-            if (trailerStarting || trailerPlaying) return;
-            resetGameplayFallbackState();
-            trailerStarting = true;
-            trailerPlaying = true;
-
-            clearInterval(timerInterval);
-            if (carouselInterval) {
-                clearInterval(carouselInterval);
-                carouselInterval = null;
-            }
-            warmupSecondaryAssets();
-
-            initSynth(); // 行動裝置使用者手勢觸發，解鎖音訊合成
-
-            introScreen.style.opacity = '0';
-            trailerOverlay.style.display = 'flex';
-            trailerOverlay.classList.add('active');
-
-            showOpeningVideoScene();
-            subUI.classList.remove('visible');
-            progressBar.style.width = '0%';
-
-            if (mainVideo) {
-                mainVideo.removeAttribute('controls');
-                loadMainVideoSource(0, true);
-            }
-
-            // 【行動裝置核心優化】在使用者互動起點，強制以靜音暫停取得網頁播放音訊憑證
-            [...allBgms, voiceoverAudio].forEach(audio => {
-                if (audio) {
-                    audio.muted = true;
-                    const playPromise = audio.play();
-                    if (playPromise !== undefined) {
-                        playPromise.then(() => {
-                            audio.pause();
-                            audio.muted = false;
-                            audio.currentTime = 0;
-                        }).catch(e => console.log('行動裝置音訊解鎖受阻:', e));
-                    }
-                }
-            });
-
-            setTimeout(() => {
-                introScreen.style.display = 'none';
-                trailerStarting = false;
-            }, 650);
-
-            startTimeline();
-        }
-
-        function startTimeline() {
-            currentSeconds = 0;
-            currentMainScene = '';
-            updateUI();
-            timerInterval = setInterval(() => {
-                currentSeconds++;
-                updateUI();
-                if (currentSeconds >= TOTAL_DURATION) endTrailer();
-            }, 1000);
-        }
-
-        function restartTrailer() {
-            currentSeconds = 0;
-            setStageHidden('outro-stage');
-            allBgms.forEach(bgm => {
-                bgm.pause();
-                bgm.currentTime = 0;
-            });
-
-            if (voiceoverAudio) {
-                voiceoverAudio.pause();
-                voiceoverAudio.currentTime = 0;
-            }
-
-            trailerStarting = false;
-            trailerPlaying = false;
-            startTrailer();
-        }
-
-        function returnToHome() {
-            trailerStarting = false;
-            trailerPlaying = false;
-            clearInterval(timerInterval);
-            if (carouselInterval) {
-                clearInterval(carouselInterval);
-                carouselInterval = null;
-            }
-            currentSeconds = 0;
-            currentMainScene = '';
-
-            allBgms.forEach(bgm => {
-                bgm.pause();
-                bgm.currentTime = 0;
-                bgm.volume = 0;
-            });
-
-            if (mainVideo) {
-                mainVideoShutdownRequested = false;
-                mainVideoAutoplayRequested = false;
-                mainVideo.pause();
-                mainVideo.currentTime = 0;
-            }
-            if (gameplayVideo) {
-                gameplayVideo.pause();
-                gameplayVideo.currentTime = 0;
-                activeGameplayClipIndex = null;
-            }
-            if (voiceoverAudio) {
-                voiceoverAudio.pause();
-                voiceoverAudio.currentTime = 0;
-            }
-
-            const glow = document.getElementById('blue-glow-ext');
-            const blackScreen = document.getElementById('black-transition');
-            if (glow) glow.classList.add('hidden');
-            if (blackScreen) blackScreen.classList.add('hidden');
-
-            hideAllVisualStages({
-                keep: ['video-container']
-            });
-            subUI?.classList.remove('visible');
-
-            sceneSim.style.display = 'none';
-            sceneSim.classList.remove('active');
-            setStageVisible('video-container', 'flex', '0');
-            progressBar.style.width = '0%';
-
-            trailerOverlay.classList.remove('active');
-            trailerOverlay.style.display = 'none';
-            introScreen.style.display = 'flex';
-            requestAnimationFrame(() => {
-                introScreen.style.opacity = '1';
-            });
-
-            if (location.hash === '#trailer-mode') {
-                history.replaceState(null, '', location.pathname + location.search + '#intro-screen');
-            } else {
-                location.hash = 'intro-screen';
-            }
-        }
-
-        // 分鏡時間軸與多媒體排程更新
-        function updateUI() {
-            const mins = Math.floor(currentSeconds / 60);
-            const secs = currentSeconds % 60;
-            if (timerUI) timerUI.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-            progressBar.style.width = `${(currentSeconds / TOTAL_DURATION) * 100}%`;
-
-            const entry = trailerScript.find(e => currentSeconds >= e.start && currentSeconds <= e.end);
-
-            // 開場影片第 10 秒淡出
-            if (currentSeconds === 9 && mainVideo) {
-                let vol = mainVideo.volume || 0.85;
-                const fadeOut = setInterval(() => {
+        let particles; // 懸浮粒子系統
+        let fallingRocks = []; // 落石系統
+
+        // 音樂控制
+        function playMusic(id) {
+            if (game.activeBgm) {
+                const oldBgm = document.getElementById(game.activeBgm);
+                let vol = 1.0;
+                const fade = setInterval(() => {
                     vol -= 0.1;
                     if (vol <= 0) {
-                        mainVideo.volume = 0;
-                        clearInterval(fadeOut);
+                        oldBgm.pause();
+                        clearInterval(fade);
                     } else {
-                        mainVideo.volume = vol;
+                        oldBgm.volume = vol;
                     }
                 }, 100);
             }
 
-            // 分鏡 BGM 與配音（VO）精準事件排程
-            if (currentSeconds === 16) {
-                playCustomChime(); // 16-20秒完美插入琶音音訊
-                if (voiceoverAudio) {
-                    voiceoverAudio.currentTime = 0;
-                    voiceoverAudio.muted = false;
-                    voiceoverAudio.volume = 1.0;
-                    voiceoverAudio.play().catch(e => console.log('配音自動播放阻擋:', e));
-                }
-                playBGM(bgmAct1);
-            }
-            if (currentSeconds === 66) {
-                stopBGM(bgmAct1);
-                playBGM(bgmAct2);
-            }
-            if (currentSeconds === 102) {
-                stopBGM(bgmAct2);
-                playBGM(bgmAct3);
-            }
-            if (currentSeconds === 127) {
-                stopBGM(bgmAct3);
-                playBGM(bgmAct4);
-            }
+            const newBgm = document.getElementById(id);
+            newBgm.volume = 0;
+            newBgm.play().catch(e => console.log("Audio play failed, wait for user interaction"));
+            game.activeBgm = id;
 
-            // 主電視影像切換至團隊簡報轉場特效
-            if (currentSeconds === 10) {
-                const glow = document.getElementById('blue-glow-ext');
-                glow.classList.remove('hidden');
-                setTimeout(() => glow.classList.add('active'), 50);
-            }
-            if (currentSeconds === 11) {
-                setStageHidden('video-container');
-                prepareSceneSim();
-                const blackScreen = document.getElementById('black-transition');
-                blackScreen.classList.remove('active');
-                blackScreen.classList.add('hidden');
-                const glow = document.getElementById('blue-glow-ext');
-                glow.classList.remove('active');
-                glow.classList.add('hidden');
-                if (mainVideo) {
-                    mainVideoShutdownRequested = true;
-                    mainVideoAutoplayRequested = false;
-                    mainVideo.pause();
-                    mainVideo.removeAttribute('src');
-                    mainVideo.load();
-                }
-            }
-
-            if (entry) {
-                if (entry.type === 'video') {
-                    showOpeningVideoScene();
-                    subUI.classList.remove('visible');
-                } else if (entry.type === 'team') {
-                    showTeamScene();
-                    subUI.classList.remove('visible');
-                } else if (entry.type === 'gameplay') {
-                    const clipIndex = Number.isInteger(entry.clip) ? entry.clip : 0;
-
-                    if (isGameplayClipFailed(clipIndex)) {
-                        showGameplayFallbackScene(clipIndex);
-                        activateGameplayImageFallback(clipIndex, '試玩影片無法載入，已改用照片背景。');
-                    } else {
-                        showGameplayScene(clipIndex);
-                        const gameplayStage = document.getElementById('gameplay-stage');
-                        if (gameplayStage) gameplayStage.classList.remove('video-error');
-                        setGameplayClip(clipIndex);
-
-                        // 超時保護：若影片就緒逾時，改用背景圖備援
-                        const expectedClipIndex = clipIndex;
-                        setTimeout(() => {
-                            if (currentSeconds >= entry.start && currentSeconds <= entry.end && activeGameplayClipIndex === expectedClipIndex) {
-                                const ready = gameplayVideo && gameplayVideo.readyState >= 2 && !gameplayVideo.error;
-                                if (!ready) activateGameplayImageFallback(expectedClipIndex, '試玩影片載入逾時，已改用照片背景。');
-                            }
-                        }, 4200);
-                    }
-
-                    renderNarrative(entry);
-                } else if (entry.type === 'logo') {
-                    showOutroScene();
-                    subUI.classList.remove('visible');
-                    if (gameplayVideo) gameplayVideo.pause();
+            // 漸入效果
+            let volIn = 0;
+            const fadeIn = setInterval(() => {
+                volIn += 0.1;
+                if (volIn >= 0.7) {
+                    newBgm.volume = 0.7;
+                    clearInterval(fadeIn);
                 } else {
-                    showScriptedScene();
+                    newBgm.volume = volIn;
+                }
+            }, 100);
+        }
 
-                    if (gameplayVideo && !gameplayVideo.paused) {
-                        gameplayVideo.pause();
+        window.initGame = () => {
+            document.getElementById('intro').style.display = 'none';
+            document.getElementById('boost-container').style.display = 'block';
+
+            // ★ 核心修復：啟動遊戲後立刻強制網頁本體取得焦點，避免按鍵無反應
+            document.body.focus();
+
+            // 啟動第一階段音樂
+            playMusic('bgm-p1');
+
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0a1931);
+            scene.fog = new THREE.FogExp2(0x0a1931, 0.03);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({
+                antialias: true
+            });
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            // 讓 canvas 本身也能接收焦點
+            renderer.domElement.tabIndex = 0;
+            document.body.appendChild(renderer.domElement);
+
+            // --- 燈光系統 ---
+            const amb = new THREE.AmbientLight(0x8ec5fc, 1.8);
+            scene.add(amb);
+
+            const sunLight = new THREE.DirectionalLight(0x38bdf8, 2.2);
+            sunLight.position.set(5, 20, 5);
+            scene.add(sunLight);
+
+            // 潛水艇純 3D 建模
+            const playerGroup = new THREE.Group();
+            const subMat = new THREE.MeshStandardMaterial({
+                color: 0x334e68,
+                metalness: 0.9,
+                roughness: 0.2,
+                flatShading: true
+            });
+
+            const brassMat = new THREE.MeshStandardMaterial({
+                color: 0xf59e0b,
+                metalness: 0.95,
+                roughness: 0.1
+            });
+
+            // 1. 主機身
+            const hullGeo = new THREE.CylinderGeometry(0.4, 0.4, 1.8, 16);
+            const hull = new THREE.Mesh(hullGeo, subMat);
+            hull.rotation.z = Math.PI / 2;
+            playerGroup.add(hull);
+
+            // 2. 船頭
+            const noseGeo = new THREE.SphereGeometry(0.4, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+            const nose = new THREE.Mesh(noseGeo, subMat);
+            nose.position.x = 0.9;
+            nose.rotation.z = -Math.PI / 2;
+            playerGroup.add(nose);
+
+            // 3. 船尾
+            const tailGeo = new THREE.CylinderGeometry(0.4, 0.12, 0.8, 16);
+            const tail = new THREE.Mesh(tailGeo, subMat);
+            tail.position.x = -1.3;
+            tail.rotation.z = Math.PI / 2;
+            playerGroup.add(tail);
+
+            // 4. 指揮塔
+            const sailGeo = new THREE.BoxGeometry(0.5, 0.6, 0.25);
+            const sail = new THREE.Mesh(sailGeo, subMat);
+            sail.position.set(0.1, 0.5, 0);
+            playerGroup.add(sail);
+
+            const sailFrontGeo = new THREE.CylinderGeometry(0.125, 0.125, 0.6, 16, 1, false, 0, Math.PI);
+            const sailFront = new THREE.Mesh(sailFrontGeo, subMat);
+            sailFront.position.set(0.35, 0.5, 0);
+            sailFront.rotation.y = -Math.PI / 2;
+            playerGroup.add(sailFront);
+
+            // 5. 潛望鏡 / 天線
+            const mastGeo = new THREE.CylinderGeometry(0.015, 0.015, 0.4, 8);
+            const mast1 = new THREE.Mesh(mastGeo, subMat);
+            mast1.position.set(0.1, 0.9, 0.04);
+            const mast2 = new THREE.Mesh(mastGeo, subMat);
+            mast2.position.set(0.2, 0.95, -0.04);
+            playerGroup.add(mast1);
+            playerGroup.add(mast2);
+
+            // 6. 指揮塔翼板
+            const sailWingGeo = new THREE.BoxGeometry(0.16, 0.03, 0.7);
+            const sailWing = new THREE.Mesh(sailWingGeo, subMat);
+            sailWing.position.set(0.25, 0.6, 0);
+            playerGroup.add(sailWing);
+
+            // 7. 發光船窗
+            const glowCyanMat = new THREE.MeshBasicMaterial({
+                color: 0x22d3ee
+            });
+            const windowGeo = new THREE.SphereGeometry(0.06, 8, 8);
+            for (let i = -1; i <= 1; i++) {
+                const winL = new THREE.Mesh(windowGeo, glowCyanMat);
+                winL.position.set(i * 0.35, 0.1, 0.26);
+                playerGroup.add(winL);
+
+                const winR = new THREE.Mesh(windowGeo, glowCyanMat);
+                winR.position.set(i * 0.35, 0.1, -0.26);
+                playerGroup.add(winR);
+            }
+
+            // 8. 航行燈
+            const glowRedMat = new THREE.MeshBasicMaterial({
+                color: 0xef4444
+            });
+            const glowGreenMat = new THREE.MeshBasicMaterial({
+                color: 0x22c55e
+            });
+            const navLightGeo = new THREE.SphereGeometry(0.05, 8, 8);
+
+            const navRed = new THREE.Mesh(navLightGeo, glowRedMat);
+            navRed.position.set(0.25, 0.62, 0.36);
+            const navGreen = new THREE.Mesh(navLightGeo, glowGreenMat);
+            navGreen.position.set(0.25, 0.62, -0.36);
+            playerGroup.add(navRed);
+            playerGroup.add(navGreen);
+
+            // 9. 穩定翼
+            const vertFinGeo = new THREE.BoxGeometry(0.25, 0.5, 0.04);
+            const vertFin = new THREE.Mesh(vertFinGeo, subMat);
+            vertFin.position.set(-1.6, 0, 0);
+            playerGroup.add(vertFin);
+
+            const horizFinGeo = new THREE.BoxGeometry(0.25, 0.04, 0.5);
+            const horizFin = new THREE.Mesh(horizFinGeo, subMat);
+            horizFin.position.set(-1.6, 0, 0);
+            playerGroup.add(horizFin);
+
+            // 10. 軸承
+            const propHubGeo = new THREE.CylinderGeometry(0.06, 0.04, 0.15, 8);
+            const propHub = new THREE.Mesh(propHubGeo, brassMat);
+            propHub.position.set(-1.75, 0, 0);
+            propHub.rotation.z = Math.PI / 2;
+            playerGroup.add(propHub);
+
+            // 11. 螺旋槳
+            const propGroup = new THREE.Group();
+            propGroup.position.set(-1.8, 0, 0);
+
+            const bladeGeo = new THREE.BoxGeometry(0.02, 0.45, 0.1);
+
+            const blade1 = new THREE.Mesh(bladeGeo, brassMat);
+            blade1.rotation.x = Math.PI / 6;
+            propGroup.add(blade1);
+
+            const blade2 = new THREE.Mesh(bladeGeo, brassMat);
+            blade2.rotation.x = Math.PI / 6 + Math.PI / 3;
+            propGroup.add(blade2);
+
+            const blade3 = new THREE.Mesh(bladeGeo, brassMat);
+            blade3.rotation.x = Math.PI / 6 + Math.PI * 2 / 3;
+            propGroup.add(blade3);
+
+            playerGroup.userData.propeller = propGroup;
+            playerGroup.add(propGroup);
+
+            // 前探照燈
+            const headLight = new THREE.SpotLight(0xffffff, 8, 40, 0.4, 0.3);
+            headLight.position.set(0.6, 0, 0);
+            const lightTarget = new THREE.Object3D();
+            lightTarget.position.set(10, 0, 0);
+            playerGroup.add(lightTarget);
+            headLight.target = lightTarget;
+            playerGroup.add(headLight);
+
+            player = playerGroup;
+            player.position.y = 2;
+            scene.add(player);
+
+            createEnvironment();
+            setupControls();
+            clock = new THREE.Clock();
+
+            // 啟動倒數計時系統
+            startTimerSystem();
+
+            animate();
+
+            triggerDialog('核心系統', '探勘員，潛航系統已就緒。你現在聽到的是當地的環境基底聲脈「海底壓痕」。填海工程引發海流紊亂與落石！請在 3 分鐘內，避開落石、調查地圖上全數 5 個環評衝突點。', [{
+                text: '了解，保持通訊並出發。',
+                action: () => {}
+            }]);
+        };
+
+        // 3分鐘計時器
+        function startTimerSystem() {
+            const timerInterval = setInterval(() => {
+                if (game.isGameOver) {
+                    clearInterval(timerInterval);
+                    return;
+                }
+
+                if (document.getElementById('dialog-box').style.display !== 'block') {
+                    game.timeRemaining--;
+
+                    // 格式化顯示 MM:SS
+                    const m = Math.floor(game.timeRemaining / 60).toString().padStart(2, '0');
+                    const s = (game.timeRemaining % 60).toString().padStart(2, '0');
+                    const timerEl = document.getElementById('val-timer');
+
+                    timerEl.innerText = `${m}:${s}`;
+
+                    if (game.timeRemaining <= 30) {
+                        timerEl.style.color = 'var(--ui-red)';
                     }
 
-                    if (entry.bg && ASSETS.backgrounds[entry.bg]) {
-                        setScriptedBackground(entry.bg);
+                    if (game.timeRemaining <= 0) {
+                        clearInterval(timerInterval);
+                        failRescue();
+                    }
+                }
+            }, 1000);
+        }
+
+        // 宣告救援失敗
+        function failRescue() {
+            game.isGameOver = true;
+            triggerDialog('【系統警報：救援失敗】', '三分鐘調查時限已到，你未能及時完整探勘並提交生態危害證明。四接 2018 原始方案遭強行填海通過，29.25 公頃的基隆水產動植物保育區以及珍規的珊瑚群落將永遠自地圖上消失...', [{
+                text: '寂靜深海的控訴...',
+                action: () => {}
+            }]);
+            document.getElementById('dialog-box').style.borderColor = 'var(--ui-red)';
+            document.getElementById('d-speaker').style.color = 'var(--ui-red)';
+        }
+
+        // 宣告救援成功
+        function winRescue() {
+            game.isGameOver = true;
+            triggerDialog('【任務完成：生態保護推進】', '你已順利在時限內探勘完全部 5 個爭議點，並提交了關鍵的海底珊瑚群聚調查與漁民訴求，成功促使本案進入嚴格的二階審查！原始 29.25 公頃大填海方案被迫做出修正與退讓，你成功為這片深海爭取了生存契機！', [{
+                text: '守護海洋，功不可沒。',
+                action: () => {}
+            }]);
+            document.getElementById('dialog-box').style.borderColor = '#4ade80';
+            document.getElementById('d-speaker').style.color = '#4ade80';
+        }
+
+        function createEnvironment() {
+            // 海底沙地
+            const groundGeo = new THREE.PlaneGeometry(300, 300);
+            const groundMat = new THREE.MeshStandardMaterial({
+                color: 0x111e36,
+                roughness: 0.9,
+                metalness: 0.1
+            });
+            const ground = new THREE.Mesh(groundGeo, groundMat);
+            ground.rotation.x = -Math.PI / 2;
+            scene.add(ground);
+
+            // 海底礁石群
+            for (let i = 0; i < 45; i++) {
+                const rx = Math.random() * 180 - 90;
+                const rz = Math.random() * 180 - 90;
+                if (Math.abs(rx) < 5 && Math.abs(rz) < 5) continue;
+
+                const scale = 0.6 + Math.random() * 1.6;
+                const rockGeo = new THREE.DodecahedronGeometry(scale, 0);
+                const rockMat = new THREE.MeshStandardMaterial({
+                    color: 0x223344,
+                    roughness: 0.9,
+                    metalness: 0.1
+                });
+                const rock = new THREE.Mesh(rockGeo, rockMat);
+                rock.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
+                rock.position.set(rx, scale / 2.5, rz);
+                scene.add(rock);
+            }
+
+            // 建立落石 (Falling Rocks) 物理威脅物
+            const rockColor = new THREE.Color(0x3a4f6e);
+            for (let i = 0; i < 12; i++) {
+                const rockGeo = new THREE.DodecahedronGeometry(0.5 + Math.random() * 0.4, 0);
+                const rockMat = new THREE.MeshStandardMaterial({
+                    color: rockColor,
+                    roughness: 0.95,
+                    metalness: 0.2
+                });
+                const rockMesh = new THREE.Mesh(rockGeo, rockMat);
+
+                resetRock(rockMesh);
+                rockMesh.position.y = 15 + Math.random() * 15;
+                scene.add(rockMesh);
+                fallingRocks.push(rockMesh);
+            }
+
+            // 珊瑚群聚
+            for (let i = 0; i < 240; i++) {
+                const x = Math.random() * 180 - 90;
+                const z = Math.random() * 180 - 90;
+                if (Math.abs(x) < 5 && Math.abs(z) < 5) continue;
+
+                const isAlive = Math.random() > 0.15;
+                const h = 0.4 + Math.random() * 1.0;
+
+                let color;
+                if (isAlive) {
+                    const randType = Math.random();
+                    if (randType < 0.35) {
+                        color = new THREE.Color(0xf43f5e);
+                    } else if (randType < 0.65) {
+                        color = new THREE.Color(0x06b6d4);
+                    } else if (randType < 0.85) {
+                        color = new THREE.Color(0xd97706);
+                    } else {
+                        color = new THREE.Color(0x8b5cf6);
+                    }
+                } else {
+                    color = new THREE.Color(0x475569);
+                }
+
+                const coral = new THREE.Mesh(
+                    new THREE.ConeGeometry(0.18, h, 5),
+                    new THREE.MeshStandardMaterial({
+                        color: color,
+                        emissive: isAlive ? color : 0x000000,
+                        emissiveIntensity: isAlive ? 0.6 : 0.0,
+                        roughness: 0.3
+                    })
+                );
+                coral.position.set(x, h / 2, z);
+
+                coral.rotation.z = (Math.random() - 0.5) * 0.25;
+                coral.rotation.x = (Math.random() - 0.5) * 0.25;
+
+                scene.add(coral);
+                corals.push({
+                    mesh: coral,
+                    alive: isAlive,
+                    baseColor: color
+                });
+            }
+
+            // 動態海洋雪粒子系統
+            const particleGeo = new THREE.BufferGeometry();
+            const pCount = 150;
+            const positions = new Float32Array(pCount * 3);
+
+            for (let i = 0; i < pCount * 3; i += 3) {
+                positions[i] = Math.random() * 180 - 90;
+                positions[i + 1] = Math.random() * 15;
+                positions[i + 2] = Math.random() * 180 - 90;
+            }
+
+            particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            const particleMat = new THREE.PointsMaterial({
+                size: 0.15,
+                color: 0xe0f2fe,
+                transparent: true,
+                opacity: 0.8
+            });
+
+            particles = new THREE.Points(particleGeo, particleMat);
+            scene.add(particles);
+
+            // 5 個環評爭議點
+            addPOI("台電工程規劃點 (2018原始方案)", 25, 25, 'CORP_NODE');
+            addPOI("基隆市水產動植物保育區", -30, -20, 'FISH_NODE');
+            addPOI("環評決策與協調中心", 0, -40, 'CORP_NODE_2');
+            addPOI("高緯度非礁型珊瑚群聚點", -15, 30, 'CORP_NODE_3');
+            addPOI("外木山漁民抗議區", 40, -10, 'FISH_NODE_2');
+        }
+
+        // 重設落石位置
+        function resetRock(rock) {
+            rock.position.x = player ? player.position.x + (Math.random() * 40 - 20) : (Math.random() * 100 - 50);
+            rock.position.z = player ? player.position.z + (Math.random() * 40 - 20) : (Math.random() * 100 - 50);
+            rock.position.y = 20 + Math.random() * 10;
+
+            rock.userData = {
+                fallSpeed: 6.0 + Math.random() * 8.0,
+                rotSpeedX: Math.random() * 1.5,
+                rotSpeedY: Math.random() * 1.5
+            };
+        }
+
+        // 發光標記點
+        function addPOI(name, x, z, id) {
+            const poiGroup = new THREE.Group();
+            const poiGeo = new THREE.TorusGeometry(1.5, 0.15, 16, 32);
+            const poiMat = new THREE.MeshBasicMaterial({
+                color: 0xfbbf24,
+                transparent: true,
+                opacity: 0.7
+            });
+            const ring = new THREE.Mesh(poiGeo, poiMat);
+            ring.rotation.x = Math.PI / 2;
+            poiGroup.add(ring);
+
+            const core = new THREE.Mesh(new THREE.SphereGeometry(0.3, 8, 8), new THREE.MeshBasicMaterial({
+                color: 0xfbbf24
+            }));
+            core.position.y = 0.5;
+            poiGroup.add(core);
+
+            poiGroup.position.set(x, 0.2, z);
+            scene.add(poiGroup);
+            pois.push({
+                mesh: poiGroup,
+                name,
+                id
+            });
+        }
+
+        function setupControls() {
+            window.addEventListener('keydown', (e) => {
+                if (game.isGameOver) return;
+                // 增強兼容性，兼容大寫鎖定或特定輸入法狀態
+                if (e.code === 'KeyW' || e.key === 'w' || e.key === 'W') moveDir.z = 1;
+                if (e.code === 'KeyS' || e.key === 's' || e.key === 'S') moveDir.z = -1;
+                if (e.code === 'KeyA' || e.key === 'a' || e.key === 'A') moveDir.x = -1;
+                if (e.code === 'KeyD' || e.key === 'd' || e.key === 'D') moveDir.x = 1;
+                if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') game.isBoosting = true;
+                if (e.code === 'Space') interact();
+            });
+            window.addEventListener('keyup', (e) => {
+                if (e.code === 'KeyW' || e.key === 'w' || e.key === 'W' || e.code === 'KeyS' || e.key === 's' || e.key === 'S') moveDir.z = 0;
+                if (e.code === 'KeyA' || e.key === 'a' || e.key === 'A' || e.code === 'KeyD' || e.key === 'd' || e.key === 'D') moveDir.x = 0;
+                if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') game.isBoosting = false;
+            });
+        }
+
+        function interact() {
+            if (document.getElementById('dialog-box').style.display === 'block') return;
+
+            pois.forEach(p => {
+                // ★ 防呆防卡機制：只有在尚未探勘的情況下，按下空白鍵才會觸發對話
+                if (player.position.distanceTo(p.mesh.position) < 4 && !game.exploredPoints.has(p.id)) {
+                    if (p.id === 'CORP_NODE') {
+                        triggerDialog('台電規劃代表', '我們在2018年提出的原始方案：預計填海造地達 29.25 公頃，填方量達 540 萬立方公尺，藉此建置4部總容量達 520 萬瓩的燃氣複循環機組以解決北部巨大電力缺口。是否支持直接以原始方案全力推進？', [{
+                                text: '全力支持：確保520萬瓩龐大發電容量 (開發進度+35.0%, 生態-25.0%)',
+                                action: () => {
+                                    updateStats(35, -25, 40, -30);
+                                    markExplored(p.id);
+                                }
+                            },
+                            {
+                                text: '堅決反對：29.25公頃的大規模填海將徹底摧毀海底 (生態+10.0%, 環團信任+30)',
+                                action: () => {
+                                    updateStats(0, 10, -30, 30);
+                                    markExplored(p.id);
+                                }
+                            }
+                        ]);
+                    } else if (p.id === 'FISH_NODE') {
+                        triggerDialog('海洋保育學者與地方漁民', '這裡屬於「基隆市水產動植物保育區」。你底下的海域生長著極具科學價值的豐富高緯度珊瑚和非礁型珊瑚群聚！台電大規模填海會讓這裡覆滅。請協助我們抗爭到底！', [{
+                                text: '捍衛保育區：強烈抗議並要求案件進入更嚴格的二階環評 (生態+20.0%, 開發進度-15.0%)',
+                                action: () => {
+                                    updateStats(-15, 20, -30, 40);
+                                    markExplored(p.id);
+                                }
+                            },
+                            {
+                                text: '開發優先：為了民生用電與北部經濟，繼續執行填海計畫 (開發進度+20.0%, 生態-15.0%)',
+                                action: () => {
+                                    updateStats(20, -15, 30, -30);
+                                    markExplored(p.id);
+                                }
+                            }
+                        ]);
+                    } else if (p.id === 'CORP_NODE_2') {
+                        triggerDialog('環評大會現場', '台電原始方案在水產動植物保育區引發巨大風暴。學者、居民與保育團體強烈反對。大會最終判定：因嚴重影響海洋生態，必須進入更嚴謹、耗時的「第二階段環境影響評估（二階環評）」。我們該如何面對？', [{
+                                text: '接受挑戰：深入二階環評，尋求未來縮小填海規模的替代方案 (生態+15.0%, 開發進度+5.0%)',
+                                action: () => {
+                                    updateStats(5, 15, -10, 25);
+                                    markExplored(p.id);
+                                }
+                            },
+                            {
+                                text: '規避阻力：試圖在現有框架強行過關 (開發進度+15.0%, 生態-10.0%)',
+                                action: () => {
+                                    updateStats(15, -10, 25, -20);
+                                    markExplored(p.id);
+                                }
+                            }
+                        ]);
+                    } else if (p.id === 'CORP_NODE_3') {
+                        triggerDialog('生態學者', '台電 540 萬立方公尺的土石一旦倒入，所揚起的漫天懸浮沙塵將徹底阻塞這裡高緯度非礁型珊瑚群聚的呼吸孔。是否堅持迴避此珊瑚敏感區？', [{
+                                text: '環境優先：要求開發單位重新選址並進行生態監測 (生態+20.0%, 開發進度-10.0%)',
+                                action: () => {
+                                    updateStats(-10, 20, -25, 30);
+                                    markExplored(p.id);
+                                }
+                            },
+                            {
+                                text: '工程防砂：宣稱使用雙層防砂幕能完全阻絕污染並繼續原址傾倒 (開發進度+25.0%, 生態-20.0%)',
+                                action: () => {
+                                    updateStats(25, -20, 30, -30);
+                                    markExplored(p.id);
+                                }
+                            }
+                        ]);
+                    } else if (p.id === 'FISH_NODE_2') {
+                        triggerDialog('外木山在地漁民', '填海造地 29.25 公頃後，沿岸豐富的漁場將不復存在！這是討海人生存底線。請幫我們在環評會上向社會發聲！', [{
+                                text: '支持發聲：捍衛漁場多樣性與在地生計 (生態+15.0%, 進度-10.0%)',
+                                action: () => {
+                                    updateStats(-10, 15, -20, 35);
+                                    markExplored(p.id);
+                                }
+                            },
+                            {
+                                text: '補償金平息：以回饋金和高額補償平息爭議，加快工期 (開發進度+20.0%, 生態-10.0%)',
+                                action: () => {
+                                    updateStats(20, -10, 25, -25);
+                                    markExplored(p.id);
+                                }
+                            }
+                        ]);
+                    }
+                }
+            });
+        }
+
+        function markExplored(id) {
+            game.exploredPoints.add(id);
+            const count = game.exploredPoints.size;
+            document.getElementById('val-explored').innerText = `${count} / 5`;
+
+            if (count === 5 && !game.isGameOver) {
+                winRescue();
+            }
+        }
+
+        function triggerDialog(speaker, content, choices) {
+            const box = document.getElementById('dialog-box');
+            document.getElementById('d-speaker').innerText = speaker;
+            document.getElementById('d-content').innerText = content;
+            const cBox = document.getElementById('d-choices');
+            cBox.innerHTML = '';
+            choices.forEach(c => {
+                const btn = document.createElement('button');
+                btn.className = 'choice-btn';
+                btn.innerText = c.text;
+
+                // ★ 核心修復：綁定事件時阻止預設行為，並在關閉選項後強制歸還焦點
+                btn.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    // ★ 關鍵修復：在執行 action() 之前就「先」關閉當前對話框（設定為 display = none）
+                    // 這樣 action() 內部如果再次觸發了 checkPhase() 的新對話框或是 winRescue()，新對話框才會正確留存並設定為 block！
+                    box.style.display = 'none';
+
+                    if (typeof c.action === 'function') {
+                        c.action();
                     }
 
-                    const captionEl = document.getElementById('scene-caption');
-                    if (captionEl) {
-                        if (entry.sceneLabel) {
-                            captionEl.innerText = entry.sceneLabel;
-                            captionEl.classList.remove('hidden');
-                            captionEl.style.display = 'block';
-                            captionEl.style.visibility = 'visible';
-                            captionEl.style.opacity = '1';
-                        } else {
-                            captionEl.classList.add('hidden');
-                            captionEl.style.display = 'none';
+                    // 完全修復 iframe 瀏覽器點擊按鈕後 WASD 無法移動的問題
+                    document.body.focus();
+                };
+                cBox.appendChild(btn);
+            });
+            box.style.display = 'block';
+        }
+
+        function updateStats(p, e, c, g) {
+            game.prog = Math.min(100, Math.max(0, game.prog + p));
+            game.eco = Math.min(100, Math.max(0, game.eco + e));
+            game.corp = Math.min(100, Math.max(0, game.corp + c));
+            game.green = Math.min(100, Math.max(0, game.green + g));
+
+            document.getElementById('val-prog').innerText = game.prog.toFixed(1) + '%';
+            document.getElementById('val-eco').innerText = game.eco.toFixed(1);
+            document.getElementById('val-eco').style.color = game.eco < 50 ? 'var(--ui-red)' : '#4ade80';
+
+            document.getElementById('bar-corp').style.width = game.corp + '%';
+            document.getElementById('bar-green').style.width = game.green + '%';
+
+            const energyText = document.getElementById('val-energy');
+            if (game.prog > 70) {
+                energyText.innerText = "穩定";
+                energyText.style.color = "#4ade80";
+            } else if (game.prog > 30) {
+                energyText.innerText = "中度";
+                energyText.style.color = "var(--ui-gold)";
+            } else {
+                energyText.innerText = "危急";
+                energyText.style.color = "var(--ui-red)";
+            }
+
+            checkPhase();
+        }
+
+        function checkPhase() {
+            if (game.eco < 70 && game.phase === 0) {
+                game.phase = 1;
+                playMusic('bgm-p2');
+                scene.background.set(0x18253c);
+                scene.fog.color.set(0x18253c);
+                triggerDialog('系統通知', '環境警告：大規模填海造地方案讓珊瑚窒息，音樂轉向焦躁的「狹縫奔逃」。保育區海底濁度上升！', [{
+                    text: '確認',
+                    action: () => {}
+                }]);
+            } else if (game.eco < 35 && game.phase === 1) {
+                game.phase = 2;
+                playMusic('bgm-p3');
+                scene.background.set(0x351d33);
+                scene.fog.color.set(0x351d33);
+                triggerDialog('生態災難', '白化危機：進入「破曉回聲」。基隆保育區內珍貴的高緯度非礁型珊瑚大規模死亡、停止生長。這是海洋寂靜的控訴。', [{
+                    text: '確認',
+                    action: () => {}
+                }]);
+                corals.forEach(c => {
+                    if (c.alive) c.mesh.material.color.set(0xf1f5f9);
+                });
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const dt = clock.getDelta();
+
+            if (document.getElementById('dialog-box').style.display !== 'block' && !game.isGameOver) {
+                const speed = game.isBoosting ? 22 : 12;
+                player.position.x += moveDir.x * speed * dt;
+                player.position.z -= moveDir.z * speed * dt;
+
+                if (player && player.userData && player.userData.propeller) {
+                    const rotSpeed = game.isBoosting ? 25 : 12;
+                    player.userData.propeller.rotation.x += rotSpeed * dt;
+                }
+
+                if (particles) {
+                    const pPos = particles.geometry.attributes.position.array;
+                    for (let i = 1; i < pPos.length; i += 3) {
+                        pPos[i] -= 1.0 * dt;
+                        if (pPos[i] < 0.1) {
+                            pPos[i] = 15;
                         }
                     }
-
-                    renderNarrative(entry);
+                    particles.geometry.attributes.position.needsUpdate = true;
                 }
-            } else {
-                subUI.classList.remove('visible');
+
+                fallingRocks.forEach(rock => {
+                    rock.rotation.x += rock.userData.rotSpeedX * dt;
+                    rock.rotation.y += rock.userData.rotSpeedY * dt;
+                    rock.position.y -= rock.userData.fallSpeed * dt;
+
+                    if (player.position.distanceTo(rock.position) < 1.4) {
+                        updateStats(0, -5.0, 0, 0);
+                        resetRock(rock);
+
+                        const overlay = document.getElementById('hit-overlay');
+                        overlay.style.display = 'block';
+                        setTimeout(() => {
+                            overlay.style.display = 'none';
+                        }, 150);
+                    }
+
+                    if (rock.position.y < 0.2) {
+                        resetRock(rock);
+                    }
+                });
+
+                if (Math.abs(moveDir.x) > 0.1 || Math.abs(moveDir.z) > 0.1) {
+                    const targetRotation = Math.atan2(moveDir.z, moveDir.x);
+                    player.rotation.y = THREE.MathUtils.lerp(player.rotation.y, targetRotation, 0.15);
+                }
+
+                document.getElementById('boost-fill').style.width = game.isBoosting ? '100%' : '50%';
+
+                if (game.isBoosting) {
+                    corals.forEach(c => {
+                        if (c.alive && player.position.distanceTo(c.mesh.position) < 2.5) {
+                            c.alive = false;
+                            c.mesh.material.color.set(0x475569);
+                            c.mesh.material.emissiveIntensity = 0;
+                            updateStats(0, -0.3, 0, 0);
+                        }
+                    });
+                }
+
+                let near = false;
+                pois.forEach(p => {
+                    const isExplored = game.exploredPoints.has(p.id);
+                    const dist = player.position.distanceTo(p.mesh.position);
+
+                    // 已探勘的節點自轉變慢
+                    p.mesh.rotation.y += isExplored ? 0.005 : 0.02;
+
+                    if (dist < 5) {
+                        // ★ 防呆防卡機制：探勘後更新提示文字，不再要求按空白鍵
+                        if (!isExplored) {
+                            document.getElementById('hint-text').innerText = `[按空格鍵互動] - ${p.name}`;
+                        } else {
+                            document.getElementById('hint-text').innerText = `${p.name} [已探勘完成]`;
+                        }
+                        near = true;
+                    }
+                });
+                if (!near) document.getElementById('hint-text').innerText = '';
+
+                const camTarget = new THREE.Vector3(player.position.x, 18, player.position.z + 14);
+                camera.position.lerp(camTarget, 0.08);
+                camera.lookAt(player.position.x, 0, player.position.z);
+            } else if (game.isGameOver) {
+                if (particles) {
+                    const pPos = particles.geometry.attributes.position.array;
+                    for (let i = 1; i < pPos.length; i += 3) {
+                        pPos[i] -= 0.5 * dt;
+                        if (pPos[i] < 0.1) pPos[i] = 15;
+                    }
+                    particles.geometry.attributes.position.needsUpdate = true;
+                }
+
+                fallingRocks.forEach(rock => {
+                    rock.rotation.x += rock.userData.rotSpeedX * 0.2 * dt;
+                    rock.position.y -= rock.userData.fallSpeed * 0.2 * dt;
+                    if (rock.position.y < 0.2) resetRock(rock);
+                });
             }
-        }
 
-        // 渲染角色字幕與去背立繪
-        function renderNarrative(entry) {
-            subUI.className = 'subtitle-box visible';
-
-            if (entry.char === '阿文伯') {
-                subUI.style.borderLeftColor = 'var(--char-wen)';
-                charUI.style.color = 'var(--char-wen)';
-            } else if (entry.char === '阿美') {
-                subUI.style.borderLeftColor = 'var(--char-mei)';
-                charUI.style.color = 'var(--char-mei)';
-            } else if (entry.char === '小慧') {
-                subUI.style.borderLeftColor = 'var(--char-hui)';
-                charUI.style.color = 'var(--char-hui)';
-            } else {
-                subUI.style.borderLeftColor = 'var(--char-nar)';
-                charUI.style.color = 'var(--char-nar)';
-            }
-
-            charUI.innerText = entry.char || '';
-            textUI.className = `sub-text ${entry.effect || ''}`;
-            textUI.innerHTML = entry.text || '';
-
-            if (entry.avatar && ASSETS.characters[entry.avatar]) {
-                avatarWrap.classList.remove('hidden');
-                const originalUrl = ASSETS.characters[entry.avatar];
-                processAvatarCutout(avatarImg, originalUrl);
-            } else {
-                avatarWrap.classList.add('hidden');
-            }
-        }
-
-        function endTrailer() {
-            trailerStarting = false;
-            trailerPlaying = false;
-            clearInterval(timerInterval);
-            if (carouselInterval) {
-                clearInterval(carouselInterval);
-                carouselInterval = null;
-            }
-
-            allBgms.forEach(bgm => {
-                bgm.pause();
-                bgm.currentTime = 0;
-            });
-            if (mainVideo) {
-                mainVideoAutoplayRequested = false;
-                mainVideo.pause();
-            }
-            if (gameplayVideo) {
-                gameplayVideo.pause();
-                activeGameplayClipIndex = null;
-            }
-            if (voiceoverAudio) {
-                voiceoverAudio.pause();
-                voiceoverAudio.currentTime = 0;
-            }
-
-            document.getElementById('blue-glow-ext').classList.add('hidden');
-            document.getElementById('black-transition').classList.add('hidden');
-
-            showOutroScene();
-            subUI.classList.remove('visible');
+            renderer.render(scene, camera);
         }
     </script>
 </body>
