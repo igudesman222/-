@@ -141,8 +141,13 @@
         }
 
         @keyframes executePulse {
-            0% { box-shadow: 0 0 5px rgba(244, 63, 94, 0.4); }
-            100% { box-shadow: 0 0 25px rgba(244, 63, 94, 0.9); }
+            0% {
+                box-shadow: 0 0 5px rgba(244, 63, 94, 0.4);
+            }
+
+            100% {
+                box-shadow: 0 0 25px rgba(244, 63, 94, 0.9);
+            }
         }
 
         .battle-btn:disabled {
@@ -190,9 +195,20 @@
         }
 
         @keyframes damageAnim {
-            0% { transform: scale(0.2) rotate(-15deg) translate(-50%, -50%); opacity: 0; }
-            30% { transform: scale(1.1) rotate(5deg) translate(-50%, -50%); opacity: 1; }
-            100% { transform: scale(0.8) translate(-50%, -220px); opacity: 0; }
+            0% {
+                transform: scale(0.2) rotate(-15deg) translate(-50%, -50%);
+                opacity: 0;
+            }
+
+            30% {
+                transform: scale(1.1) rotate(5deg) translate(-50%, -50%);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(0.8) translate(-50%, -220px);
+                opacity: 0;
+            }
         }
 
         .shake {
@@ -200,10 +216,27 @@
         }
 
         @keyframes screenShake {
-            10%, 90% { transform: translate3d(-2px, 0, 0); }
-            20%, 80% { transform: translate3d(4px, 0, 0); }
-            30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
-            40%, 60% { transform: translate3d(8px, 0, 0); }
+
+            10%,
+            90% {
+                transform: translate3d(-2px, 0, 0);
+            }
+
+            20%,
+            80% {
+                transform: translate3d(4px, 0, 0);
+            }
+
+            30%,
+            50%,
+            70% {
+                transform: translate3d(-8px, 0, 0);
+            }
+
+            40%,
+            60% {
+                transform: translate3d(8px, 0, 0);
+            }
         }
 
         .flash-white {
@@ -211,8 +244,13 @@
         }
 
         @keyframes flashWhite {
-            0% { filter: brightness(3); }
-            100% { filter: brightness(1); }
+            0% {
+                filter: brightness(3);
+            }
+
+            100% {
+                filter: brightness(1);
+            }
         }
 
         #loading-text {
@@ -234,8 +272,13 @@
         }
 
         @keyframes loadingPulse {
-            from { opacity: 0.35; }
-            to { opacity: 1; }
+            from {
+                opacity: 0.35;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         #bgm-status {
@@ -261,7 +304,7 @@
 
         <!-- 遊戲標題畫面 -->
         <div id="start-screen" class="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-slate-950">
-            <h1 class="text-7xl font-black text-white italic mb-4 tracking-tighter text-center drop-shadow-[0_0_20px_rgba(14,165,233,0.8)]">PONGSO NO TAO</h1>
+            <h1 class="text-7xl font-black text-white italic mb-4 tracking-tighter text-center drop-shadow-[0_0_20px_rgba(14,165,233,0.8)]">PONGSO NO GOJOTAO</h1>
             <p class="text-sky-400/60 tracking-[1em] text-[10px] mb-12">DEEP SEA ASCENSION</p>
             <button id="btn-start" class="battle-btn text-xl px-12 py-5 border-sky-400/50" disabled onclick="Game.showPrologue()">
                 資 源 載 入 中 ...
@@ -496,9 +539,15 @@
                     const onError = () => finish(false);
                     const timer = setTimeout(() => finish(false), 3500);
 
-                    audio.addEventListener('canplaythrough', onReady, { once: true });
-                    audio.addEventListener('loadeddata', onReady, { once: true });
-                    audio.addEventListener('error', onError, { once: true });
+                    audio.addEventListener('canplaythrough', onReady, {
+                        once: true
+                    });
+                    audio.addEventListener('loadeddata', onReady, {
+                        once: true
+                    });
+                    audio.addEventListener('error', onError, {
+                        once: true
+                    });
 
                     try {
                         audio.pause();
@@ -567,8 +616,25 @@
             imgPlayer: null,
             imgEnemy: null,
             prologueTimer: null,
-            player: { x: 300, y: 550, hp: 10000, maxHp: 10000, np: 20, shield: false, tx: 300, emergencyTriggered: false, emergencyShieldActive: false, atkMultiplier: 1.0 },
-            enemy: { x: 980, y: 350, hp: 25000, maxHp: 25000, tx: 980 },
+            player: {
+                x: 300,
+                y: 550,
+                hp: 10000,
+                maxHp: 10000,
+                np: 20,
+                shield: false,
+                tx: 300,
+                emergencyTriggered: false,
+                emergencyShieldActive: false,
+                atkMultiplier: 1.0
+            },
+            enemy: {
+                x: 980,
+                y: 350,
+                hp: 25000,
+                maxHp: 25000,
+                tx: 980
+            },
 
             init() {
                 if (this.initialized) return;
@@ -662,22 +728,24 @@
                     loadingText.innerText = '連線中...';
                 }
 
-                try { SFX.init(); } catch (e) {}
-                
+                try {
+                    SFX.init();
+                } catch (e) {}
+
                 // 播放序章背景音樂
                 BGM.play('prologue');
-                
+
                 await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
                 document.getElementById('start-screen').style.display = 'none';
-                
+
                 // 啟動字幕動畫
                 const prologueScreen = document.getElementById('prologue-screen');
                 const crawlText = document.getElementById('crawl-text');
                 const proceedBtn = document.getElementById('btn-proceed');
-                
+
                 prologueScreen.style.display = 'flex';
-                
+
                 // 重置動畫
                 crawlText.classList.remove('crawl-animation');
                 void crawlText.offsetWidth; // 觸發重繪
@@ -690,15 +758,15 @@
                 this.prologueTimer = setTimeout(() => {
                     proceedBtn.disabled = false;
                     proceedBtn.style.opacity = '1';
-                }, 6500); 
+                }, 6500);
             },
 
             // 正式進入戰鬥
             async enterBattle() {
                 if (this.prologueTimer) clearTimeout(this.prologueTimer);
-                
+
                 document.getElementById('prologue-screen').style.display = 'none';
-                
+
                 const gameUI = document.getElementById('game-ui');
                 if (gameUI) gameUI.style.opacity = '1';
 
@@ -708,7 +776,7 @@
                 this.updateUI();
                 this.state = 'PLAYER_TURN';
                 this.updateBtns(false);
-                
+
                 // 劇情融入：開場白
                 await this.msg("「四月黑潮帶回飛魚，這不僅是恆春的命脈，更是達悟的存亡。」");
                 await this.msg("「當六海浬禁令下達，生存與傳承的對決，即將引爆！」");
@@ -725,8 +793,13 @@
             spawn(x, y, color, n = 20, s = 10) {
                 for (let i = 0; i < n; i++) {
                     this.particles.push({
-                        x, y, vx: (Math.random() - 0.5) * s, vy: (Math.random() - 0.5) * s,
-                        r: Math.random() * 5 + 1, l: 1, c: color
+                        x,
+                        y,
+                        vx: (Math.random() - 0.5) * s,
+                        vy: (Math.random() - 0.5) * s,
+                        r: Math.random() * 5 + 1,
+                        l: 1,
+                        c: color
                     });
                 }
             },
@@ -817,13 +890,23 @@
                             const xOffset = (Math.random() - 0.5) * 120;
                             const yOffset = (Math.random() - 0.5) * 120;
                             this.effects.push({
-                                type: 'slash', x1: this.enemy.x - 220 + xOffset, y1: this.enemy.y - 220 + yOffset,
-                                x2: this.enemy.x + 220 - xOffset, y2: this.enemy.y + 20 - yOffset,
-                                color: popColor, width: 14, l: 1.0
+                                type: 'slash',
+                                x1: this.enemy.x - 220 + xOffset,
+                                y1: this.enemy.y - 220 + yOffset,
+                                x2: this.enemy.x + 220 - xOffset,
+                                y2: this.enemy.y + 20 - yOffset,
+                                color: popColor,
+                                width: 14,
+                                l: 1.0
                             });
                             this.effects.push({
-                                type: 'shockwave', x: this.enemy.x, y: this.enemy.y - 100,
-                                r: 10, maxR: 260, color: popColor, l: 1.0
+                                type: 'shockwave',
+                                x: this.enemy.x,
+                                y: this.enemy.y - 100,
+                                r: 10,
+                                maxR: 260,
+                                color: popColor,
+                                l: 1.0
                             });
                             this.spawn(this.enemy.x, this.enemy.y - 100, popColor, 25, 20);
                         }, i * 75);
@@ -839,12 +922,28 @@
                         dmg = this.enemy.hp;
                         popText = "EXECUTE: 終 焉 斬 滅";
                         SFX.play(35, 'sawtooth', 2.0, 0.75);
-                        this.effects.push({ type: 'shockwave', x: this.enemy.x, y: this.enemy.y - 100, r: 25, maxR: 520, color: '#f43f5e', l: 1.6 });
+                        this.effects.push({
+                            type: 'shockwave',
+                            x: this.enemy.x,
+                            y: this.enemy.y - 100,
+                            r: 25,
+                            maxR: 520,
+                            color: '#f43f5e',
+                            l: 1.6
+                        });
                     } else {
                         dmg = Math.floor(15000 * mult);
                         popText = "ABYSS TERMINUS";
                         SFX.play(45, 'sawtooth', 1.6, 0.55);
-                        this.effects.push({ type: 'shockwave', x: this.enemy.x, y: this.enemy.y - 100, r: 20, maxR: 420, color: '#38bdf8', l: 1.2 });
+                        this.effects.push({
+                            type: 'shockwave',
+                            x: this.enemy.x,
+                            y: this.enemy.y - 100,
+                            r: 20,
+                            maxR: 420,
+                            color: '#38bdf8',
+                            l: 1.2
+                        });
                     }
 
                     this.enemy.hp = Math.max(0, this.enemy.hp - dmg);
@@ -868,7 +967,7 @@
                     await this.msg("長老：「建立達悟與恆春的共同管理機制，讓海洋永續，這才是雙贏的最佳解。」");
                     return this.end(true);
                 }
-                
+
                 this.enemyTurn();
             },
 
@@ -1031,7 +1130,7 @@
                 BGM.stop();
                 const scr = document.getElementById('result-screen');
                 scr.classList.remove('hidden');
-                
+
                 document.getElementById('result-title').innerText = win ? "雙 贏 共 好" : "寂 滅";
                 document.getElementById('result-title').style.color = win ? "#0ea5e9" : "#f43f5e";
                 document.getElementById('result-subtitle').innerText = win ? "空間爭議已化解，海洋永續的盟約確立。" : "文化與生計在衝突中雙雙沉淪。";
@@ -1041,7 +1140,7 @@
                 document.getElementById('result-screen').classList.add('hidden');
                 document.getElementById('game-ui').style.opacity = '0';
                 document.getElementById('start-screen').style.display = 'flex';
-                
+
                 // 重置序章按鈕
                 const proceedBtn = document.getElementById('btn-proceed');
                 proceedBtn.disabled = true;
@@ -1052,11 +1151,31 @@
                 this.particles = [];
                 this.effects = [];
 
-                this.player = { x: 300, y: 550, hp: 10000, maxHp: 10000, np: 20, shield: false, tx: 300, emergencyTriggered: false, emergencyShieldActive: false, atkMultiplier: 1.0 };
-                this.enemy = { x: 980, y: 350, hp: 25000, maxHp: 25000, tx: 980 };
+                this.player = {
+                    x: 300,
+                    y: 550,
+                    hp: 10000,
+                    maxHp: 10000,
+                    np: 20,
+                    shield: false,
+                    tx: 300,
+                    emergencyTriggered: false,
+                    emergencyShieldActive: false,
+                    atkMultiplier: 1.0
+                };
+                this.enemy = {
+                    x: 980,
+                    y: 350,
+                    hp: 25000,
+                    maxHp: 25000,
+                    tx: 980
+                };
 
                 const label = document.getElementById('p-state-label');
-                if (label) { label.innerText = "ASCENDED STATE"; label.style.color = ""; }
+                if (label) {
+                    label.innerText = "ASCENDED STATE";
+                    label.style.color = "";
+                }
 
                 const startBtn = document.getElementById('btn-start');
                 if (startBtn) {
@@ -1078,7 +1197,11 @@
             },
 
             draw() {
-                const { ctx, canvas, frame } = this;
+                const {
+                    ctx,
+                    canvas,
+                    frame
+                } = this;
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
                 const grd = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, 0, canvas.width / 2, canvas.height / 2, canvas.width);
@@ -1149,7 +1272,10 @@
             },
 
             drawChar(obj, isPlayer) {
-                const { ctx, frame } = this;
+                const {
+                    ctx,
+                    frame
+                } = this;
                 const bob = Math.sin(frame * 0.08) * 12;
                 ctx.save();
                 ctx.translate(obj.x, obj.y + bob);
@@ -1191,8 +1317,11 @@
                             this.particles.push({
                                 x: obj.x + (Math.random() - 0.5) * 140,
                                 y: obj.y + bob - 100 + (Math.random() - 0.5) * 100,
-                                vx: (Math.random() - 0.5) * 1.5, vy: -Math.random() * 2.5 - 1,
-                                r: Math.random() * 3.5 + 1.5, l: 1.0, c: '#10b981'
+                                vx: (Math.random() - 0.5) * 1.5,
+                                vy: -Math.random() * 2.5 - 1,
+                                r: Math.random() * 3.5 + 1.5,
+                                l: 1.0,
+                                c: '#10b981'
                             });
                         }
                     }
