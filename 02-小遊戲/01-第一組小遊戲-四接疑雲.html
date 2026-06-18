@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>綠電與海洋的抉擇：四接疑雲</title>
+    <title>深海的抉擇：四接疑雲</title>
     <style>
         :root {
             --ui-cyan: #22d3ee;
@@ -13,6 +13,7 @@
             --bg-blur: rgba(15, 23, 42, 0.85);
         }
 
+        /* 加入 outline: none 避免點擊畫面出現藍色外框 */
         body,
         html {
             margin: 0;
@@ -22,6 +23,7 @@
             color: #fff;
             font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
             overflow: hidden;
+            outline: none;
         }
 
         /* 頂部數據儀 */
@@ -199,210 +201,23 @@
             box-shadow: 0 0 20px var(--ui-cyan);
         }
 
-        /* 手機／平板觸控操作介面：左側拖曳控制方向，右側功能鍵 */
-        #touch-controls {
+        /* 落石警報紅幕 */
+        #hit-overlay {
             position: fixed;
             inset: 0;
-            z-index: 900;
+            background: rgba(244, 63, 94, 0.25);
+            pointer-events: none;
+            z-index: 1500;
             display: none;
-            pointer-events: none;
-        }
-
-        #touch-steer-zone {
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 68vw;
-            pointer-events: auto;
-            touch-action: none;
-        }
-
-        #touch-joystick {
-            position: fixed;
-            left: 92px;
-            bottom: calc(92px + env(safe-area-inset-bottom));
-            width: 132px;
-            height: 132px;
-            transform: translate(-50%, -50%);
-            pointer-events: none;
-            opacity: 0.72;
-            transition: opacity 0.15s;
-        }
-
-        #touch-joystick.active {
-            opacity: 1;
-        }
-
-        #joystick-base {
-            position: absolute;
-            inset: 0;
-            border: 2px solid rgba(34, 211, 238, 0.65);
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(34, 211, 238, 0.18) 0%, rgba(15, 23, 42, 0.22) 58%, rgba(15, 23, 42, 0.62) 100%);
-            box-shadow: 0 0 24px rgba(34, 211, 238, 0.2);
-            backdrop-filter: blur(6px);
-        }
-
-        #joystick-knob {
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            width: 54px;
-            height: 54px;
-            margin-left: -27px;
-            margin-top: -27px;
-            border-radius: 50%;
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            background: rgba(34, 211, 238, 0.85);
-            box-shadow: 0 0 18px rgba(34, 211, 238, 0.45);
-            transition: transform 0.06s linear;
-        }
-
-        #touch-tip {
-            position: fixed;
-            left: 18px;
-            bottom: calc(162px + env(safe-area-inset-bottom));
-            color: rgba(226, 232, 240, 0.75);
-            font-size: 13px;
-            letter-spacing: 1px;
-            text-shadow: 0 0 8px #000;
-            pointer-events: none;
-        }
-
-        #touch-actions {
-            position: fixed;
-            right: 18px;
-            bottom: calc(18px + env(safe-area-inset-bottom));
-            display: flex;
-            gap: 14px;
-            align-items: flex-end;
-            pointer-events: auto;
-        }
-
-        .touch-btn {
-            border: 1px solid rgba(34, 211, 238, 0.75);
-            background: rgba(15, 23, 42, 0.68);
-            color: #fff;
-            font-weight: 800;
-            box-shadow: 0 0 18px rgba(34, 211, 238, 0.16);
-            backdrop-filter: blur(6px);
-            touch-action: none;
-            user-select: none;
-            -webkit-user-select: none;
-        }
-
-        .touch-btn:active,
-        .touch-btn.active {
-            background: rgba(34, 211, 238, 0.85);
-            color: #020617;
-            transform: scale(0.96);
-        }
-
-        .action-btn {
-            width: 82px;
-            height: 82px;
-            border-radius: 50%;
-            font-size: 15px;
-            letter-spacing: 1px;
-        }
-
-        #touch-boost {
-            border-color: var(--ui-gold);
-        }
-
-        #touch-interact {
-            border-color: var(--ui-cyan);
-        }
-
-        @media (hover: none),
-        (pointer: coarse),
-        (max-width: 1024px) {
-            #touch-controls {
-                display: block;
-            }
-
-            #hint-text {
-                bottom: 190px;
-                font-size: 15px;
-            }
-
-            #boost-container {
-                bottom: 170px;
-            }
-
-            #dialog-box {
-                bottom: 120px;
-                padding: 18px;
-            }
-
-            #hud-top {
-                top: 10px;
-                gap: 6px;
-                width: 96%;
-                justify-content: center;
-            }
-
-            .meter-box {
-                min-width: 82px;
-                padding: 6px 8px;
-            }
-
-            .meter-val {
-                font-size: 16px;
-            }
-
-            #stance-panel {
-                top: 92px;
-                left: 10px;
-                width: 145px;
-                padding: 10px;
-            }
-        }
-
-        @media (max-width: 520px) {
-            #touch-joystick {
-                width: 116px;
-                height: 116px;
-                left: 78px;
-                bottom: calc(78px + env(safe-area-inset-bottom));
-            }
-
-            #joystick-knob {
-                width: 48px;
-                height: 48px;
-                margin-left: -24px;
-                margin-top: -24px;
-            }
-
-            #touch-tip {
-                left: 14px;
-                bottom: calc(142px + env(safe-area-inset-bottom));
-                font-size: 12px;
-            }
-
-            .action-btn {
-                width: 70px;
-                height: 70px;
-                font-size: 13px;
-            }
-
-            #touch-actions {
-                gap: 10px;
-                right: 12px;
-            }
-
-            #intro h1 {
-                font-size: 24px;
-                text-align: center;
-                line-height: 1.4;
-                padding: 0 18px;
-            }
         }
     </style>
 </head>
+<!-- 賦予 body tabindex="0" 使其能夠接收鍵盤焦點 -->
 
-<body>
+<body tabindex="0">
+
+    <!-- 碰撞視覺回饋 -->
+    <div id="hit-overlay"></div>
 
     <!-- 音樂元件 -->
     <audio id="bgm-p1" loop preload="auto">
@@ -413,12 +228,12 @@
         <source src="https://suno.com/song/40da9f03-6ee2-4b9b-a394-d560510f339f" type="audio/mpeg"></audio>
 
     <div id="intro">
-        <h1 style="color: var(--ui-cyan); letter-spacing: 8px; text-shadow: 0 0 20px rgba(34,211,238,0.5);">綠電與海洋的抉擇：四接疑雲</h1>
+        <h1 style="color: var(--ui-cyan); letter-spacing: 8px; text-shadow: 0 0 20px rgba(34,211,238,0.5);">深海的抉擇：四接風雲</h1>
         <p style="color: #94a3b8; text-align: center; max-width: 600px; line-height: 1.6;">
             操作說明：<br>
-            電腦：[WASD] 移動潛水艇｜[Shift] 噴射加速｜[Space] 與發光點互動<br>
-            手機／平板：左半邊螢幕按住拖曳控制方向｜右下「噴射」加速｜「互動」調查發光點<br>
-            ※ 噴射靠近珊瑚會造成紊流，可能降低生態完整度。<br><br>
+            [WASD] 移動潛水艇 | [Shift] 噴射加速 (小心紊流與落石)<br>
+            [Space] 與發光點互動<br><br>
+            <span style="color: #f87171">⚠️ 任務限制：3分鐘（180秒）之內，調查完全部 5 個環評爭議點，否則救援失敗。</span><br>
             <span style="color: var(--ui-cyan)">※ 啟動後將開啟環境音效與背景音樂</span>
         </p>
         <button id="btn-start" onclick="initGame()">啟動潛航系統</button>
@@ -427,27 +242,31 @@
     <div id="hud-top">
         <div class="meter-box">
             <div class="meter-label">生態完整度</div>
-            <div id="val-eco" class="meter-val" style="color: #4ade80;">100</div>
+            <div id="val-eco" class="meter-val" style="color: #4ade80;">100.0</div>
+        </div>
+        <div class="meter-box">
+            <div class="meter-label">剩餘時間</div>
+            <div id="val-timer" class="meter-val" style="color: #60a5fa;">03:00</div>
+        </div>
+        <div class="meter-box">
+            <div class="meter-label">探勘進度</div>
+            <div id="val-explored" class="meter-val" style="color: var(--ui-cyan);">0 / 5</div>
         </div>
         <div class="meter-box">
             <div class="meter-label">開發進度</div>
-            <div id="val-prog" class="meter-val" style="color: var(--ui-gold);">0%</div>
-        </div>
-        <div class="meter-box">
-            <div class="meter-label">能源缺口</div>
-            <div id="val-energy" class="meter-val" style="color: #f87171;">危急</div>
+            <div id="val-prog" class="meter-val" style="color: var(--ui-gold);">0.0%</div>
         </div>
     </div>
 
     <div id="stance-panel">
         <div class="stance-row">
-            <div class="s-label"><span>能源商</span><span id="txt-corp">10</span></div>
+            <div class="s-label"><span>台電/能源商</span><span id="txt-corp">10</span></div>
             <div class="s-bar">
                 <div id="bar-corp" class="s-fill" style="background: var(--ui-gold); width: 10%;"></div>
             </div>
         </div>
         <div class="stance-row">
-            <div class="s-label"><span>環團/漁民</span><span id="txt-green">10</span></div>
+            <div class="s-label"><span>環團/居民</span><span id="txt-green">10</span></div>
             <div class="s-bar">
                 <div id="bar-green" class="s-fill" style="background: var(--ui-cyan); width: 10%;"></div>
             </div>
@@ -458,20 +277,6 @@
         <div id="boost-fill"></div>
     </div>
     <div id="hint-text"></div>
-
-
-    <div id="touch-controls" aria-label="手機與平板觸控操作">
-        <div id="touch-steer-zone" aria-label="拖曳控制潛水艇方向"></div>
-        <div id="touch-joystick" aria-hidden="true">
-            <div id="joystick-base"></div>
-            <div id="joystick-knob"></div>
-        </div>
-        <div id="touch-tip">左側按住拖曳移動</div>
-        <div id="touch-actions">
-            <button id="touch-boost" class="touch-btn action-btn" data-touch="boost" aria-label="噴射加速">噴射</button>
-            <button id="touch-interact" class="touch-btn action-btn" data-touch="interact" aria-label="互動調查">互動</button>
-        </div>
-    </div>
 
     <div id="dialog-box">
         <div id="d-speaker" style="color: var(--ui-cyan); font-weight: bold; margin-bottom: 8px; font-size: 18px;"></div>
@@ -488,14 +293,19 @@
 
         // --- 遊戲邏輯變數 ---
         const game = {
-            eco: 100,
-            prog: 0,
+            eco: 100.0,
+            prog: 0.0,
             corp: 10,
             green: 10,
             isBoosting: false,
             energy: 100,
             phase: 0,
-            activeBgm: null
+            activeBgm: null,
+
+            // 計時器與探勘追蹤
+            timeRemaining: 180, // 3分鐘 = 180 秒
+            exploredPoints: new Set(), // 記錄已互動的節點 ID
+            isGameOver: false
         };
 
         // --- 3D 場景變數 ---
@@ -506,12 +316,13 @@
                 x: 0,
                 z: 0
             };
+        let particles; // 懸浮粒子系統
+        let fallingRocks = []; // 落石系統
 
         // 音樂控制
         function playMusic(id) {
             if (game.activeBgm) {
                 const oldBgm = document.getElementById(game.activeBgm);
-                // 漸淡效果（簡單模擬）
                 let vol = 1.0;
                 const fade = setInterval(() => {
                     vol -= 0.1;
@@ -546,12 +357,15 @@
             document.getElementById('intro').style.display = 'none';
             document.getElementById('boost-container').style.display = 'block';
 
+            // ★ 核心修復：啟動遊戲後立刻強制網頁本體取得焦點，避免按鍵無反應
+            document.body.focus();
+
             // 啟動第一階段音樂
             playMusic('bgm-p1');
 
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x050b18);
-            scene.fog = new THREE.FogExp2(0x050b18, 0.04);
+            scene.background = new THREE.Color(0x0a1931);
+            scene.fog = new THREE.FogExp2(0x0a1931, 0.03);
 
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             renderer = new THREE.WebGLRenderer({
@@ -559,35 +373,152 @@
             });
             renderer.setPixelRatio(window.devicePixelRatio);
             renderer.setSize(window.innerWidth, window.innerHeight);
+
+            // 讓 canvas 本身也能接收焦點
+            renderer.domElement.tabIndex = 0;
             document.body.appendChild(renderer.domElement);
 
-            // 光影增強
-            const amb = new THREE.AmbientLight(0x404040, 1.5);
+            // --- 燈光系統 ---
+            const amb = new THREE.AmbientLight(0x8ec5fc, 1.8);
             scene.add(amb);
 
-            // 潛水艇主體
+            const sunLight = new THREE.DirectionalLight(0x38bdf8, 2.2);
+            sunLight.position.set(5, 20, 5);
+            scene.add(sunLight);
+
+            // 潛水艇純 3D 建模
             const playerGroup = new THREE.Group();
-            const bodyMat = new THREE.MeshStandardMaterial({
-                color: 0x22d3ee,
-                emissive: 0x0ea5e9,
-                emissiveIntensity: 0.8,
-                metalness: 0.7,
-                roughness: 0.2
+            const subMat = new THREE.MeshStandardMaterial({
+                color: 0x334e68,
+                metalness: 0.9,
+                roughness: 0.2,
+                flatShading: true
             });
 
-            const mainBody = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 1.2, 16), bodyMat);
-            mainBody.rotation.z = Math.PI / 2;
-            playerGroup.add(mainBody);
+            const brassMat = new THREE.MeshStandardMaterial({
+                color: 0xf59e0b,
+                metalness: 0.95,
+                roughness: 0.1
+            });
 
-            const cap1 = new THREE.Mesh(new THREE.SphereGeometry(0.4, 16, 16), bodyMat);
-            cap1.position.x = 0.6;
-            playerGroup.add(cap1);
+            // 1. 主機身
+            const hullGeo = new THREE.CylinderGeometry(0.4, 0.4, 1.8, 16);
+            const hull = new THREE.Mesh(hullGeo, subMat);
+            hull.rotation.z = Math.PI / 2;
+            playerGroup.add(hull);
 
-            const cap2 = new THREE.Mesh(new THREE.SphereGeometry(0.4, 16, 16), bodyMat);
-            cap2.position.x = -0.6;
-            playerGroup.add(cap2);
+            // 2. 船頭
+            const noseGeo = new THREE.SphereGeometry(0.4, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+            const nose = new THREE.Mesh(noseGeo, subMat);
+            nose.position.x = 0.9;
+            nose.rotation.z = -Math.PI / 2;
+            playerGroup.add(nose);
 
-            // 前置探照燈
+            // 3. 船尾
+            const tailGeo = new THREE.CylinderGeometry(0.4, 0.12, 0.8, 16);
+            const tail = new THREE.Mesh(tailGeo, subMat);
+            tail.position.x = -1.3;
+            tail.rotation.z = Math.PI / 2;
+            playerGroup.add(tail);
+
+            // 4. 指揮塔
+            const sailGeo = new THREE.BoxGeometry(0.5, 0.6, 0.25);
+            const sail = new THREE.Mesh(sailGeo, subMat);
+            sail.position.set(0.1, 0.5, 0);
+            playerGroup.add(sail);
+
+            const sailFrontGeo = new THREE.CylinderGeometry(0.125, 0.125, 0.6, 16, 1, false, 0, Math.PI);
+            const sailFront = new THREE.Mesh(sailFrontGeo, subMat);
+            sailFront.position.set(0.35, 0.5, 0);
+            sailFront.rotation.y = -Math.PI / 2;
+            playerGroup.add(sailFront);
+
+            // 5. 潛望鏡 / 天線
+            const mastGeo = new THREE.CylinderGeometry(0.015, 0.015, 0.4, 8);
+            const mast1 = new THREE.Mesh(mastGeo, subMat);
+            mast1.position.set(0.1, 0.9, 0.04);
+            const mast2 = new THREE.Mesh(mastGeo, subMat);
+            mast2.position.set(0.2, 0.95, -0.04);
+            playerGroup.add(mast1);
+            playerGroup.add(mast2);
+
+            // 6. 指揮塔翼板
+            const sailWingGeo = new THREE.BoxGeometry(0.16, 0.03, 0.7);
+            const sailWing = new THREE.Mesh(sailWingGeo, subMat);
+            sailWing.position.set(0.25, 0.6, 0);
+            playerGroup.add(sailWing);
+
+            // 7. 發光船窗
+            const glowCyanMat = new THREE.MeshBasicMaterial({
+                color: 0x22d3ee
+            });
+            const windowGeo = new THREE.SphereGeometry(0.06, 8, 8);
+            for (let i = -1; i <= 1; i++) {
+                const winL = new THREE.Mesh(windowGeo, glowCyanMat);
+                winL.position.set(i * 0.35, 0.1, 0.26);
+                playerGroup.add(winL);
+
+                const winR = new THREE.Mesh(windowGeo, glowCyanMat);
+                winR.position.set(i * 0.35, 0.1, -0.26);
+                playerGroup.add(winR);
+            }
+
+            // 8. 航行燈
+            const glowRedMat = new THREE.MeshBasicMaterial({
+                color: 0xef4444
+            });
+            const glowGreenMat = new THREE.MeshBasicMaterial({
+                color: 0x22c55e
+            });
+            const navLightGeo = new THREE.SphereGeometry(0.05, 8, 8);
+
+            const navRed = new THREE.Mesh(navLightGeo, glowRedMat);
+            navRed.position.set(0.25, 0.62, 0.36);
+            const navGreen = new THREE.Mesh(navLightGeo, glowGreenMat);
+            navGreen.position.set(0.25, 0.62, -0.36);
+            playerGroup.add(navRed);
+            playerGroup.add(navGreen);
+
+            // 9. 穩定翼
+            const vertFinGeo = new THREE.BoxGeometry(0.25, 0.5, 0.04);
+            const vertFin = new THREE.Mesh(vertFinGeo, subMat);
+            vertFin.position.set(-1.6, 0, 0);
+            playerGroup.add(vertFin);
+
+            const horizFinGeo = new THREE.BoxGeometry(0.25, 0.04, 0.5);
+            const horizFin = new THREE.Mesh(horizFinGeo, subMat);
+            horizFin.position.set(-1.6, 0, 0);
+            playerGroup.add(horizFin);
+
+            // 10. 軸承
+            const propHubGeo = new THREE.CylinderGeometry(0.06, 0.04, 0.15, 8);
+            const propHub = new THREE.Mesh(propHubGeo, brassMat);
+            propHub.position.set(-1.75, 0, 0);
+            propHub.rotation.z = Math.PI / 2;
+            playerGroup.add(propHub);
+
+            // 11. 螺旋槳
+            const propGroup = new THREE.Group();
+            propGroup.position.set(-1.8, 0, 0);
+
+            const bladeGeo = new THREE.BoxGeometry(0.02, 0.45, 0.1);
+
+            const blade1 = new THREE.Mesh(bladeGeo, brassMat);
+            blade1.rotation.x = Math.PI / 6;
+            propGroup.add(blade1);
+
+            const blade2 = new THREE.Mesh(bladeGeo, brassMat);
+            blade2.rotation.x = Math.PI / 6 + Math.PI / 3;
+            propGroup.add(blade2);
+
+            const blade3 = new THREE.Mesh(bladeGeo, brassMat);
+            blade3.rotation.x = Math.PI / 6 + Math.PI * 2 / 3;
+            propGroup.add(blade3);
+
+            playerGroup.userData.propeller = propGroup;
+            playerGroup.add(propGroup);
+
+            // 前探照燈
             const headLight = new THREE.SpotLight(0xffffff, 8, 40, 0.4, 0.3);
             headLight.position.set(0.6, 0, 0);
             const lightTarget = new THREE.Object3D();
@@ -603,55 +534,209 @@
             createEnvironment();
             setupControls();
             clock = new THREE.Clock();
+
+            // 啟動倒數計時系統
+            startTimerSystem();
+
             animate();
 
-            triggerDialog('核心系統', '探勘員，潛航系統已就緒。你現在聽到的是當地的環境基底聲脈「海底壓痕」。請前往標記點調查四接工程對生態與能源的影響。', [{
-                text: '了解，保持通訊。',
+            triggerDialog('核心系統', '探勘員，潛航系統已就緒。你現在聽到的是當地的環境基底聲脈「海底壓痕」。填海工程引發海流紊亂與落石！請在 3 分鐘內，避開落石、調查地圖上全數 5 個環評衝突點。', [{
+                text: '了解，保持通訊並出發。',
                 action: () => {}
             }]);
         };
 
+        // 3分鐘計時器
+        function startTimerSystem() {
+            const timerInterval = setInterval(() => {
+                if (game.isGameOver) {
+                    clearInterval(timerInterval);
+                    return;
+                }
+
+                if (document.getElementById('dialog-box').style.display !== 'block') {
+                    game.timeRemaining--;
+
+                    // 格式化顯示 MM:SS
+                    const m = Math.floor(game.timeRemaining / 60).toString().padStart(2, '0');
+                    const s = (game.timeRemaining % 60).toString().padStart(2, '0');
+                    const timerEl = document.getElementById('val-timer');
+
+                    timerEl.innerText = `${m}:${s}`;
+
+                    if (game.timeRemaining <= 30) {
+                        timerEl.style.color = 'var(--ui-red)';
+                    }
+
+                    if (game.timeRemaining <= 0) {
+                        clearInterval(timerInterval);
+                        failRescue();
+                    }
+                }
+            }, 1000);
+        }
+
+        // 宣告救援失敗
+        function failRescue() {
+            game.isGameOver = true;
+            triggerDialog('【系統警報：救援失敗】', '三分鐘調查時限已到，你未能及時完整探勘並提交生態危害證明。四接 2018 原始方案遭強行填海通過，29.25 公頃的基隆水產動植物保育區以及珍規的珊瑚群落將永遠自地圖上消失...', [{
+                text: '寂靜深海的控訴...',
+                action: () => {}
+            }]);
+            document.getElementById('dialog-box').style.borderColor = 'var(--ui-red)';
+            document.getElementById('d-speaker').style.color = 'var(--ui-red)';
+        }
+
+        // 宣告救援成功
+        function winRescue() {
+            game.isGameOver = true;
+            triggerDialog('【任務完成：生態保護推進】', '你已順利在時限內探勘完全部 5 個爭議點，並提交了關鍵的海底珊瑚群聚調查與漁民訴求，成功促使本案進入嚴格的二階審查！原始 29.25 公頃大填海方案被迫做出修正與退讓，你成功為這片深海爭取了生存契機！', [{
+                text: '守護海洋，功不可沒。',
+                action: () => {}
+            }]);
+            document.getElementById('dialog-box').style.borderColor = '#4ade80';
+            document.getElementById('d-speaker').style.color = '#4ade80';
+        }
+
         function createEnvironment() {
+            // 海底沙地
             const groundGeo = new THREE.PlaneGeometry(300, 300);
             const groundMat = new THREE.MeshStandardMaterial({
-                color: 0x111827,
-                roughness: 0.8,
-                metalness: 0.2
+                color: 0x111e36,
+                roughness: 0.9,
+                metalness: 0.1
             });
             const ground = new THREE.Mesh(groundGeo, groundMat);
             ground.rotation.x = -Math.PI / 2;
             scene.add(ground);
 
-            for (let i = 0; i < 200; i++) {
+            // 海底礁石群
+            for (let i = 0; i < 45; i++) {
+                const rx = Math.random() * 180 - 90;
+                const rz = Math.random() * 180 - 90;
+                if (Math.abs(rx) < 5 && Math.abs(rz) < 5) continue;
+
+                const scale = 0.6 + Math.random() * 1.6;
+                const rockGeo = new THREE.DodecahedronGeometry(scale, 0);
+                const rockMat = new THREE.MeshStandardMaterial({
+                    color: 0x223344,
+                    roughness: 0.9,
+                    metalness: 0.1
+                });
+                const rock = new THREE.Mesh(rockGeo, rockMat);
+                rock.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
+                rock.position.set(rx, scale / 2.5, rz);
+                scene.add(rock);
+            }
+
+            // 建立落石 (Falling Rocks) 物理威脅物
+            const rockColor = new THREE.Color(0x3a4f6e);
+            for (let i = 0; i < 12; i++) {
+                const rockGeo = new THREE.DodecahedronGeometry(0.5 + Math.random() * 0.4, 0);
+                const rockMat = new THREE.MeshStandardMaterial({
+                    color: rockColor,
+                    roughness: 0.95,
+                    metalness: 0.2
+                });
+                const rockMesh = new THREE.Mesh(rockGeo, rockMat);
+
+                resetRock(rockMesh);
+                rockMesh.position.y = 15 + Math.random() * 15;
+                scene.add(rockMesh);
+                fallingRocks.push(rockMesh);
+            }
+
+            // 珊瑚群聚
+            for (let i = 0; i < 240; i++) {
                 const x = Math.random() * 180 - 90;
                 const z = Math.random() * 180 - 90;
                 if (Math.abs(x) < 5 && Math.abs(z) < 5) continue;
 
-                const isAlive = Math.random() > 0.2;
-                const h = 0.4 + Math.random() * 0.8;
-                const color = isAlive ? new THREE.Color().setHSL(Math.random() * 0.1, 0.8, 0.5) : new THREE.Color(0x94a3b8);
+                const isAlive = Math.random() > 0.15;
+                const h = 0.4 + Math.random() * 1.0;
+
+                let color;
+                if (isAlive) {
+                    const randType = Math.random();
+                    if (randType < 0.35) {
+                        color = new THREE.Color(0xf43f5e);
+                    } else if (randType < 0.65) {
+                        color = new THREE.Color(0x06b6d4);
+                    } else if (randType < 0.85) {
+                        color = new THREE.Color(0xd97706);
+                    } else {
+                        color = new THREE.Color(0x8b5cf6);
+                    }
+                } else {
+                    color = new THREE.Color(0x475569);
+                }
 
                 const coral = new THREE.Mesh(
-                    new THREE.ConeGeometry(0.15, h, 5),
+                    new THREE.ConeGeometry(0.18, h, 5),
                     new THREE.MeshStandardMaterial({
                         color: color,
                         emissive: isAlive ? color : 0x000000,
-                        emissiveIntensity: 0.6
+                        emissiveIntensity: isAlive ? 0.6 : 0.0,
+                        roughness: 0.3
                     })
                 );
                 coral.position.set(x, h / 2, z);
+
+                coral.rotation.z = (Math.random() - 0.5) * 0.25;
+                coral.rotation.x = (Math.random() - 0.5) * 0.25;
+
                 scene.add(coral);
                 corals.push({
                     mesh: coral,
-                    alive: isAlive
+                    alive: isAlive,
+                    baseColor: color
                 });
             }
 
-            addPOI("能源商：工程選址點", 25, 25, 'CORP_NODE');
-            addPOI("環境巡守隊：生態保護區", -30, -20, 'FISH_NODE');
-            addPOI("能源商：管線規劃區", 0, -40, 'CORP_NODE_2');
+            // 動態海洋雪粒子系統
+            const particleGeo = new THREE.BufferGeometry();
+            const pCount = 150;
+            const positions = new Float32Array(pCount * 3);
+
+            for (let i = 0; i < pCount * 3; i += 3) {
+                positions[i] = Math.random() * 180 - 90;
+                positions[i + 1] = Math.random() * 15;
+                positions[i + 2] = Math.random() * 180 - 90;
+            }
+
+            particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            const particleMat = new THREE.PointsMaterial({
+                size: 0.15,
+                color: 0xe0f2fe,
+                transparent: true,
+                opacity: 0.8
+            });
+
+            particles = new THREE.Points(particleGeo, particleMat);
+            scene.add(particles);
+
+            // 5 個環評爭議點
+            addPOI("台電工程規劃點 (2018原始方案)", 25, 25, 'CORP_NODE');
+            addPOI("基隆市水產動植物保育區", -30, -20, 'FISH_NODE');
+            addPOI("環評決策與協調中心", 0, -40, 'CORP_NODE_2');
+            addPOI("高緯度非礁型珊瑚群聚點", -15, 30, 'CORP_NODE_3');
+            addPOI("外木山漁民抗議區", 40, -10, 'FISH_NODE_2');
         }
 
+        // 重設落石位置
+        function resetRock(rock) {
+            rock.position.x = player ? player.position.x + (Math.random() * 40 - 20) : (Math.random() * 100 - 50);
+            rock.position.z = player ? player.position.z + (Math.random() * 40 - 20) : (Math.random() * 100 - 50);
+            rock.position.y = 20 + Math.random() * 10;
+
+            rock.userData = {
+                fallSpeed: 6.0 + Math.random() * 8.0,
+                rotSpeedX: Math.random() * 1.5,
+                rotSpeedY: Math.random() * 1.5
+            };
+        }
+
+        // 發光標記點
         function addPOI(name, x, z, id) {
             const poiGroup = new THREE.Group();
             const poiGeo = new THREE.TorusGeometry(1.5, 0.15, 16, 32);
@@ -681,119 +766,19 @@
 
         function setupControls() {
             window.addEventListener('keydown', (e) => {
-                if (e.code === 'KeyW') moveDir.z = 1;
-                if (e.code === 'KeyS') moveDir.z = -1;
-                if (e.code === 'KeyA') moveDir.x = -1;
-                if (e.code === 'KeyD') moveDir.x = 1;
-                if (e.code === 'ShiftLeft') game.isBoosting = true;
+                if (game.isGameOver) return;
+                // 增強兼容性，兼容大寫鎖定或特定輸入法狀態
+                if (e.code === 'KeyW' || e.key === 'w' || e.key === 'W') moveDir.z = 1;
+                if (e.code === 'KeyS' || e.key === 's' || e.key === 'S') moveDir.z = -1;
+                if (e.code === 'KeyA' || e.key === 'a' || e.key === 'A') moveDir.x = -1;
+                if (e.code === 'KeyD' || e.key === 'd' || e.key === 'D') moveDir.x = 1;
+                if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') game.isBoosting = true;
                 if (e.code === 'Space') interact();
             });
             window.addEventListener('keyup', (e) => {
-                if (e.code === 'KeyW' || e.code === 'KeyS') moveDir.z = 0;
-                if (e.code === 'KeyA' || e.code === 'KeyD') moveDir.x = 0;
-                if (e.code === 'ShiftLeft') game.isBoosting = false;
-            });
-
-            // 手機／平板：觸控螢幕拖曳方向控制、噴射鍵、互動鍵
-            const steerZone = document.getElementById('touch-steer-zone');
-            const joystick = document.getElementById('touch-joystick');
-            const joystickKnob = document.getElementById('joystick-knob');
-            const maxRadius = 54;
-            const deadZone = 8;
-            let steerPointerId = null;
-            let steerStart = {
-                x: 0,
-                y: 0
-            };
-
-            const resetSteering = () => {
-                moveDir.x = 0;
-                moveDir.z = 0;
-                steerPointerId = null;
-                joystick.classList.remove('active');
-                joystickKnob.style.transform = 'translate(0px, 0px)';
-            };
-
-            const updateSteering = (clientX, clientY) => {
-                let dx = clientX - steerStart.x;
-                let dy = clientY - steerStart.y;
-                const dist = Math.hypot(dx, dy);
-
-                if (dist < deadZone) {
-                    moveDir.x = 0;
-                    moveDir.z = 0;
-                    joystickKnob.style.transform = 'translate(0px, 0px)';
-                    return;
-                }
-
-                const limited = Math.min(dist, maxRadius);
-                const nx = dx / dist;
-                const ny = dy / dist;
-                const knobX = nx * limited;
-                const knobY = ny * limited;
-
-                // 螢幕座標：往上拖曳 dy 為負值；遊戲中 moveDir.z=1 代表前進
-                moveDir.x = knobX / maxRadius;
-                moveDir.z = -knobY / maxRadius;
-                joystickKnob.style.transform = `translate(${knobX}px, ${knobY}px)`;
-            };
-
-            steerZone.addEventListener('pointerdown', (e) => {
-                if (document.getElementById('dialog-box').style.display === 'block') return;
-                e.preventDefault();
-                steerPointerId = e.pointerId;
-                steerStart = {
-                    x: e.clientX,
-                    y: e.clientY
-                };
-                joystick.style.left = `${e.clientX}px`;
-                joystick.style.top = `${e.clientY}px`;
-                joystick.style.bottom = 'auto';
-                joystick.classList.add('active');
-                joystickKnob.style.transform = 'translate(0px, 0px)';
-                steerZone.setPointerCapture(e.pointerId);
-            });
-
-            steerZone.addEventListener('pointermove', (e) => {
-                if (e.pointerId !== steerPointerId) return;
-                e.preventDefault();
-                updateSteering(e.clientX, e.clientY);
-            });
-
-            ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(eventName => {
-                steerZone.addEventListener(eventName, (e) => {
-                    if (e.pointerId === steerPointerId || eventName === 'lostpointercapture') resetSteering();
-                });
-            });
-
-            const actionButtons = document.querySelectorAll('#touch-actions [data-touch]');
-            actionButtons.forEach(btn => {
-                const key = btn.dataset.touch;
-
-                const press = (e) => {
-                    e.preventDefault();
-                    btn.classList.add('active');
-                    if (key === 'boost') game.isBoosting = true;
-                    if (key === 'interact') interact();
-                };
-
-                const release = (e) => {
-                    e.preventDefault();
-                    btn.classList.remove('active');
-                    if (key === 'boost') game.isBoosting = false;
-                };
-
-                btn.addEventListener('pointerdown', press);
-                btn.addEventListener('pointerup', release);
-                btn.addEventListener('pointercancel', release);
-                btn.addEventListener('pointerleave', release);
-            });
-
-            // 避免手機瀏覽器滑動、雙指縮放影響遊戲操作
-            document.addEventListener('touchmove', (e) => {
-                if (e.target.closest('#touch-controls')) e.preventDefault();
-            }, {
-                passive: false
+                if (e.code === 'KeyW' || e.key === 'w' || e.key === 'W' || e.code === 'KeyS' || e.key === 's' || e.key === 'S') moveDir.z = 0;
+                if (e.code === 'KeyA' || e.key === 'a' || e.key === 'A' || e.code === 'KeyD' || e.key === 'd' || e.key === 'D') moveDir.x = 0;
+                if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') game.isBoosting = false;
             });
         }
 
@@ -801,35 +786,86 @@
             if (document.getElementById('dialog-box').style.display === 'block') return;
 
             pois.forEach(p => {
-                if (player.position.distanceTo(p.mesh.position) < 4) {
+                // ★ 防呆防卡機制：只有在尚未探勘的情況下，按下空白鍵才會觸發對話
+                if (player.position.distanceTo(p.mesh.position) < 4 && !game.exploredPoints.has(p.id)) {
                     if (p.id === 'CORP_NODE') {
-                        triggerDialog('開發商代表', '這裡是四接最理想的接收站位置。雖然施工會覆蓋部分藻礁，但能提供北部 20% 的電力缺口。你支持在這個座標佈署鑽探儀嗎？', [{
-                                text: '支持開發：優先解決能源缺口 (進度+25, 生態-20)',
-                                action: () => updateStats(25, -20, 40, -30)
+                        triggerDialog('台電規劃代表', '我們在2018年提出的原始方案：預計填海造地達 29.25 公頃，填方量達 540 萬立方公尺，藉此建置4部總容量達 520 萬瓩的燃氣複循環機組以解決北部巨大電力缺口。是否支持直接以原始方案全力推進？', [{
+                                text: '全力支持：確保520萬瓩龐大發電容量 (開發進度+35.0%, 生態-25.0%)',
+                                action: () => {
+                                    updateStats(35, -25, 40, -30);
+                                    markExplored(p.id);
+                                }
                             },
                             {
-                                text: '反對：藻礁不可復原 (環團信任+20)',
-                                action: () => updateStats(0, 0, -20, 20)
+                                text: '堅決反對：29.25公頃的大規模填海將徹底摧毀海底 (生態+10.0%, 環團信任+30)',
+                                action: () => {
+                                    updateStats(0, 10, -30, 30);
+                                    markExplored(p.id);
+                                }
                             }
                         ]);
                     } else if (p.id === 'FISH_NODE') {
-                        triggerDialog('資深漁民', '後生仔，這底下的水流會說話。一旦蓋了港口，海流就全亂了。請幫我們提交調查，延緩施工。', [{
-                                text: '提交調查：守護海洋多樣性 (生態+15, 進度-10)',
-                                action: () => updateStats(-10, 15, -30, 40)
+                        triggerDialog('海洋保育學者與地方漁民', '這裡屬於「基隆市水產動植物保育區」。你底下的海域生長著極具科學價值的豐富高緯度珊瑚和非礁型珊瑚群聚！台電大規模填海會讓這裡覆滅。請協助我們抗爭到底！', [{
+                                text: '捍衛保育區：強烈抗議並要求案件進入更嚴格的二階環評 (生態+20.0%, 開發進度-15.0%)',
+                                action: () => {
+                                    updateStats(-15, 20, -30, 40);
+                                    markExplored(p.id);
+                                }
                             },
                             {
-                                text: '忽視請求：工程必須按期進行',
-                                action: () => updateStats(10, -5, 20, -20)
+                                text: '開發優先：為了民生用電與北部經濟，繼續執行填海計畫 (開發進度+20.0%, 生態-15.0%)',
+                                action: () => {
+                                    updateStats(20, -15, 30, -30);
+                                    markExplored(p.id);
+                                }
                             }
                         ]);
                     } else if (p.id === 'CORP_NODE_2') {
-                        triggerDialog('能源政策顧問', '北部備轉容量持續探底。如果不加速四接管線，今年夏天可能有停電風險。', [{
-                                text: '同意浚挖：確保民生用電安全 (進度+20, 生態-15)',
-                                action: () => updateStats(20, -15, 30, -20)
+                        triggerDialog('環評大會現場', '台電原始方案在水產動植物保育區引發巨大風暴。學者、居民與保育團體強烈反對。大會最終判定：因嚴重影響海洋生態，必須進入更嚴謹、耗時的「第二階段環境影響評估（二階環評）」。我們該如何面對？', [{
+                                text: '接受挑戰：深入二階環評，尋求未來縮小填海規模的替代方案 (生態+15.0%, 開發進度+5.0%)',
+                                action: () => {
+                                    updateStats(5, 15, -10, 25);
+                                    markExplored(p.id);
+                                }
                             },
                             {
-                                text: '尋找替代路徑：雖然耗時但傷害較小 (進度+5, 生態-2)',
-                                action: () => updateStats(5, -2, 0, 10)
+                                text: '規避阻力：試圖在現有框架強行過關 (開發進度+15.0%, 生態-10.0%)',
+                                action: () => {
+                                    updateStats(15, -10, 25, -20);
+                                    markExplored(p.id);
+                                }
+                            }
+                        ]);
+                    } else if (p.id === 'CORP_NODE_3') {
+                        triggerDialog('生態學者', '台電 540 萬立方公尺的土石一旦倒入，所揚起的漫天懸浮沙塵將徹底阻塞這裡高緯度非礁型珊瑚群聚的呼吸孔。是否堅持迴避此珊瑚敏感區？', [{
+                                text: '環境優先：要求開發單位重新選址並進行生態監測 (生態+20.0%, 開發進度-10.0%)',
+                                action: () => {
+                                    updateStats(-10, 20, -25, 30);
+                                    markExplored(p.id);
+                                }
+                            },
+                            {
+                                text: '工程防砂：宣稱使用雙層防砂幕能完全阻絕污染並繼續原址傾倒 (開發進度+25.0%, 生態-20.0%)',
+                                action: () => {
+                                    updateStats(25, -20, 30, -30);
+                                    markExplored(p.id);
+                                }
+                            }
+                        ]);
+                    } else if (p.id === 'FISH_NODE_2') {
+                        triggerDialog('外木山在地漁民', '填海造地 29.25 公頃後，沿岸豐富的漁場將不復存在！這是討海人生存底線。請幫我們在環評會上向社會發聲！', [{
+                                text: '支持發聲：捍衛漁場多樣性與在地生計 (生態+15.0%, 進度-10.0%)',
+                                action: () => {
+                                    updateStats(-10, 15, -20, 35);
+                                    markExplored(p.id);
+                                }
+                            },
+                            {
+                                text: '補償金平息：以回饋金和高額補償平息爭議，加快工期 (開發進度+20.0%, 生態-10.0%)',
+                                action: () => {
+                                    updateStats(20, -10, 25, -25);
+                                    markExplored(p.id);
+                                }
                             }
                         ]);
                     }
@@ -837,10 +873,17 @@
             });
         }
 
-        function triggerDialog(speaker, content, choices = [{
-            text: '確認',
-            action: () => {}
-        }]) {
+        function markExplored(id) {
+            game.exploredPoints.add(id);
+            const count = game.exploredPoints.size;
+            document.getElementById('val-explored').innerText = `${count} / 5`;
+
+            if (count === 5 && !game.isGameOver) {
+                winRescue();
+            }
+        }
+
+        function triggerDialog(speaker, content, choices) {
             const box = document.getElementById('dialog-box');
             document.getElementById('d-speaker').innerText = speaker;
             document.getElementById('d-content').innerText = content;
@@ -850,9 +893,22 @@
                 const btn = document.createElement('button');
                 btn.className = 'choice-btn';
                 btn.innerText = c.text;
-                btn.onclick = () => {
-                    c.action();
+
+                // ★ 核心修復：綁定事件時阻止預設行為，並在關閉選項後強制歸還焦點
+                btn.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    // ★ 關鍵修復：在執行 action() 之前就「先」關閉當前對話框（設定為 display = none）
+                    // 這樣 action() 內部如果再次觸發了 checkPhase() 的新對話框或是 winRescue()，新對話框才會正確留存並設定為 block！
                     box.style.display = 'none';
+
+                    if (typeof c.action === 'function') {
+                        c.action();
+                    }
+
+                    // 完全修復 iframe 瀏覽器點擊按鈕後 WASD 無法移動的問題
+                    document.body.focus();
                 };
                 cBox.appendChild(btn);
             });
@@ -865,12 +921,10 @@
             game.corp = Math.min(100, Math.max(0, game.corp + c));
             game.green = Math.min(100, Math.max(0, game.green + g));
 
-            document.getElementById('val-prog').innerText = game.prog + '%';
-            document.getElementById('val-eco').innerText = game.eco;
+            document.getElementById('val-prog').innerText = game.prog.toFixed(1) + '%';
+            document.getElementById('val-eco').innerText = game.eco.toFixed(1);
             document.getElementById('val-eco').style.color = game.eco < 50 ? 'var(--ui-red)' : '#4ade80';
 
-            document.getElementById('txt-corp').innerText = game.corp;
-            document.getElementById('txt-green').innerText = game.green;
             document.getElementById('bar-corp').style.width = game.corp + '%';
             document.getElementById('bar-green').style.width = game.green + '%';
 
@@ -890,19 +944,24 @@
         }
 
         function checkPhase() {
-            // 音樂切換與階段邏輯
             if (game.eco < 70 && game.phase === 0) {
                 game.phase = 1;
-                playMusic('bgm-p2'); // 切換到「狹縫奔逃」
-                scene.background.set(0x161d33);
-                scene.fog.color.set(0x161d33);
-                triggerDialog('系統通知', '環境警告：隨著工程介入，音樂轉向焦躁的「狹縫奔逃」。海底濁度顯著上升，珊瑚礁出現壓力反應。');
+                playMusic('bgm-p2');
+                scene.background.set(0x18253c);
+                scene.fog.color.set(0x18253c);
+                triggerDialog('系統通知', '環境警告：大規模填海造地方案讓珊瑚窒息，音樂轉向焦躁的「狹縫奔逃」。保育區海底濁度上升！', [{
+                    text: '確認',
+                    action: () => {}
+                }]);
             } else if (game.eco < 35 && game.phase === 1) {
                 game.phase = 2;
-                playMusic('bgm-p3'); // 切換到「破曉回聲」
-                scene.background.set(0x2d1b2d);
-                scene.fog.color.set(0x2d1b2d);
-                triggerDialog('緊急預警', '白化危機：進入「破曉回聲」。大規模珊瑚礁已停止生長，這是海洋寂靜的控訴。');
+                playMusic('bgm-p3');
+                scene.background.set(0x351d33);
+                scene.fog.color.set(0x351d33);
+                triggerDialog('生態災難', '白化危機：進入「破曉回聲」。基隆保育區內珍貴的高緯度非礁型珊瑚大規模死亡、停止生長。這是海洋寂靜的控訴。', [{
+                    text: '確認',
+                    action: () => {}
+                }]);
                 corals.forEach(c => {
                     if (c.alive) c.mesh.material.color.set(0xf1f5f9);
                 });
@@ -913,13 +972,50 @@
             requestAnimationFrame(animate);
             const dt = clock.getDelta();
 
-            if (document.getElementById('dialog-box').style.display !== 'block') {
+            if (document.getElementById('dialog-box').style.display !== 'block' && !game.isGameOver) {
                 const speed = game.isBoosting ? 22 : 12;
                 player.position.x += moveDir.x * speed * dt;
                 player.position.z -= moveDir.z * speed * dt;
 
+                if (player && player.userData && player.userData.propeller) {
+                    const rotSpeed = game.isBoosting ? 25 : 12;
+                    player.userData.propeller.rotation.x += rotSpeed * dt;
+                }
+
+                if (particles) {
+                    const pPos = particles.geometry.attributes.position.array;
+                    for (let i = 1; i < pPos.length; i += 3) {
+                        pPos[i] -= 1.0 * dt;
+                        if (pPos[i] < 0.1) {
+                            pPos[i] = 15;
+                        }
+                    }
+                    particles.geometry.attributes.position.needsUpdate = true;
+                }
+
+                fallingRocks.forEach(rock => {
+                    rock.rotation.x += rock.userData.rotSpeedX * dt;
+                    rock.rotation.y += rock.userData.rotSpeedY * dt;
+                    rock.position.y -= rock.userData.fallSpeed * dt;
+
+                    if (player.position.distanceTo(rock.position) < 1.4) {
+                        updateStats(0, -5.0, 0, 0);
+                        resetRock(rock);
+
+                        const overlay = document.getElementById('hit-overlay');
+                        overlay.style.display = 'block';
+                        setTimeout(() => {
+                            overlay.style.display = 'none';
+                        }, 150);
+                    }
+
+                    if (rock.position.y < 0.2) {
+                        resetRock(rock);
+                    }
+                });
+
                 if (Math.abs(moveDir.x) > 0.1 || Math.abs(moveDir.z) > 0.1) {
-                    const targetRotation = Math.atan2(moveDir.x, moveDir.z);
+                    const targetRotation = Math.atan2(moveDir.z, moveDir.x);
                     player.rotation.y = THREE.MathUtils.lerp(player.rotation.y, targetRotation, 0.15);
                 }
 
@@ -938,10 +1034,19 @@
 
                 let near = false;
                 pois.forEach(p => {
+                    const isExplored = game.exploredPoints.has(p.id);
                     const dist = player.position.distanceTo(p.mesh.position);
-                    p.mesh.rotation.y += 0.02;
+
+                    // 已探勘的節點自轉變慢
+                    p.mesh.rotation.y += isExplored ? 0.005 : 0.02;
+
                     if (dist < 5) {
-                        document.getElementById('hint-text').innerText = `[按空格鍵互動] - ${p.name}`;
+                        // ★ 防呆防卡機制：探勘後更新提示文字，不再要求按空白鍵
+                        if (!isExplored) {
+                            document.getElementById('hint-text').innerText = `[按空格鍵互動] - ${p.name}`;
+                        } else {
+                            document.getElementById('hint-text').innerText = `${p.name} [已探勘完成]`;
+                        }
                         near = true;
                     }
                 });
@@ -950,6 +1055,21 @@
                 const camTarget = new THREE.Vector3(player.position.x, 18, player.position.z + 14);
                 camera.position.lerp(camTarget, 0.08);
                 camera.lookAt(player.position.x, 0, player.position.z);
+            } else if (game.isGameOver) {
+                if (particles) {
+                    const pPos = particles.geometry.attributes.position.array;
+                    for (let i = 1; i < pPos.length; i += 3) {
+                        pPos[i] -= 0.5 * dt;
+                        if (pPos[i] < 0.1) pPos[i] = 15;
+                    }
+                    particles.geometry.attributes.position.needsUpdate = true;
+                }
+
+                fallingRocks.forEach(rock => {
+                    rock.rotation.x += rock.userData.rotSpeedX * 0.2 * dt;
+                    rock.position.y -= rock.userData.fallSpeed * 0.2 * dt;
+                    if (rock.position.y < 0.2) resetRock(rock);
+                });
             }
 
             renderer.render(scene, camera);
