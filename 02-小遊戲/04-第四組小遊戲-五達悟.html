@@ -7,7 +7,7 @@
     <title>PONGSO NO GOJOTAO：COVENANT REBORN</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght=700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght=400;700;900&display=swap');
 
         :root {
             --primary: #0ea5e9;
@@ -47,6 +47,61 @@
             display: block;
         }
 
+        /* 序章字幕特效 */
+        #prologue-screen {
+            position: absolute;
+            inset: 0;
+            z-index: 150;
+            background: #000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .crawl-container {
+            width: 70%;
+            height: 70%;
+            position: relative;
+            overflow: hidden;
+            /* 上下漸層遮罩讓文字有淡入淡出的感覺 */
+            mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+        }
+
+        .crawl-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            font-size: 1.4rem;
+            line-height: 2.2;
+            letter-spacing: 0.15em;
+            color: #e0f2fe;
+            text-shadow: 0 0 8px rgba(14, 165, 233, 0.4);
+            transform: translateY(100vh);
+        }
+
+        .crawl-animation {
+            animation: crawlAnim 28s linear forwards;
+        }
+
+        @keyframes crawlAnim {
+            0% {
+                transform: translateY(100vh);
+            }
+
+            100% {
+                transform: translateY(-150%);
+            }
+        }
+
+        #btn-proceed {
+            position: absolute;
+            bottom: 3rem;
+            opacity: 0;
+            transition: opacity 1.5s ease-in;
+        }
+
         .glass-panel {
             background: rgba(15, 23, 42, 0.85);
             backdrop-filter: blur(16px);
@@ -75,7 +130,6 @@
             transform: scale(1.05);
         }
 
-        /* 斬殺狀態特殊的 Hover 與呼吸燈特效 */
         .battle-btn.execute-ready {
             animation: executePulse 1.5s infinite alternate;
         }
@@ -98,7 +152,6 @@
 
         .battle-btn:disabled {
             opacity: 0.6;
-            /* 提高透明度讓鎖定時也能看見文字 */
             filter: grayscale(1);
             cursor: not-allowed;
             box-shadow: none !important;
@@ -200,7 +253,6 @@
             }
         }
 
-        /* 穩定版讀取提示 */
         #loading-text {
             display: none;
             position: absolute;
@@ -229,7 +281,6 @@
             }
         }
 
-        /* BGM 狀態提示 */
         #bgm-status {
             position: absolute;
             left: 1.25rem;
@@ -251,20 +302,39 @@
     <div id="game-container">
         <canvas id="mainCanvas"></canvas>
 
-        <!-- 啟動畫面 -->
+        <!-- 遊戲標題畫面 -->
         <div id="start-screen" class="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-slate-950">
             <h1 class="text-7xl font-black text-white italic mb-4 tracking-tighter text-center drop-shadow-[0_0_20px_rgba(14,165,233,0.8)]">PONGSO NO TAO</h1>
             <p class="text-sky-400/60 tracking-[1em] text-[10px] mb-12">DEEP SEA ASCENSION</p>
-            <!-- 預設為 disabled 狀態 -->
-            <button id="btn-start" class="battle-btn text-xl px-12 py-5 border-sky-400/50" disabled onclick="Game.start()">
+            <button id="btn-start" class="battle-btn text-xl px-12 py-5 border-sky-400/50" disabled onclick="Game.showPrologue()">
                 資 源 載 入 中 ...
             </button>
             <div id="loading-text">場景建構中...</div>
         </div>
 
-        <!-- 遊戲 UI -->
+        <!-- 劇情前情提要畫面 -->
+        <div id="prologue-screen">
+            <div class="crawl-container">
+                <div id="crawl-text" class="crawl-text">
+                    <p class="mb-6 font-bold text-sky-400">【 歷 史 的 潮 汐 】</p>
+                    <p class="mb-6">四月，黑潮帶來了飛魚，也帶來了風暴。</p>
+                    <p class="mb-6">對蘭嶼的達悟族而言，飛魚不僅是食物，<br>更是與海神立下的信仰盟約，是文化傳承的命脈。</p>
+                    <p class="mb-6">然而，現代漁業的擴張打破了千年的寧靜。</p>
+                    <p class="mb-6">為了保護生態永續，<br>政府下達了蘭嶼周邊六海浬的禁捕令。</p>
+                    <p class="mb-6">這道冷冰冰的法規，<br>卻讓仰賴這片海域的恆春漁民面臨斷炊與資金斷鏈的危機。</p>
+                    <p class="mb-12">絕對的文化禁忌，對上生存的經濟命脈。<br>衝突，已無可避免。</p>
+                    <p class="mb-6 text-rose-400 font-bold">現在，你將化身守護傳統的達悟戰士，<br>直面這場由系統與體制化身的官僚幻象。</p>
+                    <p class="mb-6">唯有在毀滅邊緣，才能尋得共生的解答……</p>
+                </div>
+            </div>
+            <button id="btn-proceed" class="battle-btn px-10 py-4" disabled onclick="Game.enterBattle()">
+                直 面 衝 突 (進入戰鬥)
+            </button>
+        </div>
+
+        <!-- 遊戲主介面 -->
         <div id="game-ui" class="absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-1000">
-            <!-- 敵方 -->
+            <!-- 敵方狀態 -->
             <div class="absolute top-12 right-12 flex flex-col items-end w-96">
                 <div id="e-name" class="text-rose-500 font-black text-xs mb-3 tracking-widest uppercase">Target: Bureaucratic Phantom</div>
                 <div class="hp-bar-container">
@@ -274,7 +344,7 @@
                 <div id="e-hp-text" class="text-[10px] mt-2 font-mono text-slate-500 tabular-nums">25,000 / 25,000</div>
             </div>
 
-            <!-- 玩家 -->
+            <!-- 玩家狀態 -->
             <div class="absolute bottom-12 left-12 flex flex-col pointer-events-auto">
                 <div class="glass-panel p-6 w-[450px]">
                     <div class="flex justify-between items-end mb-3">
@@ -298,15 +368,15 @@
                 </div>
             </div>
 
-            <!-- 選單 -->
+            <!-- 技能選單 -->
             <div id="command-menu" class="absolute bottom-12 right-12 flex flex-col gap-4 pointer-events-auto items-end">
                 <button id="atk-btn" class="battle-btn w-72 text-right">術式順轉：蒼潮穿 ◈</button>
                 <button id="def-btn" class="battle-btn w-72 text-right border-amber-500 text-amber-200">反擊術式：海神障壁 🛡</button>
                 <button id="ult-btn" class="battle-btn w-72 text-right border-white text-white transition-all duration-300" disabled>終焉術式：深淵海禁 ⚡</button>
             </div>
 
-            <!-- 對話 -->
-            <div id="dialog-box" class="absolute bottom-48 left-1/2 -translate-x-1/2 w-[60%] opacity-0 transition-all duration-300">
+            <!-- 對話框 -->
+            <div id="dialog-box" class="absolute bottom-48 left-1/2 -translate-x-1/2 w-[70%] opacity-0 transition-all duration-300">
                 <div class="glass-panel py-5 px-8 border-l-4 border-l-sky-500 text-center">
                     <p id="dialog-text" class="text-xl italic font-bold text-white"></p>
                 </div>
@@ -316,7 +386,7 @@
         <div id="bgm-status">BGM：待機</div>
         <div id="music-source-note" class="sr-only">音樂資料來源：https://github.com/igudesman222/igudesman2012.git</div>
 
-        <!-- 結算 -->
+        <!-- 結算畫面 -->
         <div id="result-screen" class="absolute inset-0 z-[200] hidden bg-black/95 flex flex-col items-center justify-center text-center">
             <h2 id="result-title" class="text-9xl font-black mb-4 italic tracking-tighter"></h2>
             <p id="result-subtitle" class="text-slate-400 mb-12 tracking-[0.5em]"></p>
@@ -537,6 +607,7 @@
             isStarting: false,
             imgPlayer: null,
             imgEnemy: null,
+            prologueTimer: null,
             player: {
                 x: 300,
                 y: 550,
@@ -566,15 +637,10 @@
                 this.resize();
                 window.onresize = () => this.resize();
 
-                const startBtn = document.getElementById('btn-start');
                 const atkBtn = document.getElementById('atk-btn');
                 const defBtn = document.getElementById('def-btn');
                 const ultBtn = document.getElementById('ult-btn');
 
-                // 為了確保安全，一開始如果按鈕存在，預設給它 disabled
-                if (startBtn) startBtn.disabled = true;
-
-                if (startBtn) startBtn.addEventListener('click', () => this.start());
                 if (atkBtn) atkBtn.addEventListener('click', () => this.action('atk'));
                 if (defBtn) defBtn.addEventListener('click', () => this.action('def'));
                 if (ultBtn) ultBtn.addEventListener('click', () => this.action('ult'));
@@ -586,7 +652,6 @@
                     this.loop();
                 }
 
-                // 啟動背景圖片載入，載入完畢後才會解鎖 Start 按鈕
                 this.preloadImagesInBackground();
             },
 
@@ -596,7 +661,7 @@
                 this.canvas.height = 720;
             },
 
-            loadImage(src, timeout = 15000) { // 加長超時時間，確保不會過早放棄
+            loadImage(src, timeout = 15000) {
                 return new Promise(resolve => {
                     const img = new Image();
                     let done = false;
@@ -622,7 +687,6 @@
                     startBtn.disabled = true;
                 }
 
-                // 給予充分時間(15秒)等待圖片完整下載
                 const [playerImg, enemyImg] = await Promise.all([
                     this.loadImage('https://i.ibb.co/PGgCPLTg/01.png', 15000),
                     this.loadImage('https://i.ibb.co/v69f1sWq/03.png', 15000)
@@ -631,14 +695,14 @@
                 if (playerImg) this.imgPlayer = playerImg;
                 if (enemyImg) this.imgEnemy = enemyImg;
 
-                // 圖片都處理完後，正式解鎖按鈕
                 if (startBtn) {
                     startBtn.innerText = '啟 動 靈 魂 盟 約';
                     startBtn.disabled = false;
                 }
             },
 
-            async start() {
+            // 顯示前情提要畫面
+            async showPrologue() {
                 if (!this.initialized) this.init();
                 if (this.state !== 'INTRO') return;
                 if (this.isStarting) return;
@@ -659,35 +723,59 @@
                 try {
                     SFX.init();
                 } catch (e) {}
-                BGM.startBattle(this.enemy.hp, this.player.emergencyShieldActive);
 
                 await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 
-                // 由於前面已經強制載入過了，這裡只是做最後的確認
-                const [playerImg, enemyImg] = await Promise.all([
-                    this.imgPlayer ? Promise.resolve(this.imgPlayer) : this.loadImage('https://i.ibb.co/PGgCPLTg/01.png', 10000),
-                    this.imgEnemy ? Promise.resolve(this.imgEnemy) : this.loadImage('https://i.ibb.co/v69f1sWq/03.png', 10000)
-                ]);
+                document.getElementById('start-screen').style.display = 'none';
 
-                if (playerImg) this.imgPlayer = playerImg;
-                if (enemyImg) this.imgEnemy = enemyImg;
+                // 啟動字幕動畫
+                const prologueScreen = document.getElementById('prologue-screen');
+                const crawlText = document.getElementById('crawl-text');
+                const proceedBtn = document.getElementById('btn-proceed');
 
-                const startScreen = document.getElementById('start-screen');
+                prologueScreen.style.display = 'flex';
+
+                // 重置動畫
+                crawlText.classList.remove('crawl-animation');
+                void crawlText.offsetWidth; // 觸發重繪
+                crawlText.classList.add('crawl-animation');
+
+                // 播放低頻音效增加史詩感
+                SFX.play(100, 'sine', 1.0, 0.05);
+
+                // 設定幾秒後解鎖「進入戰鬥」按鈕 (強制玩家閱讀部分文字)
+                this.prologueTimer = setTimeout(() => {
+                    proceedBtn.disabled = false;
+                    proceedBtn.style.opacity = '1';
+                }, 6500);
+            },
+
+            // 正式進入戰鬥
+            async enterBattle() {
+                if (this.prologueTimer) clearTimeout(this.prologueTimer);
+
+                document.getElementById('prologue-screen').style.display = 'none';
+
                 const gameUI = document.getElementById('game-ui');
-                if (startScreen) startScreen.style.display = 'none';
                 if (gameUI) gameUI.style.opacity = '1';
+
+                // 開啟戰鬥BGM
+                BGM.startBattle(this.enemy.hp, this.player.emergencyShieldActive);
 
                 this.updateUI();
                 this.state = 'PLAYER_TURN';
                 this.updateBtns(false);
-                await this.msg("「誓約已成。這一次，我將在防禦中徹底粉碎你。」");
+
+                // 劇情融入：開場白
+                await this.msg("「四月黑潮帶回飛魚，這不僅是恆春的命脈，更是達悟的存亡。」");
+                await this.msg("「當六海浬禁令下達，生存與傳承的對決，即將引爆！」");
             },
 
             async msg(txt) {
                 const el = document.getElementById('dialog-box');
                 document.getElementById('dialog-text').innerText = txt;
                 el.style.opacity = '1';
-                await new Promise(r => setTimeout(r, 1500));
+                await new Promise(r => setTimeout(r, 2200));
                 el.style.opacity = '0';
             },
 
@@ -709,12 +797,8 @@
                 const container = document.getElementById('game-container');
                 const d = document.createElement('div');
                 d.className = 'damage-pop';
-
-                const leftPercent = (x / 1280) * 100;
-                const topPercent = (y / 720) * 100;
-
-                d.style.left = `${leftPercent}%`;
-                d.style.top = `${topPercent}%`;
+                d.style.left = `${(x / 1280) * 100}%`;
+                d.style.top = `${(y / 720) * 100}%`;
                 d.style.color = c;
                 d.innerText = txt;
                 container.appendChild(d);
@@ -735,6 +819,8 @@
                 const mult = this.player.atkMultiplier || 1.0;
 
                 if (type === 'atk') {
+                    await this.msg("「冰冷的數據能衡量文化的重量嗎？飛魚文化必須考量永續！」");
+
                     this.player.tx = 850;
                     await new Promise(r => setTimeout(r, 150));
                     this.flash();
@@ -746,6 +832,8 @@
                     this.spawn(this.enemy.x, this.enemy.y, '#0ea5e9', 40, 20);
                     setTimeout(() => this.player.tx = 300, 100);
                 } else if (type === 'def') {
+                    await this.msg("「海神障壁！只要抓準時機格擋你的毀滅程序，就能發動強力反擊！」");
+
                     this.player.shield = true;
                     this.player.tx = 400;
                     SFX.play(600, 'sine', 0.5, 0.15);
@@ -753,11 +841,16 @@
                     this.enemy.hp = Math.max(0, this.enemy.hp - counterPrep);
                     this.pop(`REACTION: ${counterPrep}`, this.enemy.x, this.enemy.y - 120, '#f59e0b');
                     this.spawn(this.enemy.x, this.enemy.y, '#f59e0b', 15, 10);
-                    await this.msg("「反擊術式...障壁內壓強化。」");
                     setTimeout(() => this.player.tx = 300, 200);
                 } else if (type === 'ult') {
                     const isExecuteZone = this.enemy.hp <= 5000;
                     const popColor = isExecuteZone ? '#f43f5e' : '#38bdf8';
+
+                    if (isExecuteZone) {
+                        await this.msg("「掌握攻防節奏，條件達成。這就是終焉術式：深淵海禁的處決時刻！」");
+                    } else {
+                        await this.msg("「既然缺乏生態參數，我就用領域展開：無量空間，親自為你寫入！」");
+                    }
 
                     SFX.play(100, 'sine', 0.6, 0.3);
                     for (let i = 0; i < 40; i++) {
@@ -783,7 +876,6 @@
                     for (let i = 0; i < 5; i++) {
                         setTimeout(() => {
                             SFX.play(220 + i * 140, 'sawtooth', 0.18, 0.25);
-
                             const xOffset = (Math.random() - 0.5) * 120;
                             const yOffset = (Math.random() - 0.5) * 120;
                             this.effects.push({
@@ -796,7 +888,6 @@
                                 width: 14,
                                 l: 1.0
                             });
-
                             this.effects.push({
                                 type: 'shockwave',
                                 x: this.enemy.x,
@@ -806,7 +897,6 @@
                                 color: popColor,
                                 l: 1.0
                             });
-
                             this.spawn(this.enemy.x, this.enemy.y - 100, popColor, 25, 20);
                         }, i * 75);
                     }
@@ -821,7 +911,6 @@
                         dmg = this.enemy.hp;
                         popText = "EXECUTE: 終 焉 斬 滅";
                         SFX.play(35, 'sawtooth', 2.0, 0.75);
-
                         this.effects.push({
                             type: 'shockwave',
                             x: this.enemy.x,
@@ -835,7 +924,6 @@
                         dmg = Math.floor(15000 * mult);
                         popText = "ABYSS TERMINUS";
                         SFX.play(45, 'sawtooth', 1.6, 0.55);
-
                         this.effects.push({
                             type: 'shockwave',
                             x: this.enemy.x,
@@ -859,7 +947,16 @@
 
                 this.updateUI();
                 await new Promise(r => setTimeout(r, 800));
-                if (this.enemy.hp <= 0) return this.end(true);
+
+                if (this.enemy.hp <= 0) {
+                    await this.msg("長老：「停手吧，孩子們。傳統的傳承與經濟的脈動，從來不是零和遊戲。」");
+                    await this.msg("系統：「運算衝突... 協商能否實質解決恆春漁民的生存危機？」");
+                    await this.msg("長老：「政府應修改法令維護權益，嚴令禁用破壞性網具，建立合理配額。」");
+                    await this.msg("系統：「重新計算完畢... 將絕對的空間爭議，修正為行為與漁具規範。」");
+                    await this.msg("長老：「建立達悟與恆春的共同管理機制，讓海洋永續，這才是雙贏的最佳解。」");
+                    return this.end(true);
+                }
+
                 this.enemyTurn();
             },
 
@@ -874,20 +971,20 @@
                 let dialogMsg = "";
 
                 if (isEnraged && attackRoll < 0.35) {
-                    attackName = "【終止程序：格式化清洗】";
+                    attackName = "【邏輯審查：一國兩制】";
                     baseDmg = 4000 + Math.floor(Math.random() * 2000);
                     pColor = '#7f1d1d';
-                    dialogMsg = "「判定：徹底抹除。執行核心格式化清洗！」";
+                    dialogMsg = "「系統判定：達悟不受限，恆春卻面臨禁捕。違反公平原則，無法通過邏輯審查！」";
                 } else if (attackRoll < 0.65) {
-                    attackName = "【侵蝕術式：程序污染】";
+                    attackName = "【絕對效率：資金斷鏈】";
                     baseDmg = 2200 + Math.floor(Math.random() * 1600);
                     pColor = '#a855f7';
-                    dialogMsg = "「系統資源溢流...啟動大範圍程序污染。」";
+                    dialogMsg = "「現代漁業追求絕對效率，產量不足將導致船隻停擺、資金斷鏈！」";
                 } else {
-                    attackName = "【常規審判：標準裁決】";
+                    attackName = "【強制排除程序】";
                     baseDmg = 1500 + Math.floor(Math.random() * 1000);
                     pColor = '#f43f5e';
-                    dialogMsg = "「判定：非法實體。依據標準程序進行裁決。」";
+                    dialogMsg = "「警告：交涉失敗，啟動強制排除程序。六海浬禁令已阻斷恆春數百家庭生計！」";
                 }
 
                 await this.msg(dialogMsg);
@@ -896,7 +993,7 @@
 
                 this.flash();
 
-                const predictedDmg = this.player.shield ? (attackName === "【終止程序：格式化清洗】" ? Math.floor(baseDmg * 0.25) : 0) : baseDmg;
+                const predictedDmg = this.player.shield ? (attackName === "【邏輯審查：一國兩制】" ? Math.floor(baseDmg * 0.25) : 0) : baseDmg;
                 const willTriggerEmergency = !this.player.emergencyTriggered && (this.player.hp - predictedDmg <= 1000);
 
                 if (willTriggerEmergency) {
@@ -916,7 +1013,7 @@
                     label.innerText = "COVENANT REBORN (ATK +30%)";
                     label.style.color = "#10b981";
 
-                    await this.msg("「極限臨界！逆轉之誓：將敵方攻勢轉化為生命潮汐！」");
+                    await this.msg("「就算陷入瀕死，我也會觸發逆轉盟約，絕地重生！」");
 
                     if (this.player.shield) {
                         const counterDmg = 3500 + Math.floor(Math.random() * 1500);
@@ -927,7 +1024,7 @@
                     }
                 } else {
                     if (this.player.shield) {
-                        if (attackName === "【終止程序：格式化清洗】") {
+                        if (attackName === "【邏輯審查：一國兩制】") {
                             const pierceDmg = Math.floor(baseDmg * 0.25);
                             this.player.hp = Math.max(0, this.player.hp - pierceDmg);
 
@@ -1000,7 +1097,6 @@
                     const btn = document.getElementById(id);
                     if (id === 'ult-btn') {
                         btn.disabled = disabled || (!isExecuteZone && this.player.np < 100);
-
                         if (isExecuteZone && !disabled) {
                             btn.classList.add('execute-ready');
                             btn.style.borderColor = '#f43f5e';
@@ -1023,24 +1119,27 @@
                 BGM.stop();
                 const scr = document.getElementById('result-screen');
                 scr.classList.remove('hidden');
-                document.getElementById('result-title').innerText = win ? "凱 旋" : "寂 滅";
+
+                document.getElementById('result-title').innerText = win ? "雙 贏 共 好" : "寂 滅";
                 document.getElementById('result-title').style.color = win ? "#0ea5e9" : "#f43f5e";
-                document.getElementById('result-subtitle').innerText = win ? "深淵已被征服，盟約永恆。" : "靈魂已淪為程序的塵埃。";
+                document.getElementById('result-subtitle').innerText = win ? "空間爭議已化解，海洋永續的盟約確立。" : "文化與生計在衝突中雙雙沉淪。";
             },
 
             resetToMainMenu() {
-                // 隱藏結算與遊戲介面，顯示啟動畫面
                 document.getElementById('result-screen').classList.add('hidden');
                 document.getElementById('game-ui').style.opacity = '0';
                 document.getElementById('start-screen').style.display = 'flex';
 
-                // 重置遊戲核心狀態
+                // 重置序章按鈕
+                const proceedBtn = document.getElementById('btn-proceed');
+                proceedBtn.disabled = true;
+                proceedBtn.style.opacity = '0';
+
                 this.state = 'INTRO';
                 this.isStarting = false;
                 this.particles = [];
                 this.effects = [];
 
-                // 重置玩家與敵方數值
                 this.player = {
                     x: 300,
                     y: 550,
@@ -1061,14 +1160,12 @@
                     tx: 980
                 };
 
-                // 重置 UI 標籤狀態
                 const label = document.getElementById('p-state-label');
                 if (label) {
                     label.innerText = "ASCENDED STATE";
-                    label.style.color = ""; // 清除內聯樣式，恢復預設
+                    label.style.color = "";
                 }
 
-                // 恢復啟動按鈕狀態（因為圖片已載入，直接解鎖）
                 const startBtn = document.getElementById('btn-start');
                 if (startBtn) {
                     startBtn.innerText = '啟 動 靈 魂 盟 約';
@@ -1079,7 +1176,6 @@
                 const loadingText = document.getElementById('loading-text');
                 if (loadingText) loadingText.classList.remove('show');
 
-                // 立即更新 UI 顯示滿血狀態
                 this.updateUI();
             },
 
@@ -1140,7 +1236,6 @@
                         ctx.beginPath();
                         ctx.arc(eff.x, eff.y, eff.r, 0, Math.PI * 2);
                         ctx.stroke();
-
                         eff.r += (eff.maxR - eff.r) * 0.12;
                         eff.l -= 0.035;
                     }
@@ -1194,7 +1289,6 @@
                         ctx.strokeStyle = '#10b981';
                         ctx.lineWidth = 3;
                         ctx.setLineDash([10, 15]);
-
                         ctx.beginPath();
                         for (let i = 0; i < 6; i++) {
                             const angle = (i * Math.PI) / 3 + (frame * 0.015);
@@ -1240,7 +1334,6 @@
                 } else {
                     ctx.shadowBlur = 30;
                     ctx.shadowColor = '#f43f5e';
-
                     if (this.imgEnemy && this.imgEnemy.complete && this.imgEnemy.naturalWidth > 0) {
                         ctx.drawImage(this.imgEnemy, -200, -350, 400, 450);
                     } else {
