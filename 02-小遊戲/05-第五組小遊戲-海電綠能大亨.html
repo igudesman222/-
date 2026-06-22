@@ -1,441 +1,1042 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-   <meta charset="UTF-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>海岸綠能大亨 - 璐娜設計</title>
-   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-   <script src="https://cdn.tailwindcss.com"></script>
-   <style>
-       body { margin: 0; overflow: hidden; font-family: 'Microsoft JhengHei', sans-serif; }
-       #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
-       .interactive { pointer-events: auto; }
-       #loading-screen {
-           position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-           background: #1a202c; display: flex; flex-direction: column;
-           justify-content: center; align-items: center; color: white; z-index: 100;
-       }
-       .build-btn {
-           transition: all 0.3s;
-           background: rgba(255, 255, 255, 0.15);
-           backdrop-filter: blur(10px);
-       }
-       .build-btn:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.25); }
-       .build-btn.active { border: 2px solid #4fd1c5; background: rgba(79, 209, 197, 0.2); }
-   </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>海岸綠能大亨 - 璐娜設計</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { margin: 0; overflow: hidden; font-family: 'Microsoft JhengHei', sans-serif; }
+        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
+        .interactive { pointer-events: auto; }
+        #loading-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #f0f9ff; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; color: #0c4a6e; z-index: 100;
+        }
+        .build-btn {
+            transition: all 0.3s;
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(10px);
+            color: #0c4a6e;
+        }
+        .build-btn:hover { transform: translateY(-5px); background: rgba(255, 255, 255, 0.6); }
+        .build-btn.active { border: 2px solid #0ea5e9; background: rgba(255, 255, 255, 0.8); }
+        .delete-btn.active { border: 2px solid #ef4444; background: rgba(254, 226, 226, 0.8); color: #b91c1c; }
+        
+        #music-control {
+            position: absolute; top: 20px; right: 20px;
+            background: rgba(255,255,255,0.6); color: #0c4a6e; padding: 10px;
+            border-radius: 50%; width: 44px; height: 44px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; border: 1px solid rgba(0,0,0,0.1);
+            backdrop-filter: blur(5px);
+        }
+    </style>
 </head>
 <body>
 
-
 <div id="loading-screen">
-   <h1 class="text-4xl font-bold mb-4">海岸綠能大亨</h1>
-   <div class="w-64 h-2 bg-gray-700 rounded-full overflow-hidden">
-       <div id="loading-bar" class="h-full bg-teal-400" style="width: 0%"></div>
-   </div>
-   <p class="mt-2 text-gray-400">正在準備海岸線...</p>
+    <h1 class="text-4xl font-bold mb-4 italic">海岸綠能大亨</h1>
+    <div class="w-64 h-2 bg-sky-200 rounded-full overflow-hidden">
+        <div id="loading-bar" class="h-full bg-sky-500" style="width: 0%"></div>
+    </div>
+    <p class="mt-2 font-bold">正在調度白海豚與居民...</p>
 </div>
 
+<div id="gameover-screen" class="fixed top-0 left-0 w-full h-full bg-black/80 backdrop-blur-md flex flex-col justify-center items-center text-white z-50 hidden transition-opacity duration-500">
+    <div class="bg-white/10 p-8 rounded-3xl border border-white/20 max-w-md text-center shadow-2xl mx-4">
+        <span class="text-6xl mb-4 block">🦢🚨</span>
+        <h2 class="text-3xl font-black text-rose-400 mb-3">海岸生態失去平衡！</h2>
+        <p class="text-gray-200 mb-6 text-sm leading-relaxed">
+            風電機組過於密集，巨大的噪音與運轉頻率已經嚴重干擾海岸生態。請善用「設備升級」功能安裝降噪葉片或智能調速系統，或者適度拆除多餘風機，以維持綠能與大自然的和諧共存喔！
+        </p>
+        <button onclick="resetGame()" class="w-full py-4 bg-sky-500 hover:bg-sky-600 text-white font-bold rounded-2xl shadow-lg transition-all transform hover:-translate-y-1">
+            重新規劃海岸
+        </button>
+    </div>
+</div>
+
+<audio id="bg-music" loop>
+    <source src="窗邊雨痕.mp3" type="audio/mpeg">
+</audio>
 
 <div id="ui-layer">
-   <div class="flex justify-between p-6">
-       <div class="bg-black/40 backdrop-blur-md p-4 rounded-2xl border border-white/10 text-white interactive">
-           <div class="text-xs uppercase tracking-widest text-teal-300 font-bold">目前電力 (Energy)</div>
-           <div class="text-3xl font-black italic" id="energy-val">0</div>
-       </div>
-       <div class="bg-black/40 backdrop-blur-md p-4 rounded-2xl border border-white/10 text-white text-right interactive">
-           <div class="text-xs uppercase tracking-widest text-amber-300 font-bold">發電效率</div>
-           <div class="text-xl font-bold" id="efficiency-val">+0 /s</div>
-       </div>
-   </div>
+    <div id="music-control" class="interactive" onclick="toggleMusic()">
+        <span id="music-icon">🔇</span>
+    </div>
 
+    <div class="flex flex-col md:flex-row justify-between p-6 pr-20 gap-4">
+        <div class="flex gap-4">
+            <div class="bg-white/60 backdrop-blur-md p-4 rounded-2xl border border-white/20 text-sky-900 shadow-xl interactive">
+                <div class="text-xs uppercase tracking-widest font-black opacity-60">目前電力</div>
+                <div class="text-3xl font-black italic" id="energy-val">100</div>
+            </div>
+            <div class="bg-white/60 backdrop-blur-md p-4 rounded-2xl border border-white/20 text-sky-900 text-right shadow-xl interactive">
+                <div class="text-xs uppercase tracking-widest font-black opacity-60">發電效率</div>
+                <div class="text-xl font-bold" id="efficiency-val">+0 /s</div>
+            </div>
+        </div>
+        
+        <div class="bg-white/60 backdrop-blur-md p-4 rounded-2xl border border-white/20 text-sky-900 shadow-xl interactive flex-1 max-w-sm">
+            <div class="flex justify-between text-xs font-black opacity-60 mb-1">
+                <span>海岸生態影響度 (最大 100%)</span>
+                <span id="env-val">0%</span>
+            </div>
+            <div class="w-full h-4 bg-sky-100 rounded-full overflow-hidden border border-sky-200">
+                <div id="env-bar" class="h-full bg-gradient-to-r from-emerald-400 via-amber-400 to-rose-500 transition-all duration-500" style="width: 0%"></div>
+            </div>
+        </div>
+    </div>
 
-   <div class="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-4 interactive">
-       <button onclick="setBuildMode('wind')" id="btn-wind" class="build-btn p-4 rounded-2xl text-white flex flex-col items-center w-32 border border-white/10">
-           <span class="text-2xl">🌀</span>
-           <span class="font-bold">風力發電</span>
-           <span class="text-xs text-teal-300 mt-1">成本: 50</span>
-       </button>
-       <button onclick="setBuildMode('thermal')" id="btn-thermal" class="build-btn p-4 rounded-2xl text-white flex flex-col items-center w-32 border border-white/10">
-           <span class="text-2xl">🔥</span>
-           <span class="font-bold">溫差發電</span>
-           <span class="text-xs text-teal-300 mt-1">成本: 120</span>
-       </button>
-       <button onclick="setBuildMode(null)" id="btn-move" class="build-btn active p-4 rounded-2xl text-white flex flex-col items-center w-32 border border-white/10">
-           <span class="text-2xl">🏃</span>
-           <span class="font-bold">移動模式</span>
-           <span class="text-xs text-gray-400 mt-1">自由行走</span>
-       </button>
-   </div>
+    <div id="upgrade-panel" class="absolute top-1/2 right-6 -translate-y-1/2 bg-white/80 backdrop-blur-md p-6 rounded-3xl border border-white/30 text-sky-900 shadow-2xl interactive hidden w-80">
+        <h3 class="text-lg font-black mb-1 flex items-center gap-2">⚙️ 設備升級面板</h3>
+        <p class="text-xs text-gray-500 mb-4">請控制角色靠近發電機組進行升級</p>
+        <div id="upgrade-options" class="space-y-3"></div>
+    </div>
 
+    <div class="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-3 interactive">
+        <button onclick="setBuildMode('wind')" id="btn-wind" class="build-btn p-4 rounded-2xl flex flex-col items-center w-24 border border-white/30 shadow-lg">
+            <span class="text-xl">🌀</span>
+            <span class="font-bold text-sm">建風力</span>
+            <span class="text-[10px] text-sky-600 mt-1">50 🔋 (+10%)</span>
+        </button>
+        <button onclick="setUpgradeMode()" id="btn-upgrade" class="build-btn p-4 rounded-2xl flex flex-col items-center w-24 border border-white/30 shadow-lg">
+            <span class="text-xl">⚙️</span>
+            <span class="font-bold text-sm">升級</span>
+            <span class="text-[10px] text-emerald-600 mt-1">降低影響</span>
+        </button>
+        <button onclick="setDeleteMode()" id="btn-delete" class="build-btn delete-btn p-4 rounded-2xl flex flex-col items-center w-24 border border-white/30 shadow-lg">
+            <span class="text-xl">🗑️</span>
+            <span class="font-bold text-sm">拆除</span>
+            <span class="text-[10px] text-red-500 mt-1">退還 50%</span>
+        </button>
+        <button onclick="setBuildMode(null)" id="btn-move" class="build-btn active p-4 rounded-2xl flex flex-col items-center w-24 border border-white/30 shadow-lg">
+            <span class="text-xl">🏃</span>
+            <span class="font-bold text-sm">移動/溝通</span>
+            <span class="text-[10px] text-gray-500 mt-1">點擊抗議者</span>
+        </button>
+    </div>
 
-   <div id="msg-box" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/80 text-white px-6 py-3 rounded-full opacity-0 transition-opacity pointer-events-none text-center">
-       電力不足！
-   </div>
+    <div id="msg-box" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-sky-900/90 text-white px-8 py-4 rounded-3xl opacity-0 transition-opacity pointer-events-none text-center shadow-2xl font-bold">
+        電力不足！
+    </div>
 </div>
 
-
 <script>
-   let scene, camera, renderer, player, clock;
-   let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
-   const structures = [];
-   let energy = 100;
-   let efficiency = 0;
-   let buildMode = null;
-   let ghostBuilding = null;
-
-
-   const config = {
-       wind: { cost: 50, gen: 5, color: 0x4fd1c5, label: '風力' },
-       thermal: { cost: 120, gen: 15, color: 0xf6ad55, label: '溫差' }
-   };
-
-
-   window.onload = init;
-
-
-   function init() {
-       scene = new THREE.Scene();
-       scene.background = new THREE.Color(0x87ceeb);
-       scene.fog = new THREE.FogExp2(0x87ceeb, 0.015);
-
-
-       camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-      
-       renderer = new THREE.WebGLRenderer({ antialias: true });
-       renderer.setSize(window.innerWidth, window.innerHeight);
-       renderer.shadowMap.enabled = true;
-       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-       document.body.appendChild(renderer.domElement);
-
-
-       clock = new THREE.Clock();
-
-
-       const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-       scene.add(ambientLight);
-
-
-       const sun = new THREE.DirectionalLight(0xffffff, 1);
-       sun.position.set(50, 100, 50);
-       sun.castShadow = true;
-       sun.shadow.mapSize.width = 2048;
-       sun.shadow.mapSize.height = 2048;
-       scene.add(sun);
-
-
-       createWorld();
-       createPlayer();
-       setupControls();
-
-
-       document.getElementById('loading-bar').style.width = '100%';
-       setTimeout(() => {
-           document.getElementById('loading-screen').style.opacity = '0';
-           setTimeout(() => document.getElementById('loading-screen').style.display = 'none', 500);
-       }, 500);
-
-
-       animate();
-      
-       setInterval(() => {
-           energy += efficiency;
-           updateUI();
-       }, 1000);
-   }
-
-
-   function createWorld() {
-       const groundGeo = new THREE.PlaneGeometry(200, 200, 20, 20);
-       const groundMat = new THREE.MeshPhongMaterial({ color: 0xe3c9a6 });
-       const ground = new THREE.Mesh(groundGeo, groundMat);
-       ground.rotation.x = -Math.PI / 2;
-       ground.receiveShadow = true;
-       scene.add(ground);
-
-
-       const waterGeo = new THREE.PlaneGeometry(200, 100);
-       const waterMat = new THREE.MeshPhongMaterial({
-           color: 0x0077be,
-           transparent: true,
-           opacity: 0.8,
-           shininess: 100
-       });
-       const water = new THREE.Mesh(waterGeo, waterMat);
-       water.rotation.x = -Math.PI / 2;
-       water.position.set(0, 0.1, -60);
-       scene.add(water);
-
-
-       for(let i=0; i<50; i++) {
-           const isRock = Math.random() > 0.5;
-           const geo = isRock ? new THREE.DodecahedronGeometry(Math.random() * 0.5 + 0.2) : new THREE.ConeGeometry(0.1, 0.5, 4);
-           const mat = new THREE.MeshPhongMaterial({ color: isRock ? 0x808080 : 0x2d5a27 });
-           const mesh = new THREE.Mesh(geo, mat);
-           mesh.position.set(Math.random()*80 - 40, 0, Math.random()*60 - 20);
-           mesh.rotation.y = Math.random() * Math.PI;
-           mesh.castShadow = true;
-           scene.add(mesh);
-       }
-   }
-
-
-   function createPlayer() {
-       const group = new THREE.Group();
-      
-       // 修正：手動建立膠囊形狀，避免版本不支援的 CapsuleGeometry
-       const bodyRadius = 0.3;
-       const bodyHeight = 0.7;
-       const bodyColor = 0xff6347;
-      
-       // 中間圓柱
-       const mid = new THREE.Mesh(
-           new THREE.CylinderGeometry(bodyRadius, bodyRadius, bodyHeight, 12),
-           new THREE.MeshPhongMaterial({ color: bodyColor })
-       );
-       mid.position.y = bodyHeight / 2 + bodyRadius;
-       mid.castShadow = true;
-       group.add(mid);
-
-
-       // 頂部半球
-       const topSphere = new THREE.Mesh(
-           new THREE.SphereGeometry(bodyRadius, 12, 12),
-           new THREE.MeshPhongMaterial({ color: bodyColor })
-       );
-       topSphere.position.y = bodyHeight + bodyRadius;
-       topSphere.castShadow = true;
-       group.add(topSphere);
-
-
-       // 底部半球
-       const botSphere = new THREE.Mesh(
-           new THREE.SphereGeometry(bodyRadius, 12, 12),
-           new THREE.MeshPhongMaterial({ color: bodyColor })
-       );
-       botSphere.position.y = bodyRadius;
-       botSphere.castShadow = true;
-       group.add(botSphere);
-
-
-       // 工程帽
-       const hat = new THREE.Mesh(
-           new THREE.SphereGeometry(bodyRadius + 0.05, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2),
-           new THREE.MeshPhongMaterial({ color: 0xffd700 })
-       );
-       hat.position.y = bodyHeight + bodyRadius + 0.05;
-       group.add(hat);
-
-
-       player = group;
-       player.position.set(0, 0, 10);
-       scene.add(player);
-   }
-
-
-   function setupControls() {
-       const onKeyDown = (e) => {
-           switch(e.code) {
-               case 'ArrowUp': case 'KeyW': moveForward = true; break;
-               case 'ArrowLeft': case 'KeyA': moveLeft = true; break;
-               case 'ArrowDown': case 'KeyS': moveBackward = true; break;
-               case 'ArrowRight': case 'KeyD': moveRight = true; break;
-               case 'Space': if(buildMode) placeBuilding(); break;
-           }
-       };
-       const onKeyUp = (e) => {
-           switch(e.code) {
-               case 'ArrowUp': case 'KeyW': moveForward = false; break;
-               case 'ArrowLeft': case 'KeyA': moveLeft = false; break;
-               case 'ArrowDown': case 'KeyS': moveBackward = false; break;
-               case 'ArrowRight': case 'KeyD': moveRight = false; break;
-           }
-       };
-       window.addEventListener('keydown', onKeyDown);
-       window.addEventListener('keyup', onKeyUp);
-      
-       renderer.domElement.addEventListener('pointerdown', (e) => {
-           if(buildMode && e.button === 0) placeBuilding();
-       });
-   }
-
-
-   function setBuildMode(type) {
-       buildMode = type;
-       document.querySelectorAll('.build-btn').forEach(btn => btn.classList.remove('active'));
-       if(!type) {
-           document.getElementById('btn-move').classList.add('active');
-           if(ghostBuilding) scene.remove(ghostBuilding);
-           ghostBuilding = null;
-       } else {
-           document.getElementById(`btn-${type}`).classList.add('active');
-           updateGhost();
-       }
-   }
-
-
-   function updateGhost() {
-       if(ghostBuilding) scene.remove(ghostBuilding);
-       const geo = buildMode === 'wind' ? new THREE.CylinderGeometry(0.2, 0.2, 3) : new THREE.BoxGeometry(1.5, 1, 1.5);
-       const mat = new THREE.MeshPhongMaterial({
-           color: config[buildMode].color,
-           transparent: true,
-           opacity: 0.4
-       });
-       ghostBuilding = new THREE.Mesh(geo, mat);
-       scene.add(ghostBuilding);
-   }
-
-
-   function placeBuilding() {
-       const conf = config[buildMode];
-       if(energy < conf.cost) {
-           showMessage(`電力不足！還差 ${Math.floor(conf.cost - energy)} 電力`);
-           return;
-       }
-
-
-       energy -= conf.cost;
-       efficiency += conf.gen;
-      
-       const building = createBuildingModel(buildMode);
-       building.position.copy(ghostBuilding.position);
-       building.scale.set(0,0,0);
-       scene.add(building);
-       structures.push({ mesh: building, type: buildMode });
-
-
-       updateUI();
-       showMessage(`成功建造 ${conf.label}設施！`);
-   }
-
-
-   function createBuildingModel(type) {
-       const group = new THREE.Group();
-       if(type === 'wind') {
-           const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.15, 4), new THREE.MeshPhongMaterial({color: 0xeeeeee}));
-           pole.position.y = 2;
-           pole.castShadow = true;
-           group.add(pole);
-
-
-           const blades = new THREE.Group();
-           for(let i=0; i<3; i++) {
-               const blade = new THREE.Mesh(new THREE.BoxGeometry(0.2, 1.5, 0.05), new THREE.MeshPhongMaterial({color: 0xffffff}));
-               blade.position.y = 0.75;
-               const pivot = new THREE.Group();
-               pivot.rotation.z = (i * Math.PI * 2) / 3;
-               pivot.add(blade);
-               blades.add(pivot);
-           }
-           blades.position.y = 4;
-           blades.position.z = 0.2;
-           group.add(blades);
-           group.userData.animated = blades;
-       } else {
-           const base = new THREE.Mesh(new THREE.BoxGeometry(2, 1.2, 2), new THREE.MeshPhongMaterial({color: 0x708090}));
-           base.position.y = 0.6;
-           base.castShadow = true;
-           group.add(base);
-
-
-           const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 1), new THREE.MeshPhongMaterial({color: 0x4682b4}));
-           pipe.position.y = 1.2;
-           group.add(pipe);
-          
-           const steam = new THREE.Mesh(new THREE.SphereGeometry(0.25), new THREE.MeshPhongMaterial({color: 0xffffff, transparent: true, opacity: 0.6}));
-           steam.position.y = 1.8;
-           group.add(steam);
-           group.userData.animated = steam;
-       }
-       return group;
-   }
-
-
-   function showMessage(text) {
-       const box = document.getElementById('msg-box');
-       box.innerText = text;
-       box.style.opacity = '1';
-       setTimeout(() => box.style.opacity = '0', 2000);
-   }
-
-
-   function updateUI() {
-       document.getElementById('energy-val').innerText = Math.floor(energy);
-       document.getElementById('efficiency-val').innerText = `+${efficiency} /s`;
-   }
-
-
-   function animate() {
-       requestAnimationFrame(animate);
-       const delta = clock.getDelta();
-
-
-       const speed = 6 * delta;
-       const moveDir = new THREE.Vector3(0, 0, 0);
-       if (moveForward) moveDir.z -= 1;
-       if (moveBackward) moveDir.z += 1;
-       if (moveLeft) moveDir.x -= 1;
-       if (moveRight) moveDir.x += 1;
-
-
-       if (moveDir.length() > 0) {
-           moveDir.normalize();
-           player.position.add(moveDir.clone().multiplyScalar(speed));
-           const targetRotation = Math.atan2(moveDir.x, moveDir.z);
-           let diff = targetRotation - player.rotation.y;
-           while (diff < -Math.PI) diff += Math.PI * 2;
-           while (diff > Math.PI) diff -= Math.PI * 2;
-           player.rotation.y += diff * 0.15;
-       }
-
-
-       player.position.x = THREE.MathUtils.clamp(player.position.x, -95, 95);
-       player.position.z = THREE.MathUtils.clamp(player.position.z, -25, 95);
-
-
-       const camOffset = new THREE.Vector3(0, 18, 15);
-       const targetCamPos = player.position.clone().add(camOffset);
-       camera.position.lerp(targetCamPos, 0.08);
-       camera.lookAt(player.position.x, 0, player.position.z);
-
-
-       if(ghostBuilding) {
-           const offsetDist = 3.5;
-           ghostBuilding.position.set(
-               Math.round(player.position.x + Math.sin(player.rotation.y) * offsetDist),
-               buildMode === 'wind' ? 2 : 0.6,
-               Math.round(player.position.z + Math.cos(player.rotation.y) * offsetDist)
-           );
-       }
-
-
-       structures.forEach(s => {
-           if(s.mesh.scale.x < 1) {
-               const step = 0.15;
-               s.mesh.scale.x = THREE.MathUtils.lerp(s.mesh.scale.x, 1, step);
-               s.mesh.scale.y = THREE.MathUtils.lerp(s.mesh.scale.y, 1, step);
-               s.mesh.scale.z = THREE.MathUtils.lerp(s.mesh.scale.z, 1, step);
-           }
-           if(s.type === 'wind') {
-               s.mesh.userData.animated.rotation.z += 0.06;
-           } else {
-               const time = Date.now() * 0.006;
-               s.mesh.userData.animated.position.y = 1.8 + Math.sin(time) * 0.15;
-               const scl = 1 + Math.sin(time) * 0.1;
-               s.mesh.userData.animated.scale.set(scl, scl, scl);
-           }
-       });
-
-
-       renderer.render(scene, camera);
-   }
-
-
-   window.addEventListener('resize', () => {
-       camera.aspect = window.innerWidth / window.innerHeight;
-       camera.updateProjectionMatrix();
-       renderer.setSize(window.innerWidth, window.innerHeight);
-   });
+    let scene, camera, renderer, player, clock;
+    let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
+    const structures = []; 
+    const protestors = []; 
+    const enderParticles = [];
+    let energy = 100;
+    let efficiency = 0;
+    let envImpact = 0;
+    const maxImpact = 100;
+    const impactPerWind = 10;
+    let buildMode = null; 
+    let isDeleteMode = false;
+    let isUpgradeMode = false;
+    let ghostBuilding = null;
+    let isMusicPlaying = false;
+    let gameActive = true;
+    let activeUpgradeTarget = null;
+    let spawnTimer = 0;
+    let raycaster, mouse;
+    
+    const gridSize = 3; 
+
+    const theme = {
+        sand: 0xeedcb2,
+        waterShallow: 0x3fb1b5,
+        waterDeep: 0x075e8d,
+        sky: 0x93c5fd
+    };
+
+    const config = {
+        wind: { cost: 50, gen: 5, color: 0x0ea5e9, label: '風力發電' }
+    };
+
+    const upgradeConfig = {
+        noiseBlades: { name: "降噪葉片", cost: 30, reduction: 4 },
+        smartControl: { name: "智能調速", cost: 40, reduction: 4 }
+    };
+
+    window.onload = init;
+
+    function init() {
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(theme.sky);
+        scene.fog = new THREE.FogExp2(theme.sky, 0.012);
+
+        camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        document.body.appendChild(renderer.domElement);
+
+        clock = new THREE.Clock();
+        raycaster = new THREE.Raycaster();
+        mouse = new THREE.Vector2();
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+
+        const sun = new THREE.DirectionalLight(0xffffff, 0.8);
+        sun.position.set(40, 100, 30);
+        sun.castShadow = true;
+        sun.shadow.camera.left = -60;
+        sun.shadow.camera.right = 60;
+        sun.shadow.camera.top = 60;
+        sun.shadow.camera.bottom = -60;
+        sun.shadow.mapSize.width = 2048;
+        sun.shadow.mapSize.height = 2048;
+        scene.add(sun);
+
+        createWorld();
+        createPlayer();
+        setupControls();
+
+        document.getElementById('loading-bar').style.width = '100%';
+        setTimeout(() => {
+            document.getElementById('loading-screen').style.opacity = '0';
+            setTimeout(() => document.getElementById('loading-screen').style.display = 'none', 500);
+        }, 500);
+
+        animate();
+        
+        setInterval(() => {
+            if (gameActive) {
+                energy += efficiency;
+                updateUI();
+                handleSpawning();
+            }
+        }, 1000);
+
+        window.addEventListener('pointerdown', startMusicOnce, { once: true });
+    }
+
+    function startMusicOnce() {
+        if(!isMusicPlaying) {
+            const music = document.getElementById('bg-music');
+            music.play().then(() => {
+                isMusicPlaying = true;
+                document.getElementById('music-icon').innerText = '🎵';
+            }).catch(e => console.log("Music failed", e));
+        }
+    }
+
+    function toggleMusic() {
+        const music = document.getElementById('bg-music');
+        if (isMusicPlaying) {
+            music.pause();
+            document.getElementById('music-icon').innerText = '🔇';
+        } else {
+            music.play();
+            document.getElementById('music-icon').innerText = '🎵';
+        }
+        isMusicPlaying = !isMusicPlaying;
+    }
+
+    function createWorld() {
+        const groundGeo = new THREE.PlaneGeometry(300, 300, 32, 32);
+        const groundMat = new THREE.MeshPhongMaterial({ color: theme.sand, shininess: 2 });
+        const ground = new THREE.Mesh(groundGeo, groundMat);
+        ground.rotation.x = -Math.PI / 2;
+        ground.receiveShadow = true;
+        scene.add(ground);
+
+        const deepWaterGeo = new THREE.PlaneGeometry(300, 150);
+        const deepWaterMat = new THREE.MeshPhongMaterial({ color: theme.waterDeep, transparent: true, opacity: 0.9 });
+        const deepWater = new THREE.Mesh(deepWaterGeo, deepWaterMat);
+        deepWater.rotation.x = -Math.PI / 2;
+        deepWater.position.set(0, 0.1, -100);
+        scene.add(deepWater);
+
+        const shallowWaterGeo = new THREE.PlaneGeometry(300, 40);
+        const shallowWaterMat = new THREE.MeshPhongMaterial({ color: theme.waterShallow, transparent: true, opacity: 0.6 });
+        const shallowWater = new THREE.Mesh(shallowWaterGeo, shallowWaterMat);
+        shallowWater.rotation.x = -Math.PI / 2;
+        shallowWater.position.set(0, 0.05, -25);
+        scene.add(shallowWater);
+
+        const foamGeo = new THREE.PlaneGeometry(300, 3);
+        const foamMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.4 });
+        const foam = new THREE.Mesh(foamGeo, foamMat);
+        foam.rotation.x = -Math.PI / 2;
+        foam.position.set(0, 0.11, -5);
+        scene.add(foam);
+        scene.userData.foam = foam;
+    }
+
+    function createPlayer() {
+        const group = new THREE.Group();
+        const blackMat = new THREE.MeshPhongMaterial({ color: 0x161616 });
+        const eyeMat = new THREE.MeshBasicMaterial({ color: 0xcc33ff });
+
+        const body = new THREE.Mesh(new THREE.BoxGeometry(0.35, 1.1, 0.25), blackMat);
+        body.position.y = 1.35; 
+        body.castShadow = true;
+        group.add(body);
+
+        const head = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.45, 0.45), blackMat);
+        head.position.y = 2.125;
+        head.castShadow = true;
+        group.add(head);
+
+        const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.04, 0.02), eyeMat);
+        eyeL.position.set(-0.12, 2.125, 0.23);
+        group.add(eyeL);
+
+        const eyeR = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.04, 0.02), eyeMat);
+        eyeR.position.set(0.12, 2.125, 0.23);
+        group.add(eyeR);
+
+        const armL = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.4, 0.1), blackMat);
+        armL.position.set(-0.24, 1.2, 0);
+        armL.castShadow = true;
+        group.add(armL);
+
+        const armR = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.4, 0.1), blackMat);
+        armR.position.set(0.24, 1.2, 0);
+        armR.castShadow = true;
+        group.add(armR);
+
+        const legL = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.4, 0.1), blackMat);
+        legL.position.set(-0.1, 0.7, 0);
+        legL.castShadow = true;
+        group.add(legL);
+
+        const legR = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.4, 0.1), blackMat);
+        legR.position.set(0.1, 0.7, 0);
+        legR.castShadow = true;
+        group.add(legR);
+
+        player = group;
+        player.position.set(0, 0, 20);
+        scene.add(player);
+
+        player.userData = { armL, armR, legL, legR };
+    }
+
+    function spawnEnderParticle() {
+        if (enderParticles.length > 25) {
+            const old = enderParticles.shift();
+            scene.remove(old.mesh);
+        }
+        const pGeo = new THREE.BoxGeometry(0.08, 0.08, 0.08);
+        const pMat = new THREE.MeshBasicMaterial({ color: 0xd946ef, transparent: true, opacity: 0.8 });
+        const mesh = new THREE.Mesh(pGeo, pMat);
+        mesh.position.copy(player.position).add(new THREE.Vector3(
+            (Math.random() - 0.5) * 1.5,
+            Math.random() * 2.5,
+            (Math.random() - 0.5) * 1.5
+        ));
+        scene.add(mesh);
+        enderParticles.push({
+            mesh: mesh,
+            speedY: 0.4 + Math.random() * 0.6,
+            life: 0
+        });
+    }
+
+    function createDolphinModel() {
+        const group = new THREE.Group();
+        const dColor = 0xa5b4fc; 
+
+        const body = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.6, 2.2), new THREE.MeshPhongMaterial({color: dColor}));
+        body.position.y = 0.4;
+        body.castShadow = true;
+        group.add(body);
+
+        const snout = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.3, 0.6), new THREE.MeshPhongMaterial({color: dColor}));
+        snout.position.set(0, 0.25, 1.3);
+        group.add(snout);
+
+        const fin = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.5, 0.4), new THREE.MeshPhongMaterial({color: dColor}));
+        fin.position.set(0, 0.8, -0.2);
+        fin.rotation.x = -0.3;
+        group.add(fin);
+
+        const flipperL = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.08, 0.3), new THREE.MeshPhongMaterial({color: dColor}));
+        flipperL.position.set(-0.6, 0.2, 0.3);
+        flipperL.rotation.z = 0.3;
+        group.add(flipperL);
+
+        const flipperR = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.08, 0.3), new THREE.MeshPhongMaterial({color: dColor}));
+        flipperR.position.set(0.6, 0.2, 0.3);
+        flipperR.rotation.z = -0.3;
+        group.add(flipperR);
+
+        const tailJoint = new THREE.Group();
+        tailJoint.position.set(0, 0.4, -1.1);
+        
+        const tailFin = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.08, 0.5), new THREE.MeshPhongMaterial({color: dColor}));
+        tailFin.position.set(0, 0, -0.4);
+        tailJoint.add(tailFin);
+        group.add(tailJoint);
+        
+        group.userData = { tail: tailJoint, type: 'dolphin' };
+        return group;
+    }
+
+    function createResidentModel() {
+        const group = new THREE.Group();
+        const robeColor = 0x78350f; 
+        const hatColor = 0x3f6212; 
+        const skinColor = 0xfbcfe8; 
+
+        const robe = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.4, 0.7), new THREE.MeshPhongMaterial({color: robeColor}));
+        robe.position.y = 0.7;
+        robe.castShadow = true;
+        group.add(robe);
+
+        const head = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.6, 0.6), new THREE.MeshPhongMaterial({color: skinColor}));
+        head.position.y = 1.6;
+        head.castShadow = true;
+        group.add(head);
+
+        const hat = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.25, 0.7), new THREE.MeshPhongMaterial({color: hatColor}));
+        hat.position.y = 1.95;
+        group.add(hat);
+
+        const nose = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.3, 0.2), new THREE.MeshPhongMaterial({color: 0x9a3412}));
+        nose.position.set(0, 1.5, 0.35);
+        group.add(nose);
+
+        const arms = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.35, 0.4), new THREE.MeshPhongMaterial({color: robeColor}));
+        arms.position.set(0, 1.1, 0.3);
+        group.add(arms);
+
+        const legL = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.3, 0.25), new THREE.MeshPhongMaterial({color: 0x451a03}));
+        legL.position.set(-0.2, -0.15, 0);
+        group.add(legL);
+
+        const legR = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.3, 0.25), new THREE.MeshPhongMaterial({color: 0x451a03}));
+        legR.position.set(0.2, -0.15, 0);
+        group.add(legR);
+
+        group.userData = { legs: [legL, legR], type: 'resident' };
+        return group;
+    }
+
+    function handleSpawning() {
+        if (envImpact <= 50 || structures.length === 0) return;
+
+        spawnTimer++;
+        if (spawnTimer >= 12) { 
+            spawnTimer = 0;
+            const target = structures[Math.floor(Math.random() * structures.length)];
+            const isWaterTarget = target.gridPos.z < 5; 
+            
+            let model;
+            let startPos = new THREE.Vector3();
+
+            if (isWaterTarget && Math.random() > 0.3) {
+                model = createDolphinModel();
+                startPos.set(Math.random() * 100 - 50, 0, -80);
+                showMessage("⚠️ 警告：白海豚因噪音游向風機表達抗議！");
+            } else {
+                model = createResidentModel();
+                const side = Math.random() > 0.5 ? 90 : -90;
+                startPos.set(side, 0.2, Math.random() * 40 + 10);
+                showMessage("⚠️ 警告：當地居民正前往陸上風機抗議！");
+            }
+
+            model.position.copy(startPos);
+            scene.add(model);
+
+            protestors.push({
+                mesh: model,
+                target: target,
+                speed: 4.5 + Math.random() * 2,
+                health: 1,
+                actionTimer: 0
+            });
+        }
+    }
+
+    function checkProtestorClick(event) {
+        if (buildMode || isDeleteMode || isUpgradeMode) return;
+
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+        raycaster.setFromCamera(mouse, camera);
+        
+        const clickableMeshes = protestors.map(p => p.mesh);
+        const intersects = raycaster.intersectObjects(clickableMeshes, true);
+
+        if (intersects.length > 0) {
+            let rootGroup = intersects[0].object;
+            while (rootGroup.parent && rootGroup.parent !== scene) {
+                rootGroup = rootGroup.parent;
+            }
+
+            const index = protestors.findIndex(p => p.mesh === rootGroup);
+            if (index !== -1) {
+                const p = protestors[index];
+                if (p.mesh.userData.type === 'dolphin') {
+                    showMessage("🐬 與白海豚順利溝通，引導其游回深海！");
+                } else {
+                    showMessage("💬 已傾聽居民心聲並達成回饋共識！");
+                }
+                
+                createSparkleEffect(p.mesh.position);
+                scene.remove(p.mesh);
+                protestors.splice(index, 1);
+            }
+        }
+    }
+
+    function createSparkleEffect(pos) {
+        const particleGeo = new THREE.SphereGeometry(0.15, 4, 4);
+        const particleMat = new THREE.MeshBasicMaterial({color: 0x10b981, transparent: true, opacity: 0.8});
+        for (let i = 0; i < 8; i++) {
+            const p = new THREE.Mesh(particleGeo, particleMat);
+            p.position.copy(pos).add(new THREE.Vector3(Math.random()-0.5, Math.random()+0.5, Math.random()-0.5));
+            scene.add(p);
+            const dir = new THREE.Vector3(Math.random()-0.5, Math.random()+1, Math.random()-0.5).normalize();
+            let lifetime = 0;
+            const up = () => {
+                p.position.addScaledVector(dir, 0.1);
+                p.scale.multiplyScalar(0.92);
+                lifetime++;
+                if (lifetime < 20) requestAnimationFrame(up);
+                else scene.remove(p);
+            };
+            up();
+        }
+    }
+
+    function setupControls() {
+        const onKeyDown = (e) => {
+            if (!gameActive) return;
+            switch(e.code) {
+                case 'ArrowUp': case 'KeyW': moveForward = true; break;
+                case 'ArrowLeft': case 'KeyA': moveLeft = true; break;
+                case 'ArrowDown': case 'KeyS': moveBackward = true; break;
+                case 'ArrowRight': case 'KeyD': moveRight = true; break;
+                case 'Space': 
+                    if(buildMode) placeBuilding(); 
+                    else if(isDeleteMode) tryDeleteBuilding();
+                    break;
+            }
+        };
+        const onKeyUp = (e) => {
+            switch(e.code) {
+                case 'ArrowUp': case 'KeyW': moveForward = false; break;
+                case 'ArrowLeft': case 'KeyA': moveLeft = false; break;
+                case 'ArrowDown': case 'KeyS': moveBackward = false; break;
+                case 'ArrowRight': case 'KeyD': moveRight = false; break;
+            }
+        };
+        window.addEventListener('keydown', onKeyDown);
+        window.addEventListener('keyup', onKeyUp);
+        
+        renderer.domElement.addEventListener('pointerdown', (e) => {
+            if (!gameActive) return;
+            if(buildMode && e.button === 0) placeBuilding();
+            else if(isDeleteMode && e.button === 0) tryDeleteBuilding();
+            else checkProtestorClick(e);
+        });
+
+        // 阻斷 UI 層的事件傳播，修復無法點擊升級面板的問題
+        const uiContainer = document.getElementById('ui-layer');
+        uiContainer.addEventListener('pointerdown', (e) => {
+            if (e.target.closest('.interactive')) {
+                e.stopPropagation();
+            }
+        });
+        uiContainer.addEventListener('click', (e) => {
+            if (e.target.closest('.interactive')) {
+                e.stopPropagation();
+            }
+        });
+    }
+
+    function setBuildMode(type) {
+        if (!gameActive) return;
+        buildMode = type;
+        isDeleteMode = false;
+        isUpgradeMode = false;
+        updateUIButtons();
+        checkUpgradeTarget();
+        if(!type) {
+            if(ghostBuilding) scene.remove(ghostBuilding);
+            ghostBuilding = null;
+        } else {
+            updateGhost();
+        }
+    }
+
+    function setDeleteMode() {
+        if (!gameActive) return;
+        isDeleteMode = true;
+        isUpgradeMode = false;
+        buildMode = null;
+        if(ghostBuilding) scene.remove(ghostBuilding);
+        ghostBuilding = null;
+        updateUIButtons();
+        checkUpgradeTarget();
+    }
+
+    function setUpgradeMode() {
+        if (!gameActive) return;
+        isUpgradeMode = true;
+        isDeleteMode = false;
+        buildMode = null;
+        if(ghostBuilding) scene.remove(ghostBuilding);
+        ghostBuilding = null;
+        updateUIButtons();
+        checkUpgradeTarget();
+    }
+
+    function updateUIButtons() {
+        document.querySelectorAll('.build-btn').forEach(btn => btn.classList.remove('active'));
+        if(isDeleteMode) {
+            document.getElementById('btn-delete').classList.add('active');
+        } else if(isUpgradeMode) {
+            document.getElementById('btn-upgrade').classList.add('active');
+        } else if(!buildMode) {
+            document.getElementById('btn-move').classList.add('active');
+        } else {
+            document.getElementById(`btn-${buildMode}`).classList.add('active');
+        }
+    }
+
+    function updateGhost() {
+        if(ghostBuilding) scene.remove(ghostBuilding);
+        const geo = new THREE.CylinderGeometry(0.2, 0.2, 3);
+        const mat = new THREE.MeshPhongMaterial({ 
+            color: config[buildMode].color, 
+            transparent: true, 
+            opacity: 0.4 
+        });
+        ghostBuilding = new THREE.Mesh(geo, mat);
+        scene.add(ghostBuilding);
+    }
+
+    function checkUpgradeTarget() {
+        if (!isUpgradeMode || !gameActive) {
+            document.getElementById('upgrade-panel').classList.add('hidden');
+            activeUpgradeTarget = null;
+            return;
+        }
+
+        const range = 5;
+        let target = null;
+        let minDist = range;
+
+        structures.forEach(s => {
+            const dist = s.mesh.position.distanceTo(player.position);
+            if (dist < minDist) {
+                minDist = dist;
+                target = s;
+            }
+        });
+
+        if (target) {
+            activeUpgradeTarget = target;
+            document.getElementById('upgrade-panel').classList.remove('hidden');
+            renderUpgradeOptions(target);
+        } else {
+            activeUpgradeTarget = null;
+            document.getElementById('upgrade-panel').classList.remove('hidden');
+            document.getElementById('upgrade-options').innerHTML = `
+                <div class="text-sm text-center py-6 text-sky-700/60 font-semibold leading-relaxed">
+                    🚶 請控制角色靠近任意風力發電機組
+                </div>
+            `;
+        }
+    }
+
+    function renderUpgradeOptions(target) {
+        const optDiv = document.getElementById('upgrade-options');
+        optDiv.innerHTML = '';
+
+        const keys = ['noiseBlades', 'smartControl'];
+        keys.forEach(key => {
+            const up = upgradeConfig[key];
+            const isBought = target.upgrades[key];
+            
+            const btn = document.createElement('div');
+            btn.className = `p-3 rounded-xl border flex flex-col justify-between items-start transition-all ${
+                isBought 
+                ? 'bg-emerald-50 border-emerald-200 text-emerald-800' 
+                : 'bg-white/50 border-sky-100 hover:bg-white/80'
+            }`;
+
+            const titleSection = `
+                <div class="flex justify-between w-full items-center">
+                    <span class="font-bold text-sm">${up.name}</span>
+                    ${isBought ? '<span class="text-xs font-bold bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded-full">已啟用</span>' : `<span class="text-xs font-bold bg-sky-100 text-sky-700 px-2 py-0.5 rounded-full">成本: ${up.cost} 🔋</span>`}
+                </div>
+                <p class="text-xs text-gray-500 mt-1">效果：環境影響度減少 ${up.reduction}%</p>
+            `;
+
+            btn.innerHTML = titleSection;
+
+            if (!isBought) {
+                btn.classList.add('cursor-pointer');
+                btn.onclick = () => buyUpgrade(target.id, key);
+            }
+
+            optDiv.appendChild(btn);
+        });
+    }
+
+    function buyUpgrade(targetId, key) {
+        const target = structures.find(s => s.id === targetId);
+        if (!target) return;
+
+        const up = upgradeConfig[key];
+        if (energy < up.cost) {
+            showMessage(`電力不足！需要 ${up.cost} 🔋`);
+            return;
+        }
+
+        energy -= up.cost;
+        target.upgrades[key] = true;
+        envImpact = Math.max(0, envImpact - up.reduction);
+
+        updateUI();
+        checkUpgradeTarget();
+        showMessage(`✨ 成功升級「${up.name}」！環境影響降低了！`);
+
+        if (key === 'noiseBlades') {
+            target.mesh.userData.animated.children.forEach(pivot => {
+                pivot.children[0].material.color.setHex(0xa7f3d0);
+            });
+        } else if (key === 'smartControl') {
+            const lightGeo = new THREE.SphereGeometry(0.12, 8, 8);
+            const lightMat = new THREE.MeshBasicMaterial({color: 0x10b981});
+            const light = new THREE.Mesh(lightGeo, lightMat);
+            light.position.set(0, 4.2, 0.3);
+            target.mesh.add(light);
+        }
+    }
+
+    function tryDeleteBuilding() {
+        const deleteRange = 3;
+        let targetIndex = -1;
+        let minDist = deleteRange;
+
+        const lookDir = new THREE.Vector3(Math.sin(player.rotation.y), 0, Math.cos(player.rotation.y));
+        const interactPos = player.position.clone().add(lookDir.multiplyScalar(4));
+
+        structures.forEach((s, index) => {
+            const dist = s.mesh.position.distanceTo(interactPos);
+            if(dist < minDist) {
+                minDist = dist;
+                targetIndex = index;
+            }
+        });
+
+        if(targetIndex !== -1) {
+            const target = structures[targetIndex];
+            const refund = config[target.type].cost * 0.5;
+            
+            energy += refund;
+            efficiency -= config[target.type].gen;
+            
+            let currentWindImpact = impactPerWind;
+            if (target.upgrades.noiseBlades) currentWindImpact -= upgradeConfig.noiseBlades.reduction;
+            if (target.upgrades.smartControl) currentWindImpact -= upgradeConfig.smartControl.reduction;
+            
+            envImpact = Math.max(0, envImpact - currentWindImpact);
+            
+            scene.remove(target.mesh);
+            structures.splice(targetIndex, 1);
+            
+            updateUI();
+            showMessage(`♻️ 已回收設施，生態好轉！`);
+        } else {
+            showMessage("附近沒有可回收的設施");
+        }
+    }
+
+    function forceDismantle(target) {
+        const index = structures.findIndex(s => s.id === target.id);
+        if (index !== -1) {
+            efficiency -= config[target.type].gen;
+            let currentWindImpact = impactPerWind;
+            if (target.upgrades.noiseBlades) currentWindImpact -= upgradeConfig.noiseBlades.reduction;
+            if (target.upgrades.smartControl) currentWindImpact -= upgradeConfig.smartControl.reduction;
+            
+            envImpact = Math.max(0, envImpact - currentWindImpact);
+            
+            createSparkleEffect(target.mesh.position);
+            scene.remove(target.mesh);
+            structures.splice(index, 1);
+            updateUI();
+        }
+    }
+
+    function placeBuilding() {
+        const conf = config[buildMode];
+        if(energy < conf.cost) {
+            showMessage(`電力不足！需要 ${Math.floor(conf.cost)} 🔋`);
+            return;
+        }
+
+        const gx = ghostBuilding.position.x;
+        const gz = ghostBuilding.position.z;
+        const alreadyExists = structures.some(s => s.gridPos.x === gx && s.gridPos.z === gz);
+        
+        if(alreadyExists) {
+            showMessage("這塊土地已經有設施了！");
+            return;
+        }
+
+        energy -= conf.cost;
+        efficiency += conf.gen;
+        envImpact += impactPerWind;
+        
+        const building = createBuildingModel(buildMode);
+        building.position.copy(ghostBuilding.position);
+        building.scale.set(0,0,0);
+        scene.add(building);
+        structures.push({ 
+            mesh: building, 
+            type: buildMode, 
+            gridPos: {x: gx, z: gz},
+            id: Math.random().toString(36).substr(2, 9),
+            upgrades: { noiseBlades: false, smartControl: false }
+        });
+
+        updateUI();
+        showMessage(`✅ 已部署 ${conf.label}`);
+
+        if (envImpact >= maxImpact) {
+            triggerGameOver();
+        }
+    }
+
+    function createBuildingModel(type) {
+        const group = new THREE.Group();
+        const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.15, 4), new THREE.MeshPhongMaterial({color: 0xffffff}));
+        pole.position.y = 2;
+        pole.castShadow = true;
+        group.add(pole);
+        const blades = new THREE.Group();
+        for(let i=0; i<3; i++) {
+            const blade = new THREE.Mesh(new THREE.BoxGeometry(0.2, 1.8, 0.05), new THREE.MeshPhongMaterial({color: 0xf8fafc}));
+            blade.position.y = 0.9;
+            const pivot = new THREE.Group();
+            pivot.rotation.z = (i * Math.PI * 2) / 3;
+            pivot.add(blade);
+            blades.add(pivot);
+        }
+        blades.position.y = 4;
+        blades.position.z = 0.25;
+        group.add(blades);
+        group.userData.animated = blades;
+        return group;
+    }
+
+    function triggerGameOver() {
+        gameActive = false;
+        moveForward = moveBackward = moveLeft = moveRight = false;
+        if(ghostBuilding) scene.remove(ghostBuilding);
+        ghostBuilding = null;
+        document.getElementById('upgrade-panel').classList.add('hidden');
+        
+        protestors.forEach(p => scene.remove(p.mesh));
+        protestors.length = 0;
+
+        const screen = document.getElementById('gameover-screen');
+        screen.classList.remove('hidden');
+    }
+
+    function resetGame() {
+        structures.forEach(s => {
+            scene.remove(s.mesh);
+        });
+        structures.length = 0;
+
+        protestors.forEach(p => scene.remove(p.mesh));
+        protestors.length = 0;
+
+        enderParticles.forEach(p => scene.remove(p.mesh));
+        enderParticles.length = 0;
+
+        energy = 100;
+        efficiency = 0;
+        envImpact = 0;
+        buildMode = null;
+        isDeleteMode = false;
+        isUpgradeMode = false;
+        gameActive = true;
+
+        player.position.set(0, 0, 20);
+
+        document.getElementById('gameover-screen').classList.add('hidden');
+        document.getElementById('upgrade-panel').classList.add('hidden');
+        updateUIButtons();
+        updateUI();
+        showMessage("🌾 海岸線已重置，開始新的綠能規劃！");
+    }
+
+    function showMessage(text) {
+        const box = document.getElementById('msg-box');
+        box.innerText = text;
+        box.style.opacity = '1';
+        setTimeout(() => box.style.opacity = '0', 2500);
+    }
+
+    function updateUI() {
+        document.getElementById('energy-val').innerText = Math.floor(energy);
+        document.getElementById('efficiency-val').innerText = `+${efficiency} /s`;
+        
+        document.getElementById('env-val').innerText = `${envImpact}%`;
+        document.getElementById('env-bar').style.width = `${envImpact}%`;
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        const delta = clock.getDelta();
+
+        if (gameActive) {
+            const speed = 7 * delta;
+            const moveDir = new THREE.Vector3(0, 0, 0);
+            if (moveForward) moveDir.z -= 1;
+            if (moveBackward) moveDir.z += 1;
+            if (moveLeft) moveDir.x -= 1;
+            if (moveRight) moveDir.x += 1;
+
+            if (moveDir.length() > 0) {
+                moveDir.normalize();
+                player.position.add(moveDir.clone().multiplyScalar(speed));
+                const targetRotation = Math.atan2(moveDir.x, moveDir.z);
+                let diff = targetRotation - player.rotation.y;
+                while (diff < -Math.PI) diff += Math.PI * 2;
+                while (diff > Math.PI) diff -= Math.PI * 2;
+                player.rotation.y += diff * 0.15;
+
+                const time = Date.now() * 0.015;
+                player.userData.legL.rotation.x = Math.sin(time) * 0.45;
+                player.userData.legR.rotation.x = -Math.sin(time) * 0.45;
+                player.userData.armL.rotation.x = -Math.sin(time) * 0.45;
+                player.userData.armR.rotation.x = Math.sin(time) * 0.45;
+            } else {
+                player.userData.legL.rotation.x = 0;
+                player.userData.legR.rotation.x = 0;
+                player.userData.armL.rotation.x = 0;
+                player.userData.armR.rotation.x = 0;
+            }
+            
+            checkUpgradeTarget();
+            
+            if (Math.random() < 0.2) {
+                spawnEnderParticle();
+            }
+
+            for (let i = enderParticles.length - 1; i >= 0; i--) {
+                const p = enderParticles[i];
+                p.mesh.position.y += p.speedY * delta;
+                p.mesh.scale.multiplyScalar(0.96);
+                p.life += delta;
+                if (p.life > 1.2) {
+                    scene.remove(p.mesh);
+                    enderParticles.splice(i, 1);
+                }
+            }
+            
+            for (let i = protestors.length - 1; i >= 0; i--) {
+                const p = protestors[i];
+                
+                if (!structures.some(s => s.id === p.target.id)) {
+                    if (structures.length > 0) {
+                        p.target = structures[Math.floor(Math.random() * structures.length)];
+                    } else {
+                        scene.remove(p.mesh);
+                        protestors.splice(i, 1);
+                        continue;
+                    }
+                }
+
+                const dir = new THREE.Vector3().subVectors(p.target.mesh.position, p.mesh.position);
+                dir.y = 0;
+                const dist = dir.length();
+
+                if (dist > 1.8) {
+                    dir.normalize();
+                    p.mesh.position.addScaledVector(dir, p.speed * delta);
+                    const targetRot = Math.atan2(dir.x, dir.z);
+                    p.mesh.rotation.y = targetRot;
+
+                    const time = Date.now() * 0.01;
+                    if (p.mesh.userData.type === 'dolphin') {
+                        p.mesh.userData.tail.rotation.y = Math.sin(time) * 0.3;
+                        p.mesh.position.y = Math.sin(time * 0.5) * 0.15 + 0.1;
+                    } else {
+                        p.mesh.userData.legs[0].rotation.x = Math.sin(time) * 0.5;
+                        p.mesh.userData.legs[1].rotation.x = -Math.sin(time) * 0.5;
+                        p.mesh.rotation.z = Math.sin(time) * 0.05;
+                    }
+                } else {
+                    p.actionTimer += delta;
+                    const flashVal = Math.sin(Date.now() * 0.02) * 0.5 + 0.5;
+                    p.target.mesh.children.forEach(child => {
+                        if (child.material) child.material.color.setRGB(1, flashVal, flashVal);
+                    });
+
+                    if (p.actionTimer >= 5) {
+                        if (p.mesh.userData.type === 'dolphin') {
+                            showMessage("⚠️ 警告：白海豚拍打導致風機停擺損壞！");
+                        } else {
+                            showMessage("⚠️ 警告：風機因居民抗議抗爭已被強制拆除！");
+                        }
+                        forceDismantle(p.target);
+                        scene.remove(p.mesh);
+                        protestors.splice(i, 1);
+                    }
+                }
+            }
+        }
+
+        player.position.x = THREE.MathUtils.clamp(player.position.x, -90, 90);
+        player.position.z = THREE.MathUtils.clamp(player.position.z, -5, 90);
+
+        const camOffset = new THREE.Vector3(0, 24, 21);
+        const targetCamPos = player.position.clone().add(camOffset);
+        camera.position.lerp(targetCamPos, 0.06);
+        camera.lookAt(player.position.x, 1, player.position.z);
+
+        if(ghostBuilding && gameActive) {
+            const offsetDist = 4;
+            const targetX = player.position.x + Math.sin(player.rotation.y) * offsetDist;
+            const targetZ = player.position.z + Math.cos(player.rotation.y) * offsetDist;
+            
+            const snappedX = Math.round(targetX / gridSize) * gridSize;
+            const snappedZ = Math.round(targetZ / gridSize) * gridSize;
+
+            ghostBuilding.position.set(snappedX, 2, snappedZ);
+        }
+
+        if(scene.userData.foam) {
+            scene.userData.foam.position.z = -5 + Math.sin(Date.now() * 0.0008) * 1.2;
+            scene.userData.foam.material.opacity = 0.2 + Math.sin(Date.now() * 0.0015) * 0.15;
+        }
+
+        structures.forEach(s => {
+            if(s.mesh.scale.x < 1) s.mesh.scale.lerp(new THREE.Vector3(1,1,1), 0.1);
+            s.mesh.userData.animated.rotation.z += 0.04;
+        });
+
+        renderer.render(scene, camera);
+    }
+
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
 </script>
 </body>
 </html>
