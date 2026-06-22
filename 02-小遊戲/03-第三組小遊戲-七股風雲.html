@@ -1,29 +1,33 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>七股風雲 - 互動敘事體驗</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap" rel="stylesheet">
-    
+
     <style>
         :root {
             --sea-blue: #0ea5e9;
-            --panel-black: #1e293b;
+            --panel-black: #0b1329;
             --hope-gold: #f59e0b;
+            --eco-green: #10b981;
         }
 
-        html, body {
+        html,
+        body {
             min-height: 100%;
             overflow-x: hidden;
-            background-color: #020617;
+            background-color: #030712;
             font-family: "Noto Serif TC", serif;
-            color: #f8fafc;
+            color: #f3f4f6;
         }
 
+        /* 脈動與發光背景 */
         .qigu-water-bg {
-            background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+            background: radial-gradient(circle at 50% 50%, #0b1528 0%, #030712 100%);
             position: relative;
         }
 
@@ -31,195 +35,322 @@
             position: fixed;
             width: 200%;
             height: 200%;
-            background: radial-gradient(circle, rgba(14, 165, 233, 0.03) 0%, transparent 70%);
-            animation: ripple 25s infinite linear;
+            background: radial-gradient(circle, rgba(14, 165, 233, 0.05) 0%, transparent 60%);
+            animation: ripple 35s infinite linear;
             pointer-events: none;
             z-index: 0;
         }
 
         @keyframes ripple {
-            0% { transform: translate(-25%, -25%) rotate(0deg); }
-            100% { transform: translate(-25%, -25%) rotate(360deg); }
+            0% {
+                transform: translate(-25%, -25%) rotate(0deg);
+            }
+
+            100% {
+                transform: translate(-25%, -25%) rotate(360deg);
+            }
         }
 
+        /* 深邃玻璃面板 */
         .chapter-card {
-            background: rgba(30, 41, 59, 0.4);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.7);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
             cursor: pointer;
         }
 
         .chapter-card:hover:not(.locked) {
-            border-color: var(--sea-blue);
-            transform: translateY(-10px) scale(1.02);
-            background: rgba(14, 165, 233, 0.1);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border-color: rgba(14, 165, 233, 0.6);
+            transform: translateY(-8px) scale(1.02);
+            background: rgba(14, 165, 233, 0.08);
+            box-shadow: 0 25px 50px -12px rgba(14, 165, 233, 0.25);
         }
 
-        .locked { opacity: 0.2; cursor: not-allowed; filter: grayscale(1); }
-        .completed { border-color: #10b981 !important; background: rgba(16, 185, 129, 0.1) !important; }
+        .locked {
+            opacity: 0.25;
+            cursor: not-allowed !important;
+            filter: grayscale(0.85);
+            border-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .completed {
+            border-color: #10b981 !important;
+            background: rgba(16, 185, 129, 0.06) !important;
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.1) !important;
+        }
 
         .btn-primary {
-            background: linear-gradient(135deg, #0ea5e9, #2563eb);
-            box-shadow: 0 10px 20px -10px rgba(14, 165, 233, 0.5);
-            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #0ea5e9, #1d4ed8);
+            box-shadow: 0 10px 25px -10px rgba(14, 165, 233, 0.6);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .btn-primary:hover {
-            transform: scale(1.05);
-            box-shadow: 0 15px 30px -10px rgba(14, 165, 233, 0.7);
+            transform: scale(1.03) translateY(-2px);
+            box-shadow: 0 15px 30px -10px rgba(14, 165, 233, 0.8);
         }
 
         .char-avatar {
-            width: 72px; height: 72px;
+            width: 76px;
+            height: 76px;
             border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 2rem;
-            background: rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.25rem;
+            background: rgba(255, 255, 255, 0.03);
             border: 2px solid var(--sea-blue);
-            box-shadow: 0 0 20px rgba(14, 165, 233, 0.2);
+            box-shadow: 0 0 25px rgba(14, 165, 233, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .char-card:hover .char-avatar {
+            transform: scale(1.1) rotate(5deg);
         }
 
         .chat-bubble {
-            background: rgba(15, 23, 42, 0.9);
+            background: rgba(10, 15, 30, 0.9);
             border-radius: 1.5rem;
             border-top-left-radius: 0;
             padding: 1.5rem;
-            border: 1px solid rgba(255,255,255,0.1);
-            animation: slideIn 0.4s ease-out;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            animation: slideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
 
         @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-20px); }
-            to { opacity: 1; transform: translateX(0); }
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
+        /* 污染霧霾 */
         .toxic-fog {
             position: absolute;
-            width: 400px; height: 400px;
-            background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
-            filter: blur(50px);
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(239, 68, 68, 0.12) 0%, transparent 70%);
+            filter: blur(40px);
             pointer-events: none;
             z-index: 5;
-            animation: move-fog 12s infinite alternate ease-in-out;
+            animation: move-fog 8s infinite alternate ease-in-out;
         }
 
         @keyframes move-fog {
-            from { transform: translate(-10%, -10%); }
-            to { transform: translate(20%, 20%); }
+            0% {
+                transform: translate(-20%, -20%) scale(1);
+            }
+
+            100% {
+                transform: translate(40%, 30%) scale(1.2);
+            }
         }
 
-        .progress-node { width: 12px; height: 12px; border-radius: 50%; background: #334155; transition: all 0.6s ease; }
-        .progress-node.active { background: #0ea5e9; box-shadow: 0 0 15px #0ea5e9; }
-        .progress-node.done { background: #10b981; }
+        /* 動態背景漂浮粒子 */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
 
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        .progress-node {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #1e293b;
+            border: 2px solid #334155;
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .progress-node.active {
+            background: #0ea5e9;
+            border-color: #38bdf8;
+            box-shadow: 0 0 15px #38bdf8;
+        }
+
+        .progress-node.done {
+            background: #10b981;
+            border-color: #34d399;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 10px;
+        }
+
+        /* 閃爍動畫 */
+        @keyframes pulse-glow {
+
+            0%,
+            100% {
+                opacity: 0.6;
+            }
+
+            50% {
+                opacity: 1;
+                filter: drop-shadow(0 0 8px rgba(14, 165, 233, 0.8));
+            }
+        }
+
+        .pulse-light {
+            animation: pulse-glow 2s infinite;
+        }
     </style>
 </head>
-<body class="min-h-screen qigu-water-bg selection:bg-sky-500/30">
-    <!-- 備註：背景音樂因路徑限制可能無法直接播放，但 SFX 音效可運作 -->
-    <audio id="bgm-act1" loop></audio>
-    <audio id="bgm-act2" loop></audio>
-    <audio id="bgm-act4" loop></audio>
 
+<body class="min-h-screen qigu-water-bg selection:bg-sky-500/30 flex flex-col justify-between">
     <div class="water-ripple"></div>
+    <div class="particles" id="particles-container"></div>
 
     <!-- 序幕 -->
     <div id="intro-screen" class="fixed inset-0 z-[200] bg-slate-950 flex flex-col items-center justify-center p-6 text-center transition-all duration-1000">
-        <div id="intro-start" class="max-w-3xl">
-            <h1 class="text-6xl md:text-9xl font-black mb-6 tracking-tighter text-white italic drop-shadow-2xl">七股風雲</h1>
-            <p class="text-sky-400 font-bold tracking-[0.5em] md:tracking-[1em] mb-16 text-xs md:text-sm uppercase opacity-80">THE WIND AND CLOUDS OF QIGU</p>
-            <button onclick="initAudioAndShowChars()" class="btn-primary px-16 md:px-24 py-6 rounded-full font-black text-white text-xl tracking-widest">
+        <div id="intro-start" class="max-w-3xl transition-all duration-700">
+            <h1 class="text-6xl md:text-9xl font-black mb-6 tracking-tight text-white italic drop-shadow-[0_15px_15px_rgba(0,0,0,0.8)]">
+                七股風雲
+            </h1>
+            <p class="text-sky-400 font-bold tracking-[0.5em] md:tracking-[0.8em] mb-16 text-xs md:text-sm uppercase opacity-80">
+                THE WIND AND CLOUDS OF QIGU
+            </p>
+            <button onclick="initAudioAndShowChars()" class="btn-primary px-16 md:px-24 py-6 rounded-full font-black text-white text-xl tracking-widest uppercase">
                 進入生態前線
             </button>
         </div>
 
-        <div id="character-intro" class="hidden max-w-5xl w-full custom-scrollbar overflow-y-auto max-h-screen p-8">
-            <h2 class="text-3xl md:text-5xl font-black mb-16 text-white italic leading-tight">「這不是能源與魚的選擇，<br>是生存方式的對抗。」</h2>
+        <div id="character-intro" class="hidden max-w-5xl w-full custom-scrollbar overflow-y-auto max-h-screen p-8 transition-all duration-700">
+            <h2 class="text-3xl md:text-5xl font-black mb-12 text-white italic leading-tight">
+                「這不是能源與魚的選擇，<br class="hidden md:block">而是生存方式的對抗。」
+            </h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-                <div class="bg-slate-900/60 p-8 rounded-[2.5rem] border border-sky-500/10 text-center hover:border-sky-500/40 transition-colors">
-                    <div class="text-6xl mb-6">👴</div>
+                <!-- 阿文伯 -->
+                <div class="char-card bg-slate-900/60 p-8 rounded-[2.5rem] border border-sky-500/10 text-center hover:border-sky-500/40 transition-all duration-300">
+                    <div class="char-avatar mx-auto mb-6">👴</div>
                     <h3 class="text-2xl font-bold text-sky-400 mb-3">阿文伯</h3>
-                    <p class="text-slate-400 text-sm italic leading-relaxed">「黑色的玻璃蓋住了海，我的魚要怎麼呼吸？」</p>
+                    <p class="text-slate-300 text-sm leading-relaxed mb-4">在地老漁民，一輩子守著魚塭與鹽田。</p>
+                    <p class="text-slate-500 text-xs italic leading-relaxed">「黑色的玻璃蓋住了海，我的魚要怎麼呼吸？」</p>
                 </div>
-                <div class="bg-slate-900/60 p-8 rounded-[2.5rem] border border-rose-500/10 text-center hover:border-rose-500/40 transition-colors">
-                    <div class="text-6xl mb-6">✊</div>
+                <!-- 阿美 -->
+                <div class="char-card bg-slate-900/60 p-8 rounded-[2.5rem] border border-rose-500/10 text-center hover:border-rose-500/40 transition-all duration-300">
+                    <div class="char-avatar mx-auto mb-6 border-rose-500 shadow-[0_0_25px_rgba(244,63,94,0.3)]">✊</div>
                     <h3 class="text-2xl font-bold text-rose-400 mb-3">阿美</h3>
-                    <p class="text-slate-400 text-sm italic leading-relaxed">「家鄉的風不該被噪音填滿，我們要透明的未來。」</p>
+                    <p class="text-slate-300 text-sm leading-relaxed mb-4">青年返鄉自救會代表，熱血捍衛土地與家園。</p>
+                    <p class="text-slate-500 text-xs italic leading-relaxed">「家鄉的風不該被噪音填滿，我們要透明的未來。」</p>
                 </div>
-                <div class="bg-slate-900/60 p-8 rounded-[2.5rem] border border-emerald-500/10 text-center hover:border-emerald-500/40 transition-colors">
-                    <div class="text-6xl mb-6">🔬</div>
+                <!-- 小慧 -->
+                <div class="char-card bg-slate-900/60 p-8 rounded-[2.5rem] border border-emerald-500/10 text-center hover:border-emerald-500/40 transition-all duration-300">
+                    <div class="char-avatar mx-auto mb-6 border-emerald-500 shadow-[0_0_25px_rgba(16,185,129,0.3)]">🔬</div>
                     <h3 class="text-2xl font-bold text-emerald-400 mb-3">小慧</h3>
-                    <p class="text-slate-400 text-sm italic leading-relaxed">「在數據中找到平衡點，這是我能為家鄉做的最後一件事。」</p>
+                    <p class="text-slate-300 text-sm leading-relaxed mb-4">環境生態工程碩士，致力推行漁電共生。</p>
+                    <p class="text-slate-500 text-xs italic leading-relaxed">「在數據中找到平衡點，這是我能為家鄉做的最後一件事。」</p>
                 </div>
             </div>
-            <button onclick="startGame()" class="btn-primary px-20 py-6 rounded-full font-black text-white text-xl mb-12">
+            <button onclick="startGame()" class="btn-primary px-20 py-6 rounded-full font-black text-white text-xl mb-12 tracking-widest">
                 啟動協定
             </button>
         </div>
     </div>
 
+    <!-- 主操作畫面 -->
     <div class="relative z-10 flex flex-col min-h-screen">
-        <header class="p-8 md:p-10 flex justify-between items-end sticky top-0 bg-slate-950/40 backdrop-blur-xl border-b border-white/5 z-50">
+        <header class="p-6 md:p-10 flex justify-between items-end sticky top-0 bg-slate-950/60 backdrop-blur-xl border-b border-white/5 z-50">
             <div>
-                <div class="text-[10px] text-sky-500 font-black tracking-[0.4em] mb-2 uppercase">Station 07 - Ecological Monitor</div>
-                <h2 class="text-3xl md:text-4xl font-black text-white italic tracking-tight">七股風雲 <span class="text-sky-500/50">/</span> 環境數據監測</h2>
+                <div class="text-[10px] text-sky-400 font-black tracking-[0.4em] mb-2 uppercase flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                    STATION 07 - Ecological Monitor
+                </div>
+                <h2 class="text-2xl md:text-4xl font-black text-white italic tracking-tight">七股風雲 <span class="text-sky-500/50">/</span> 環境監測站</h2>
             </div>
-            <div class="flex gap-3 mb-2">
-                <div id="node-1" class="progress-node active"></div>
-                <div id="node-1-extra" class="progress-node"></div>
-                <div id="node-2" class="progress-node"></div>
-                <div id="node-3" class="progress-node"></div>
+            <div class="flex gap-4 mb-2">
+                <div id="node-1" class="progress-node active" title="第一章"></div>
+                <div id="node-1-extra" class="progress-node" title="第一章外傳"></div>
+                <div id="node-2" class="progress-node" title="第二章"></div>
+                <div id="node-3" class="progress-node" title="終章"></div>
             </div>
         </header>
 
-        <main class="flex-1 p-8 md:p-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 items-start max-w-[90rem] mx-auto w-full">
-            <div id="card-1" class="chapter-card p-10 rounded-[2.5rem]" onclick="startLevel(1)">
-                <div class="text-6xl mb-8">🌊</div>
-                <h3 class="text-2xl font-black text-white mb-3 italic">回憶拼圖</h3>
-                <p class="text-slate-400 text-sm leading-relaxed mb-10">重組被撕裂的土地記憶，尋回最初的海味。</p>
+        <main class="flex-1 p-6 md:p-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 items-stretch max-w-[95rem] mx-auto w-full">
+            <!-- 關卡1 -->
+            <div id="card-1" class="chapter-card p-10 rounded-[2.5rem] flex flex-col justify-between" onclick="startLevel(1)">
+                <div>
+                    <div class="text-6xl mb-8">🌊</div>
+                    <h3 class="text-2xl font-black text-white mb-3 italic">回憶拼圖</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-10">重組被撕裂的土地記憶，在歷史碎片中找回最初的海洋滋味。</p>
+                </div>
                 <div id="status-1" class="text-[10px] font-black text-sky-400 flex items-center gap-2">
                     <span class="relative flex h-2 w-2">
-                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
-                      <span class="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
                     </span>
                     等待同步
                 </div>
             </div>
 
-            <div id="card-1-extra" class="chapter-card locked p-10 rounded-[2.5rem]" onclick="startLevel('1-extra')">
-                <div class="text-6xl mb-8">🌑</div>
-                <h3 class="text-2xl font-black text-white mb-3 italic">病變之水</h3>
-                <p class="text-slate-400 text-sm leading-relaxed mb-10">在迷霧與工業陰影中搶救垂死的魚苗。</p>
-                <div id="status-1-extra" class="text-[10px] font-black text-slate-500 uppercase tracking-widest">○ 權限受限</div>
+            <!-- 關卡1-Extra -->
+            <div id="card-1-extra" class="chapter-card locked p-10 rounded-[2.5rem] flex flex-col justify-between" onclick="startLevel('1-extra')">
+                <div>
+                    <div class="text-6xl mb-8">🌑</div>
+                    <h3 class="text-2xl font-black text-white mb-3 italic">病變之水</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-10">工業廢料與工程陰影正在蠶食水體，火速搶救驚慌流離的魚苗。</p>
+                </div>
+                <div id="status-1-extra" class="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                    <span>🔒</span> 權限受限
+                </div>
             </div>
 
-            <div id="card-2" class="chapter-card locked p-10 rounded-[2.5rem]" onclick="startLevel(2)">
-                <div class="text-6xl mb-8">🧬</div>
-                <h3 class="text-2xl font-black text-white mb-3 italic">極限校準</h3>
-                <p class="text-slate-400 text-sm leading-relaxed mb-10">微調光電效率與水質溶氧，尋求共生共存。</p>
-                <div id="status-2" class="text-[10px] font-black text-slate-500 uppercase tracking-widest">○ 權限受限</div>
+            <!-- 關卡2 -->
+            <div id="card-2" class="chapter-card locked p-10 rounded-[2.5rem] flex flex-col justify-between" onclick="startLevel(2)">
+                <div>
+                    <div class="text-6xl mb-8">🧬</div>
+                    <h3 class="text-2xl font-black text-white mb-3 italic">極限校準</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-10">在動態波動中，微調光電效率與水質溶氧，建立永續共生點。</p>
+                </div>
+                <div id="status-2" class="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                    <span>🔒</span> 權限受限
+                </div>
             </div>
 
-            <div id="card-3" class="chapter-card locked p-10 rounded-[2.5rem]" onclick="startLevel(3)">
-                <div class="text-6xl mb-8">⚖️</div>
-                <h3 class="text-2xl font-black text-white mb-3 italic">生存契約</h3>
-                <p class="text-slate-400 text-sm leading-relaxed mb-10">站在歷史的分水嶺，決定這片土地的未來。</p>
-                <div id="status-3" class="text-[10px] font-black text-slate-500 uppercase tracking-widest">○ 權限受限</div>
+            <!-- 關卡3 -->
+            <div id="card-3" class="chapter-card locked p-10 rounded-[2.5rem] flex flex-col justify-between" onclick="startLevel(3)">
+                <div>
+                    <div class="text-6xl mb-8">⚖️</div>
+                    <h3 class="text-2xl font-black text-white mb-3 italic">生存契約</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-10">站在歷史分水嶺，交付最關鍵的最終決議，為七股譜寫終章。</p>
+                </div>
+                <div id="status-3" class="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                    <span>🔒</span> 權限受限
+                </div>
             </div>
         </main>
 
         <footer class="p-8 text-center text-slate-600 text-[10px] tracking-widest uppercase">
-            Data Stream Integrity Verified © 2024 Project Qigu
+            Data Stream Integrity Verified © 2026 Project Qigu
         </footer>
     </div>
 
+    <!-- 彈出互動視窗 -->
     <div id="modal" class="fixed inset-0 z-[250] hidden flex items-center justify-center p-4 bg-slate-950/98 backdrop-blur-3xl">
-        <div class="bg-slate-900 border border-white/10 w-full max-w-4xl rounded-[3.5rem] p-8 md:p-16 relative shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar">
-            <button onclick="closeModal()" class="absolute top-8 right-10 text-slate-500 hover:text-white text-5xl transition-colors">&times;</button>
+        <div class="bg-slate-900 border border-white/10 w-full max-w-4xl rounded-[3.5rem] p-8 md:p-12 relative shadow-2xl max-h-[92vh] overflow-y-auto custom-scrollbar">
+            <button onclick="closeModal()" class="absolute top-6 right-8 text-slate-400 hover:text-white text-5xl transition-colors">&times;</button>
             <div id="modal-content"></div>
         </div>
     </div>
@@ -227,9 +358,9 @@
     <!-- 結束畫面 -->
     <div id="ending" class="fixed inset-0 z-[500] hidden bg-slate-950 flex flex-col items-center justify-center p-12 text-center overflow-y-auto">
         <div class="max-w-4xl">
-            <h2 id="ending-title" class="text-5xl md:text-8xl font-black text-white mb-10 italic leading-tight"></h2>
-            <div id="ending-text" class="text-xl md:text-3xl text-slate-400 font-light leading-relaxed mb-20 space-y-8"></div>
-            <div class="text-[10rem] font-black text-white/5 tracking-[0.2em] pointer-events-none select-none mb-12">THE END</div>
+            <h2 id="ending-title" class="text-4xl md:text-7xl font-black text-white mb-10 italic leading-tight"></h2>
+            <div id="ending-text" class="text-lg md:text-2xl text-slate-300 font-light leading-relaxed mb-16 space-y-8"></div>
+            <div class="text-8xl md:text-[10rem] font-black text-white/5 tracking-[0.2em] pointer-events-none select-none mb-12">THE END</div>
             <button onclick="location.reload()" class="btn-primary px-16 py-5 rounded-full font-black text-white uppercase tracking-[0.3em] text-sm">
                 重新啟動系統
             </button>
@@ -237,336 +368,684 @@
     </div>
 
     <script>
+        // --- 1. procedural Web Audio 音訊與背景音樂(BGM)引擎 ---
         const AudioEngine = {
             ctx: null,
-            currentBGM: null,
-            
-            init() { 
+            ambientGain: null,
+            isPlayingAmbience: false,
+            bgm: null, // 用於播放關卡MP3檔案的音訊物件
+            currentBgmType: null,
+
+            init() {
                 if (!this.ctx) {
-                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    this.ctx = new(window.AudioContext || window.webkitAudioContext)();
                 }
             },
 
-            playSFX(freq, type = 'sine', duration = 0.15, vol = 0.15) {
+            // 實時合成海浪拍打聲（白噪音 + LFO 低頻調幅）
+            startSeaAmbience() {
+                if (this.isPlayingAmbience || !this.ctx) return;
+                this.isPlayingAmbience = true;
+
+                // 生成白噪音緩衝區
+                const bufferSize = this.ctx.sampleRate * 2;
+                const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const output = noiseBuffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    output[i] = Math.random() * 2 - 1;
+                }
+
+                const whiteNoise = this.ctx.createBufferSource();
+                whiteNoise.buffer = noiseBuffer;
+                whiteNoise.loop = true;
+
+                // 帶通濾波器：模擬潮汐悶沉的聲音
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(320, this.ctx.currentTime);
+
+                // 動態增益（海浪高低起伏）
+                const waveGain = this.ctx.createGain();
+                waveGain.gain.setValueAtTime(0.01, this.ctx.currentTime);
+
+                // LFO (低頻振盪器)：用來自動控制海浪來回起伏
+                const lfo = this.ctx.createOscillator();
+                lfo.frequency.setValueAtTime(0.12, this.ctx.currentTime); // 約8秒一個潮汐周期
+
+                const lfoGain = this.ctx.createGain();
+                lfoGain.gain.setValueAtTime(0.04, this.ctx.currentTime); // 幅度
+
+                // 連結結構
+                lfo.connect(lfoGain);
+                lfoGain.connect(waveGain.gain); // 調變海浪音量
+
+                whiteNoise.connect(filter);
+                filter.connect(waveGain);
+
+                this.ambientGain = this.ctx.createGain();
+                this.ambientGain.gain.setValueAtTime(0.4, this.ctx.currentTime);
+
+                waveGain.connect(this.ambientGain);
+                this.ambientGain.connect(this.ctx.destination);
+
+                lfo.start();
+                whiteNoise.start();
+            },
+
+            playSFX(freq, type = 'sine', duration = 0.15, vol = 0.15, slideTo = null) {
                 if (!this.ctx) return;
                 const osc = this.ctx.createOscillator();
                 const g = this.ctx.createGain();
-                osc.type = type; 
+                osc.type = type;
                 osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-                osc.connect(g); 
+                if (slideTo) {
+                    osc.frequency.exponentialRampToValueAtTime(slideTo, this.ctx.currentTime + duration);
+                }
+                osc.connect(g);
                 g.connect(this.ctx.destination);
                 g.gain.setValueAtTime(vol, this.ctx.currentTime);
                 g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
-                osc.start(); 
+                osc.start();
                 osc.stop(this.ctx.currentTime + duration);
             },
 
-            switchBGM(elementId) {
-                const target = document.getElementById(elementId);
-                if (this.currentBGM) {
-                    this.currentBGM.pause();
-                    this.currentBGM.currentTime = 0;
+            playSuccessChord() {
+                const now = this.ctx.currentTime;
+                const freqs = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+                freqs.forEach((f, i) => {
+                    setTimeout(() => {
+                        this.playSFX(f, 'sine', 0.4, 0.1);
+                    }, i * 100);
+                });
+            },
+
+            // 依據關卡載入並播放指定 MP3 檔案
+            playBGM(type) {
+                this.init();
+                if (this.currentBgmType === type) return;
+                this.stopBGM();
+                this.currentBgmType = type;
+
+                let file = "";
+                if (type === 'intro' || type === '1') {
+                    file = "第一關.mp3";
+                } else if (type === '1-extra') {
+                    file = "第二關.mp3";
+                } else if (type === '2') {
+                    file = "第三關.mp3";
+                } else if (type === '3') {
+                    file = "第四關.mp3";
                 }
-                if (target && target.src) {
-                    this.currentBGM = target;
-                    this.currentBGM.volume = 0.4;
-                    this.currentBGM.play().catch(() => {});
+
+                if (file) {
+                    this.bgm = new Audio(file);
+                    this.bgm.loop = true;
+                    this.bgm.volume = 0.4;
+                    this.bgm.play().catch(e => {
+                        console.log("播放被瀏覽器阻擋，將在玩家互動後播放。", e);
+                    });
                 }
+            },
+
+            stopBGM() {
+                if (this.bgm) {
+                    this.bgm.pause();
+                    this.bgm.currentTime = 0;
+                    this.bgm = null;
+                }
+                this.currentBgmType = null;
             }
         };
 
+        // --- 2. 遊戲狀態管理 ---
         const state = {
-            completed: { "1": false, "1-extra": false, "2": false, "3": false },
-            ecoBalance: { oxy: 45, energy: 55 },
-            timer: 0, score: 0, gameLoop: null, winT: null
+            completed: {
+                "1": false,
+                "1-extra": false,
+                "2": false,
+                "3": false
+            },
+            ecoBalance: {
+                oxy: 45,
+                energy: 55
+            },
+            timer: 0,
+            score: 0,
+            gameLoop: null,
+            winT: null,
+            canvasAnimFrame: null,
+            particles: []
         };
 
-        function initAudioAndShowChars() { 
-            AudioEngine.init(); 
-            AudioEngine.playSFX(440, 'sine', 0.5); 
-            document.getElementById('intro-start').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('intro-start').classList.add('hidden'); 
-                document.getElementById('character-intro').classList.remove('hidden'); 
-            }, 500);
+        // 懸浮晶體鹽微粒效果
+        function initParticles() {
+            const container = document.getElementById('particles-container');
+            const count = 35;
+            for (let i = 0; i < count; i++) {
+                const p = document.createElement('div');
+                const size = Math.random() * 4 + 2;
+                p.className = 'absolute bg-sky-400/20 rounded-full pointer-events-none transition-all';
+                p.style.width = size + 'px';
+                p.style.height = size + 'px';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.top = Math.random() * 100 + '%';
+                p.style.boxShadow = `0 0 8px rgba(14, 165, 233, 0.4)`;
+                container.appendChild(p);
+                state.particles.push({
+                    el: p,
+                    x: Math.random() * window.innerWidth,
+                    y: Math.random() * window.innerHeight,
+                    vx: (Math.random() - 0.5) * 0.4,
+                    vy: (Math.random() - 0.5) * 0.4,
+                    size: size
+                });
+            }
+            requestAnimationFrame(updateParticles);
         }
 
-        function startGame() { 
-            AudioEngine.playSFX(880, 'triangle', 0.3); 
-            document.getElementById('intro-screen').style.opacity = '0';
+        function updateParticles() {
+            state.particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                if (p.x < 0) p.x = window.innerWidth;
+                if (p.x > window.innerWidth) p.x = 0;
+                if (p.y < 0) p.y = window.innerHeight;
+                if (p.y > window.innerHeight) p.y = 0;
+                p.el.style.transform = `translate3d(${p.x}px, ${p.y}px, 0)`;
+            });
+            requestAnimationFrame(updateParticles);
+        }
+
+        window.addEventListener('resize', () => {
+            state.particles.forEach(p => {
+                p.x = Math.random() * window.innerWidth;
+                p.y = Math.random() * window.innerHeight;
+            });
+        });
+
+        // 啟動音訊與角色介紹
+        function initAudioAndShowChars() {
+            AudioEngine.init();
+            AudioEngine.playSFX(440, 'sine', 0.6, 0.15, 880);
+            AudioEngine.playBGM('intro'); // 播放第一關.mp3 作為首頁背景音樂
+            document.getElementById('intro-start').style.opacity = '0';
+            document.getElementById('intro-start').style.transform = 'translateY(-20px)';
             setTimeout(() => {
-                document.getElementById('intro-screen').classList.add('hidden'); 
+                document.getElementById('intro-start').classList.add('hidden');
+                const charIntro = document.getElementById('character-intro');
+                charIntro.classList.remove('hidden');
+                charIntro.style.opacity = '0';
+                setTimeout(() => {
+                    charIntro.style.opacity = '1';
+                }, 50);
+            }, 600);
+        }
+
+        // 啟動協定
+        function startGame() {
+            AudioEngine.playSFX(880, 'sine', 0.5, 0.15, 1320);
+            AudioEngine.startSeaAmbience();
+            initParticles();
+
+            const intro = document.getElementById('intro-screen');
+            intro.style.opacity = '0';
+            setTimeout(() => {
+                intro.classList.add('hidden');
             }, 1000);
         }
 
-        function closeModal() { 
-            if (state.gameLoop) clearInterval(state.gameLoop); 
+        function closeModal() {
+            if (state.gameLoop) clearInterval(state.gameLoop);
             if (state.winT) clearTimeout(state.winT);
-            AudioEngine.playSFX(330);
-            document.getElementById('modal').classList.add('hidden'); 
+            if (state.canvasAnimFrame) cancelAnimationFrame(state.canvasAnimFrame);
+            AudioEngine.playSFX(330, 'sine', 0.2, 0.1);
+            AudioEngine.playBGM('intro'); // 關閉關卡後，回歸原首頁 BGM
+            document.getElementById('modal').classList.add('hidden');
         }
 
         function startLevel(lv) {
-            const req = { "1-extra": "1", "2": "1-extra", "3": "2" };
+            const req = {
+                "1-extra": "1",
+                "2": "1-extra",
+                "3": "2"
+            };
             if (req[lv] && !state.completed[req[lv]]) return;
 
-            AudioEngine.playSFX(660, 'sine', 0.2);
+            AudioEngine.playSFX(660, 'sine', 0.25, 0.15, 880);
+            AudioEngine.playBGM(lv.toString()); // 切換為各關卡專屬背景音樂
             renderLevelContent(lv);
             document.getElementById('modal').classList.remove('hidden');
         }
 
+        // --- 3. 渲染關卡邏輯與交互 ---
         function renderLevelContent(lv) {
             const container = document.getElementById('modal-content');
-            
+
             if (lv === 1) {
                 state.score = 0;
                 container.innerHTML = `
-                    <div class="flex items-start gap-8 mb-12">
-                        <div class="char-avatar">👴</div>
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-8 mb-10">
+                        <div class="char-avatar flex-shrink-0">👴</div>
                         <div class="chat-bubble flex-1">
                             <div class="text-sky-400 text-xs font-black mb-2 uppercase tracking-widest">阿文伯</div>
-                            <div class="text-slate-200 text-lg leading-relaxed">「選出那些屬於這片土地、屬於『家』的記憶碎片。不要被冰冷的建設迷惑了。」</div>
+                            <div class="text-slate-200 text-lg leading-relaxed">
+                                「選出那些真正屬於我們七股土地、帶有鹹魚味、白鷺鷥與浪潮回憶的記憶碎片吧。別被高壓鐵塔與冰冷的水泥灌漿給迷惑了眼。」
+                            </div>
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 md:grid-cols-3 gap-6" id="game-board">
-                        ${["銀色虱目魚", "黑色矽板", "白鷺鷥", "水泥灌漿", "潮汐鹽味", "高壓鐵塔"].map(t => {
-                            const isOk = !["黑色矽板", "水泥灌漿", "高壓鐵塔"].includes(t);
-                            return `<button onclick="handleLv1('${t}', ${isOk}, this)" class="p-8 bg-slate-800/40 rounded-3xl border border-white/5 hover:border-sky-500 transition-all font-bold text-slate-300 text-lg">${t}</button>`;
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="game-board">
+                        ${[
+                            { text: "銀色虱目魚", isOk: true, desc: "魚塭中的活潑精靈，那是我們祖輩流傳下來的生計與驕傲。" },
+                            { text: "黑色矽板", isOk: false, desc: "反射著酷熱的光芒。它蓋住了海水，也蓋住了原本土地的呼吸。" },
+                            { text: "翩翩白鷺鷥", isOk: true, desc: "黃昏時在灘地與鹽田飛舞的白色剪影，這裡是牠們永遠的避難所。" },
+                            { text: "水泥灌漿", isOk: false, desc: "將古老鬆軟的灘地死死封閉，潮水進不來，萬物逐漸乾涸。" },
+                            { text: "潮汐與鹽味", isOk: true, desc: "空氣中總帶著黏稠的微風，那是海水與烈日孕育的生命基調。" },
+                            { text: "高壓鐵塔", isOk: false, desc: "高聳入雲的鋼鐵巨人，象徵了外來利益輸送的電網巨獸。" }
+                        ].map(item => {
+                            return ` <
+                    button onclick = "handleLv1('${item.text}', ${item.isOk}, this)"
+                class = "p-6 bg-slate-800/30 rounded-3xl border border-white/5 hover:border-sky-500/50 transition-all font-bold text-slate-300 text-left flex flex-col justify-between h-48 focus:outline-none" >
+                    <
+                    span class = "text-xl text-white mb-2" > $ {
+                        item.text
+                    } < /span> <
+                    span class = "text-xs text-slate-400 font-light leading-relaxed" > $ {
+                        item.desc
+                    } < /span> <
+                    /button>
+                `;
                         }).join('')}
                     </div>
-                    <div id="fb" class="mt-12 text-center text-sky-400 font-black uppercase tracking-[0.5em] text-sm h-4"></div>
+                    <div id="fb" class="mt-10 text-center text-sky-400 font-black uppercase tracking-[0.5em] text-sm h-6"></div>
                 `;
             } else if (lv === '1-extra') {
-                state.score = 0; state.timer = 20;
+                state.score = 0;
+                state.timer = 20;
                 container.innerHTML = `
-                    <div class="flex items-start gap-8 mb-12">
-                        <div class="char-avatar border-rose-500">✊</div>
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-8 mb-10">
+                        <div class="char-avatar border-rose-500 flex-shrink-0 shadow-[0_0_20px_rgba(244,63,94,0.3)]">✊</div>
                         <div class="chat-bubble flex-1">
-                            <div class="text-rose-500 text-xs font-black uppercase mb-2 tracking-widest">阿美</div>
-                            <div class="text-slate-200 text-lg leading-relaxed">「工程廢料正在污染魚塭！快，避開垃圾，救出 7 尾驚慌的魚苗！」</div>
+                            <div class="text-rose-400 text-xs font-black uppercase mb-2 tracking-widest">阿美</div>
+                            <div class="text-slate-200 text-lg leading-relaxed">
+                                「光電施工的廢渣汙水排進隔壁魚塭了！快點幫阿文伯搶救流離的魚苗（🐟），記得閃避工程鐵罐與有毒垃圾（🥫）！」
+                            </div>
                         </div>
                     </div>
-                    <div class="relative h-96 bg-slate-950 rounded-[3rem] border border-white/10 overflow-hidden cursor-crosshair group" id="dark-pond">
+                    
+                    <div class="relative h-96 bg-slate-950 rounded-[2.5rem] border border-white/10 overflow-hidden cursor-crosshair group" id="dark-pond">
                         <div class="toxic-fog"></div>
-                        <div id="pond-objects"></div>
-                        <div class="absolute inset-0 pointer-events-none border-[20px] border-rose-500/5 transition-opacity group-hover:opacity-100 opacity-30"></div>
+                        <div id="pond-objects" class="absolute inset-0"></div>
+                        <div class="absolute inset-0 pointer-events-none border-[15px] border-rose-500/5 transition-opacity duration-300 group-hover:opacity-100 opacity-40"></div>
+                        <!-- 水流波纹背景 -->
+                        <div class="absolute bottom-4 right-6 text-[10px] text-slate-700 font-bold uppercase tracking-widest">Aquatic Grid Frontline</div>
                     </div>
-                    <div class="flex justify-between mt-10 items-center">
+                    
+                    <div class="flex justify-between mt-8 items-center">
                         <div id="timer-ui" class="text-rose-500 font-black text-4xl italic">20s</div>
-                        <div id="fb" class="text-white font-black text-2xl italic tracking-wider">RESCUED: 0/7</div>
+                        <div id="fb" class="text-emerald-400 font-black text-2xl italic tracking-wider">已拯救魚苗: 0/7</div>
                     </div>
                 `;
                 startLv1ExtraLoop();
             } else if (lv === 2) {
-                state.ecoBalance = { oxy: 45, energy: 55 };
+                state.ecoBalance = {
+                    oxy: 45,
+                    energy: 55
+                };
                 container.innerHTML = `
-                    <div class="flex items-start gap-8 mb-12">
-                        <div class="char-avatar border-emerald-500">🔬</div>
+                    <div class="flex flex-col md:flex-row items-center md:items-start gap-8 mb-10">
+                        <div class="char-avatar border-emerald-500 flex-shrink-0 shadow-[0_0_20px_rgba(16,185,129,0.3)]">🔬</div>
                         <div class="chat-bubble flex-1">
                             <div class="text-emerald-400 text-xs font-black uppercase mb-2 tracking-widest">小慧</div>
-                            <div class="text-slate-200 text-lg leading-relaxed">「我們需要調整系統參數。讓含氧量維持在 75%-88%，發電效率穩定在 45%-62%。維持 3 秒以達成平衡。」</div>
-                        </div>
-                    </div>
-                    <div class="space-y-12 bg-slate-950/50 p-10 rounded-[3rem] mb-12 border border-white/5">
-                        <div class="space-y-4">
-                            <div class="flex justify-between text-xs font-black text-sky-500 uppercase tracking-widest">
-                                <span>水質含氧量 [Target: 75-88]</span>
-                                <span id="val-o" class="text-lg">45%</span>
-                            </div>
-                            <div class="h-4 bg-slate-800 rounded-full overflow-hidden border border-white/5">
-                                <div id="bar-o" class="h-full bg-sky-500 transition-all duration-500 shadow-[0_0_15px_rgba(14,165,233,0.5)] w-[45%]"></div>
-                            </div>
-                        </div>
-                        <div class="space-y-4">
-                            <div class="flex justify-between text-xs font-black text-amber-500 uppercase tracking-widest">
-                                <span>光電發電率 [Target: 45-62]</span>
-                                <span id="val-e" class="text-lg">55%</span>
-                            </div>
-                            <div class="h-4 bg-slate-800 rounded-full overflow-hidden border border-white/5">
-                                <div id="bar-e" class="h-full bg-amber-500 transition-all duration-500 shadow-[0_0_15px_rgba(245,158,11,0.5)] w-[55%]"></div>
+                            <div class="text-slate-200 text-lg leading-relaxed">
+                                「我們不能意氣用事。請微調水下增氧（O₂）與光電輸出效率（Energy）。將**水質溶氧維持在 75%-88%**，且**發電效率在 45%-62%**，穩定維持 3 秒，就能達成完美共存點！」
                             </div>
                         </div>
                     </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
+                        <!-- 調控進度條 -->
+                        <div class="lg:col-span-2 space-y-8 bg-slate-950/70 p-8 rounded-[2.5rem] border border-white/5 flex flex-col justify-center">
+                            <div class="space-y-3">
+                                <div class="flex justify-between text-xs font-black text-sky-400 uppercase tracking-widest">
+                                    <span>水質含氧量 (O₂) [安全區: 75%-88%]</span>
+                                    <span id="val-o" class="text-lg font-bold">45%</span>
+                                </div>
+                                <div class="h-5 bg-slate-900 rounded-full overflow-hidden border border-white/10 relative p-[2px]">
+                                    <!-- 綠色安全目標標示 -->
+                                    <div class="absolute top-0 bottom-0 left-[75%] right-[12%] bg-emerald-500/20 border-l border-r border-emerald-500/40"></div>
+                                    <div id="bar-o" class="h-full bg-sky-500 rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(14,165,233,0.6)]" style="width: 45%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-3">
+                                <div class="flex justify-between text-xs font-black text-amber-500 uppercase tracking-widest">
+                                    <span>光電發電效率 [安全區: 45%-62%]</span>
+                                    <span id="val-e" class="text-lg font-bold">55%</span>
+                                </div>
+                                <div class="h-5 bg-slate-900 rounded-full overflow-hidden border border-white/10 relative p-[2px]">
+                                    <!-- 綠色安全目標標示 -->
+                                    <div class="absolute top-0 bottom-0 left-[45%] right-[38%] bg-emerald-500/20 border-l border-r border-emerald-500/40"></div>
+                                    <div id="bar-e" class="h-full bg-amber-500 rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(245,158,11,0.6)]" style="width: 55%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 示波器繪製 -->
+                        <div class="bg-slate-950 p-6 rounded-[2.5rem] border border-white/5 flex flex-col justify-between">
+                            <div class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-2">Live Waveform Feedback</div>
+                            <canvas id="osc-canvas" class="w-full h-32 bg-slate-950 rounded-2xl border border-white/5"></canvas>
+                            <div class="text-center mt-3 text-xs text-slate-400 italic">波形重疊度越高，平衡越穩定</div>
+                        </div>
+                    </div>
+                    
                     <div class="grid grid-cols-2 gap-6">
-                        <button onclick="updateLv2(15, -10)" class="p-8 bg-sky-500/10 border border-sky-500/30 rounded-3xl text-sm font-black uppercase tracking-widest hover:bg-sky-500/30 transition-all text-sky-400">注入純氧</button>
-                        <button onclick="updateLv2(-10, 20)" class="p-8 bg-amber-500/10 border border-amber-500/30 rounded-3xl text-sm font-black uppercase tracking-widest hover:bg-amber-500/30 transition-all text-amber-400">強化輸出</button>
+                        <button onclick="updateLv2(15, -10)" class="py-6 bg-sky-500/10 border border-sky-500/30 hover:border-sky-400 hover:bg-sky-500/20 rounded-3xl text-sm font-black uppercase tracking-widest transition-all text-sky-400 focus:outline-none">
+                            🌊 注入純氧 (+15% O₂ / -10% E)
+                        </button>
+                        <button onclick="updateLv2(-10, 20)" class="py-6 bg-amber-500/10 border border-amber-500/30 hover:border-amber-400 hover:bg-amber-500/20 rounded-3xl text-sm font-black uppercase tracking-widest transition-all text-amber-400 focus:outline-none">
+                            ⚡ 提升電網輸出 (-10% O₂ / +20% E)
+                        </button>
                     </div>
                     <div id="fb" class="mt-8 text-center text-slate-500 text-xs italic tracking-[0.3em] uppercase">Status: System Calibrating...</div>
                 `;
                 startLv2Loop();
             } else if (lv === 3) {
                 container.innerHTML = `
-                    <div class="text-center mb-16">
-                        <h2 class="text-6xl font-black text-white mb-6 italic tracking-tight">終章：七股之名</h2>
-                        <p class="text-slate-400 text-lg">數據已就緒，人心已澄澈。請決定這片土地最終的色彩。</p>
+                    <div class="text-center mb-12">
+                        <h2 class="text-4xl md:text-6xl font-black text-white mb-4 italic tracking-tight">終章：七股之名</h2>
+                        <p class="text-slate-400 text-lg">數據監控已鎖定，民意與大局已沉澱。七股的命運現在交付到你的指尖。</p>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <button onclick="finishGame('eco')" class="group p-12 bg-sky-900/10 border border-sky-500/20 rounded-[3rem] hover:bg-sky-500/20 transition-all text-left">
-                            <div class="text-sky-400 text-3xl font-black mb-6 italic">【回歸自然】</div>
-                            <p class="text-slate-400 leading-relaxed">拆除所有光電設施。即便這意味著放棄能源轉型的契機，我們也要守住候鳥與漁民最後的淨土。</p>
+                        <button onclick="finishGame('eco')" class="group p-10 bg-sky-950/20 border border-sky-500/20 hover:border-sky-500/60 hover:bg-sky-950/40 rounded-[2.5rem] transition-all duration-300 text-left flex flex-col justify-between h-80 focus:outline-none">
+                            <div>
+                                <div class="text-sky-400 text-2xl md:text-3xl font-black mb-4 italic">【回歸自然：守護純粹淨土】</div>
+                                <p class="text-slate-300 text-sm md:text-base leading-relaxed">
+                                    斷然拆除七股的所有光電面板與工程鋼架。即使放棄了能源轉型的示範機會與財團補助，我們也要守住候鳥最愛的泥灘地、最原始的夕陽紅、以及祖輩傳承下的漁撈生活。
+                                </p>
+                            </div>
+                            <span class="text-sky-400 text-xs font-bold uppercase tracking-widest group-hover:translate-x-2 transition-transform inline-block">→ 履行此條約</span>
                         </button>
-                        <button onclick="finishGame('tech')" class="group p-12 bg-emerald-900/10 border border-emerald-500/20 rounded-[3rem] hover:bg-emerald-500/20 transition-all text-left">
-                            <div class="text-emerald-400 text-3xl font-black mb-6 italic">【智慧共生】</div>
-                            <p class="text-slate-400 leading-relaxed">深化數據治理與生態補償。讓七股成為全球能源轉型與生態維護平衡的示範點，用科技守護傳統。</p>
+                        
+                        <button onclick="finishGame('tech')" class="group p-10 bg-emerald-950/20 border border-emerald-500/20 hover:border-emerald-500/60 hover:bg-emerald-950/40 rounded-[2.5rem] transition-all duration-300 text-left flex flex-col justify-between h-80 focus:outline-none">
+                            <div>
+                                <div class="text-emerald-400 text-2xl md:text-3xl font-black mb-4 italic">【科技共生：漁電共榮藍圖】</div>
+                                <p class="text-slate-300 text-sm md:text-base leading-relaxed">
+                                    推動全面性的「數據治理與生態補償」。在光電板下建立智慧水溫增氧魚塭，部分面板收益全數回饋地方信託，發展兼具低碳發電、黑面琵鷺保育、以及現代智慧漁業的未來示範基地。
+                                </p>
+                            </div>
+                            <span class="text-emerald-400 text-xs font-bold uppercase tracking-widest group-hover:translate-x-2 transition-transform inline-block">→ 履行此條約</span>
                         </button>
                     </div>
                 `;
             }
         }
 
-        function handleLv1(t, ok, el) { 
-            if (ok) { 
-                AudioEngine.playSFX(523.25, 'sine', 0.1, 0.2); 
-                el.classList.add('bg-sky-500/20', 'border-sky-500', 'text-sky-400', 'scale-95'); 
-                state.score++; 
-                document.getElementById('fb').innerText = `同步記憶碎片 (${state.score}/3)`; 
+        // 關卡1: 拼圖判定
+        function handleLv1(t, ok, el) {
+            if (ok) {
+                AudioEngine.playSFX(523.25, 'sine', 0.15, 0.2);
+                el.classList.add('bg-sky-500/20', 'border-sky-500', 'text-sky-400', 'scale-95');
+                state.score++;
+                document.getElementById('fb').innerText = `同步記憶碎片 (${state.score}/3)`;
                 if (state.score === 3) {
-                    AudioEngine.playSFX(1046.5, 'sine', 0.5);
-                    setTimeout(() => completeLevel('1'), 800); 
+                    AudioEngine.playSuccessChord();
+                    setTimeout(() => completeLevel('1'), 800);
                 }
-            } else { 
-                AudioEngine.playSFX(146.83, 'sawtooth', 0.3, 0.2); 
-                el.classList.add('bg-red-500/20', 'border-red-500', 'text-red-400', 'animate-pulse'); 
-                setTimeout(() => { 
-                    el.classList.remove('bg-red-500/20', 'border-red-500', 'text-red-400', 'animate-pulse'); 
-                    el.disabled = false; 
-                }, 800); 
-            } 
-            el.disabled = true; 
+            } else {
+                AudioEngine.playSFX(146.83, 'sawtooth', 0.4, 0.25);
+                el.classList.add('bg-red-500/20', 'border-red-500', 'text-red-400', 'animate-pulse');
+                document.getElementById('fb').innerText = `「${t}」不屬於原鄉記憶！`;
+                setTimeout(() => {
+                    el.classList.remove('bg-red-500/20', 'border-red-500', 'text-red-400', 'animate-pulse');
+                    el.disabled = false;
+                }, 800);
+            }
+            el.disabled = true;
         }
 
-        function startLv1ExtraLoop() { 
-            state.gameLoop = setInterval(() => { 
-                state.timer--; 
-                const t = document.getElementById('timer-ui'); 
-                if (t) t.innerText = `${state.timer}s`; 
-                if (state.timer <= 0) { 
-                    clearInterval(state.gameLoop); 
-                    closeModal(); 
-                } 
-                if (Math.random() > 0.3) spawnPondObject(Math.random() > 0.65); 
-            }, 1000); 
+        // 關卡1-Extra: 動態水池魚苗搶救
+        function startLv1ExtraLoop() {
+            state.gameLoop = setInterval(() => {
+                state.timer--;
+                const t = document.getElementById('timer-ui');
+                if (t) t.innerText = `${state.timer}s`;
+                if (state.timer <= 0) {
+                    clearInterval(state.gameLoop);
+                    closeModal();
+                }
+                if (Math.random() > 0.25) spawnPondObject(Math.random() > 0.60);
+            }, 1000);
         }
 
-        function spawnPondObject(isJunk) { 
-            const p = document.getElementById('pond-objects'); if (!p) return; 
-            const o = document.createElement('div'); 
-            o.className = "absolute text-5xl cursor-pointer transition-all duration-700 opacity-0 select-none hover:scale-125"; 
-            o.style.left = `${Math.random()*85+5}%`; o.style.top = `${Math.random()*70+15}%`; 
-            o.innerText = isJunk ? "🥫" : "🐟"; 
-            o.onclick = function() { 
-                if (isJunk) { 
-                    AudioEngine.playSFX(110, 'sawtooth', 0.4); 
-                    state.timer = Math.max(0, state.timer - 4); 
-                    this.innerText = "💥"; 
-                } else { 
-                    AudioEngine.playSFX(880, 'sine', 0.2); 
-                    state.score++; this.innerText = "✨"; 
-                    document.getElementById('fb').innerText = `RESCUED: ${state.score}/7`; 
+        function spawnPondObject(isJunk) {
+            const p = document.getElementById('pond-objects');
+            if (!p) return;
+            const o = document.createElement('div');
+            o.className = "absolute text-5xl cursor-pointer select-none hover:scale-125 duration-300 flex items-center justify-center p-2 rounded-full active:scale-95";
+
+            // 隨機初始位置
+            let startX = Math.random() * 85 + 5;
+            let startY = Math.random() * 65 + 15;
+            o.style.left = `${startX}%`;
+            o.style.top = `${startY}%`;
+            o.style.transform = `translateY(30px)`;
+            o.style.opacity = '0';
+            o.style.transition = 'all 1.8s cubic-bezier(0.1, 0.8, 0.3, 1)';
+            o.innerText = isJunk ? "🥫" : "🐟";
+
+            // 點擊與觸控相容處理
+            const claimItem = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (isJunk) {
+                    AudioEngine.playSFX(110, 'sawtooth', 0.5, 0.2);
+                    state.timer = Math.max(0, state.timer - 4);
+                    o.innerText = "💥";
+                    o.style.color = "#ef4444";
+                } else {
+                    AudioEngine.playSFX(880, 'sine', 0.25, 0.2);
+                    state.score++;
+                    o.innerText = "✨";
+                    document.getElementById('fb').innerText = `已拯救魚苗: ${state.score}/7`;
                     if (state.score >= 7) {
-                        AudioEngine.playSFX(1320, 'sine', 0.6);
-                        setTimeout(() => completeLevel('1-extra'), 600); 
+                        AudioEngine.playSuccessChord();
+                        setTimeout(() => completeLevel('1-extra'), 600);
                     }
-                } 
-                setTimeout(() => { if (this.parentNode) this.remove(); }, 300); 
-            }; 
-            p.appendChild(o); 
-            setTimeout(() => o.style.opacity = '1', 50); 
-            setTimeout(() => { if (o.parentNode) o.remove(); }, 2000); 
+                }
+                setTimeout(() => {
+                    if (o.parentNode) o.remove();
+                }, 300);
+            };
+
+            o.addEventListener('mousedown', claimItem);
+            o.addEventListener('touchstart', claimItem, {
+                passive: false
+            });
+
+            p.appendChild(o);
+            // 啟動進場滑動動畫（模擬浮游動態）
+            setTimeout(() => {
+                o.style.opacity = '1';
+                o.style.transform = `translate(${Math.random() * 40 - 20}px, ${Math.random() * 40 - 20}px)`;
+            }, 50);
+            // 自動漂流並消失
+            setTimeout(() => {
+                if (o.parentNode) o.remove();
+            }, 1800);
         }
 
-        function startLv2Loop() { 
-            state.gameLoop = setInterval(() => { 
-                state.ecoBalance.oxy = Math.max(0, state.ecoBalance.oxy - 1.2); 
-                state.ecoBalance.energy = Math.max(0, state.ecoBalance.energy + (Math.random() - 0.5) * 4); 
-                
-                const valO = document.getElementById('val-o'); 
-                if (!valO) return; 
-                
-                valO.innerText = Math.round(state.ecoBalance.oxy) + "%"; 
-                document.getElementById('val-e').innerText = Math.round(state.ecoBalance.energy) + "%"; 
-                document.getElementById('bar-o').style.width = state.ecoBalance.oxy + "%"; 
-                document.getElementById('bar-e').style.width = state.ecoBalance.energy + "%"; 
-                
-                const oxyOk = state.ecoBalance.oxy >= 75 && state.ecoBalance.oxy <= 88; 
-                const prOk = state.ecoBalance.energy >= 45 && state.ecoBalance.energy <= 62; 
+        // 關卡2: 系統極限校準儀錶板 + 實時示波器
+        function startLv2Loop() {
+            const canvas = document.getElementById('osc-canvas');
+            const ctx = canvas ? canvas.getContext('2d') : null;
+            let t = 0;
+
+            function drawWave() {
+                if (!ctx || !canvas) return;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // 網格線
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.03)";
+                ctx.lineWidth = 1;
+                for (let i = 0; i < canvas.width; i += 20) {
+                    ctx.beginPath();
+                    ctx.moveTo(i, 0);
+                    ctx.lineTo(i, canvas.height);
+                    ctx.stroke();
+                }
+                for (let j = 0; j < canvas.height; j += 20) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, j);
+                    ctx.lineTo(canvas.width, j);
+                    ctx.stroke();
+                }
+
+                // 繪製氧氣 O2 波形（藍色）
+                ctx.strokeStyle = "rgba(14, 165, 233, 0.85)";
+                ctx.lineWidth = 2.5;
+                ctx.shadowColor = "rgba(14, 165, 233, 0.4)";
+                ctx.shadowBlur = 6;
+                ctx.beginPath();
+                for (let x = 0; x < canvas.width; x++) {
+                    const angle = (x / canvas.width) * Math.PI * 4 + t;
+                    const amp = (state.ecoBalance.oxy - 80) * 0.7; // 偏離安全值越大 振幅越大
+                    const y = (canvas.height / 2) + Math.sin(angle) * amp;
+                    if (x === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+
+                // 繪製發電 Energy 波形（橙色）
+                ctx.strokeStyle = "rgba(245, 158, 11, 0.85)";
+                ctx.lineWidth = 2.5;
+                ctx.shadowColor = "rgba(245, 158, 11, 0.4)";
+                ctx.shadowBlur = 6;
+                ctx.beginPath();
+                for (let x = 0; x < canvas.width; x++) {
+                    const angle = (x / canvas.width) * Math.PI * 4 - t * 1.2;
+                    const amp = (state.ecoBalance.energy - 53) * 0.7;
+                    const y = (canvas.height / 2) + Math.sin(angle) * amp;
+                    if (x === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+
+                ctx.shadowBlur = 0; // 重設影子
+                t += 0.08;
+                state.canvasAnimFrame = requestAnimationFrame(drawWave);
+            }
+
+            if (canvas) {
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+                drawWave();
+            }
+
+            state.gameLoop = setInterval(() => {
+                // 緩慢模擬消耗、漏氧與發電起伏
+                state.ecoBalance.oxy = Math.max(0, state.ecoBalance.oxy - 1.5);
+                state.ecoBalance.energy = Math.max(0, state.ecoBalance.energy + (Math.random() - 0.5) * 3);
+
+                const valO = document.getElementById('val-o');
+                if (!valO) return;
+
+                valO.innerText = Math.round(state.ecoBalance.oxy) + "%";
+                document.getElementById('val-e').innerText = Math.round(state.ecoBalance.energy) + "%";
+                document.getElementById('bar-o').style.width = state.ecoBalance.oxy + "%";
+                document.getElementById('bar-e').style.width = state.ecoBalance.energy + "%";
+
+                const oxyOk = state.ecoBalance.oxy >= 75 && state.ecoBalance.oxy <= 88;
+                const prOk = state.ecoBalance.energy >= 45 && state.ecoBalance.energy <= 62;
                 const fb = document.getElementById('fb');
 
-                if (oxyOk && prOk) { 
-                    fb.innerText = "Status: Optimal Balance Detected! Locking...";
+                if (oxyOk && prOk) {
+                    fb.innerText = "Status: 已偵測到極限平衡點！鎖定協定中...";
                     fb.className = "mt-8 text-center text-emerald-400 font-black uppercase tracking-[0.3em] animate-pulse";
-                    if (!state.winT) { 
-                        AudioEngine.playSFX(1200, 'sine', 0.05); 
-                        state.winT = setTimeout(() => completeLevel(2), 3000); 
-                    } 
-                } else { 
-                    fb.innerText = "Status: System Calibrating...";
+                    if (!state.winT) {
+                        AudioEngine.playSFX(1000, 'sine', 0.1, 0.08, 1200);
+                        state.winT = setTimeout(() => {
+                            AudioEngine.playSuccessChord();
+                            completeLevel(2);
+                        }, 3000);
+                    }
+                } else {
+                    fb.innerText = "Status: 正在努力維持平衡中...";
                     fb.className = "mt-8 text-center text-slate-500 text-xs italic tracking-[0.3em] uppercase";
-                    clearTimeout(state.winT); state.winT = null; 
-                } 
-            }, 500); 
+                    clearTimeout(state.winT);
+                    state.winT = null;
+                }
+            }, 500);
         }
 
-        function updateLv2(o, e) { 
-            AudioEngine.playSFX(440, 'triangle', 0.1); 
-            state.ecoBalance.oxy = Math.min(100, Math.max(0, state.ecoBalance.oxy + o)); 
-            state.ecoBalance.energy = Math.min(100, Math.max(0, state.ecoBalance.energy + e)); 
+        function updateLv2(o, e) {
+            AudioEngine.playSFX(350, 'triangle', 0.15, 0.1, 550);
+            state.ecoBalance.oxy = Math.min(100, Math.max(0, state.ecoBalance.oxy + o));
+            state.ecoBalance.energy = Math.min(100, Math.max(0, state.ecoBalance.energy + e));
         }
 
+        // --- 4. 通關與解鎖判定 ---
         function completeLevel(lv) {
-            clearInterval(state.gameLoop); 
-            state.completed[lv] = true; 
-            
+            clearInterval(state.gameLoop);
+            state.completed[lv] = true;
+
             const card = document.getElementById(`card-${lv}`);
             const status = document.getElementById(`status-${lv}`);
             const node = document.getElementById(`node-${lv}`);
-            
+
             card.classList.add('completed');
             status.innerHTML = `<span class="text-emerald-400">● 認證完畢</span>`;
-            status.className = "text-[10px] font-black uppercase tracking-widest";
+            status.className = "text-[10px] font-black uppercase tracking-widest flex items-center gap-2";
             node.classList.replace('active', 'done');
-            
-            const mapping = { "1": "1-extra", "1-extra": "2", "2": "3" };
+
+            const mapping = {
+                "1": "1-extra",
+                "1-extra": "2",
+                "2": "3"
+            };
             const next = mapping[lv];
-            if (next) { 
+            if (next) {
                 const nextCard = document.getElementById(`card-${next}`);
                 const nextStatus = document.getElementById(`status-${next}`);
                 const nextNode = document.getElementById(`node-${next}`);
-                
-                nextCard.classList.remove('locked'); 
+
+                nextCard.classList.remove('locked');
                 nextStatus.innerHTML = `<span class="relative flex h-2 w-2">
                       <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
                       <span class="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
                     </span>
-                    授權啟動`; 
+                    授權啟動`;
                 nextStatus.className = "text-[10px] font-black text-sky-400 flex items-center gap-2";
-                nextNode.classList.add('active'); 
+                nextNode.classList.add('active');
             }
             closeModal();
         }
 
+        // --- 5. 終章決定結局 ---
         function finishGame(choice) {
-            AudioEngine.playSFX(1320, 'sine', 0.8); 
+            AudioEngine.playSFX(1000, 'sine', 1.2, 0.25, 300);
+            AudioEngine.playBGM('3'); // 播放第四關.mp3 終章音樂
             document.getElementById('ending').classList.remove('hidden');
-            const t = document.getElementById('ending-title'); 
+            const t = document.getElementById('ending-title');
             const txt = document.getElementById('ending-text');
-            
-            if (choice === 'eco') { 
-                t.innerText = "七股風雲：回憶的歸宿"; 
+
+            if (choice === 'eco') {
+                t.innerText = "七股風雲：回憶的歸宿";
                 txt.innerHTML = `
-                    <p>光電板漸次拆除，七股的海風帶回了純粹的鹽味。</p>
-                    <p>我們守住了這片濕地的記憶，將原本的家園完整交給下一代。</p>
-                    <p class="text-sky-400/60 text-lg italic mt-12">黑面琵鷺在夕陽下盤旋，這裡是牠們永遠的避風港。</p>
-                `; 
-            } else { 
-                t.innerText = "七股風雲：新時代的平衡"; 
+                    <p>冰冷的光電組件與灰色高塔逐漸退出地平線，七股的風、鹽田與潮水重新擁有了最廣闊的自由。</p>
+                    <p>當我們選擇守住這片濕地，也守住了夕陽下黑面琵鷺漫天盤旋的壯麗景致。或許我們失去了一次能源轉型的紅利，但我們將不曾妥協的原鄉靈魂完整交付給了下一代。</p>
+                    <p class="text-sky-400/80 text-lg md:text-xl italic mt-12">阿文伯站在堤防旁，迎著充滿鹹味的風，默默流下了眼淚：「這才是我們七股的海風。」</p>
+                `;
+            } else {
+                t.innerText = "七股風雲：新時代的平衡";
                 txt.innerHTML = `
-                    <p>數據歸於穩定。科技與生態在七股達成了真正的和解。</p>
-                    <p>人類證明了轉型不需以犧牲自然為代價，新的生命正在板下的智慧魚塭中茁壯。</p>
-                    <p class="text-emerald-400/60 text-lg italic mt-12">漁民的手中握著監控螢幕，那是通往永續未來的鑰匙。</p>
-                `; 
+                    <p>智慧微電網的數據終於在臨界值達成恆定。科技不再是以吞噬自然為代價的怪獸，而是成為守護傳統的盔甲。</p>
+                    <p>光電板下的高溶氧魚塭孕育著茁壯的魚苗，信託基金源源不絕注入地方教育與候鳥生態補償，這裡成了全球生態轉型的示範點。我們向世界證明：永續發展，不必以犧牲家園為代價。</p>
+                    <p class="text-emerald-400/80 text-lg md:text-xl italic mt-12">小慧與阿美看著手中螢幕跳出的綠色安全信號，笑著說道：「歷史會記住這一天，我們與未來達成了和解。」</p>
+                `;
             }
         }
     </script>
 </body>
+
 </html>
