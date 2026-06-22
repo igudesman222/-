@@ -616,8 +616,8 @@
             // 基本上 16.2 秒之後都有人聲，所以在此設定一個主要人聲區間
             const hasVoiceOver = (elapsed >= 16.2 && elapsed <= 277.0);
 
-            // 設定目標音量：有人聲時 0.2，無人聲時初始音量 (0.75)
-            const targetVolume = hasVoiceOver ? 0.2 : (bgmPart1.initialVolume || 0.75);
+            // 設定目標音量：有人聲時調低為 0.08 (確保不蓋過旁白音量)，無人聲時維持初始音量 (0.75)
+            const targetVolume = hasVoiceOver ? 0.08 : (bgmPart1.initialVolume || 0.75);
 
             // 平滑漸變音量 (使用簡單的線性內插)
             const currentVolume = bgmPart1.volume;
