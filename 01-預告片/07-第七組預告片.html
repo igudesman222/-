@@ -1792,6 +1792,9 @@
         let wasPausedBeforeScrub = false;
         let isPaused = false;
         let lastRenderedElapsed = 0;
+        const OPENING_TIMELINE_END = 9.2;
+        let openingGateActive = false;
+        let openingGateFallbackStart = 0;
 
         const gameplayVideoSources = [
             'https://cdn.jsdelivr.net/gh/igudesman222/igudesman2012/07-%E7%AC%AC%E4%B8%83%E7%B5%84%E8%B3%87%E6%BA%90/07-001-%E5%BD%B1%E7%89%87/07-%E5%B0%8F%E9%81%8A%E6%88%B2%E9%81%8A%E7%8E%A9%E9%8C%84%E8%A3%BD.mp4',
@@ -2405,10 +2408,13 @@
 
 
 
-        const CHARACTER_ASSET_BASE = 'https://cdn.jsdelivr.net/gh/igudesman222/igudesman2012/07-第七組資源/07-002-圖片/';
-        const CHARACTER_GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/igudesman222/igudesman2012/main/07-第七組資源/07-002-圖片/';
+        const CHARACTER_ASSET_BASE = 'https://cdn.jsdelivr.net/gh/igudesman222/igudesman2012/07-%E7%AC%AC%E4%B8%83%E7%B5%84%E8%B3%87%E6%BA%90/07-002-%E5%9C%96%E7%89%87/';
+        const CHARACTER_GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/igudesman222/igudesman2012/main/07-%E7%AC%AC%E4%B8%83%E7%B5%84%E8%B3%87%E6%BA%90/07-002-%E5%9C%96%E7%89%87/';
         let portraitLoadToken = 0;
         let activePortraitKey = '';
+        const portraitUrlCache = new Map();
+        const portraitImageCache = new Map();
+        const TRANSPARENT_PIXEL = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
 
         const portraitMap = {
             '旁白|陳述': {
@@ -2427,12 +2433,12 @@
                 side: 'right'
             },
             '阿建|得意大笑': {
-                files: ['2- 阿建（笑到哭出來） .png', '02-阿建（笑到哭出來）.png', '12-阿建（笑到哭出來）.png', '12-阿建(笑到哭出來).png', '08-阿建(奸笑）.png', '08-阿建（奸笑）.png', '08-阿建(奸笑).png'],
+                files: ['12-阿建（笑到哭出來）.png', '12-阿建(笑到哭出來).png', '2- 阿建（笑到哭出來） .png', '02-阿建（笑到哭出來）.png', '12-阿建(笑到哭出來).png', '08-阿建(奸笑）.png', '08-阿建（奸笑）.png', '08-阿建(奸笑).png'],
                 label: '阿建',
                 side: 'right'
             },
             '遠德|憤怒': {
-                files: ['03- 遠德（咬牙切齒） .png', '03-遠德（咬牙切齒）.png', '03-遠德(咬牙切齒).png'],
+                files: ['03-遠德（咬牙切齒）.png', '03-遠德(咬牙切齒).png', '03- 遠德（咬牙切齒） .png', '03-遠德(咬牙切齒).png'],
                 label: '遠德',
                 side: 'left'
             },
@@ -2457,7 +2463,7 @@
                 side: 'right'
             },
             '遠德|質問': {
-                files: ['03- 遠德（咬牙切齒） .png', '03-遠德（咬牙切齒）.png', '03-遠德(咬牙切齒).png'],
+                files: ['03-遠德（咬牙切齒）.png', '03-遠德(咬牙切齒).png', '03- 遠德（咬牙切齒） .png', '03-遠德(咬牙切齒).png'],
                 label: '遠德',
                 side: 'left'
             },
@@ -2487,7 +2493,7 @@
                 side: 'right'
             },
             '遠德|守護': {
-                files: ['02- 遠德（自信） .png', '02-遠德（自信）.png', '02-遠德(自信).png', '2-遠德（自信）.png'],
+                files: ['02-遠德（自信）.png', '02-遠德(自信).png', '02- 遠德（自信） .png', '02-遠德(自信).png', '2-遠德（自信）.png'],
                 label: '遠德',
                 side: 'left'
             },
@@ -2525,6 +2531,28 @@
                 urls.push(CHARACTER_GITHUB_RAW_BASE + encodeURIComponent(file).replace(/%2F/g, '/'));
             });
             return urls;
+        }
+
+        function cachePortraitUrl(cacheKey, url) {
+            if (!portraitUrlCache.has(cacheKey)) portraitUrlCache.set(cacheKey, url);
+        }
+
+        function preloadPortraitUrl(url, cacheKey) {
+            if (!url || portraitImageCache.has(url)) return;
+            const preloader = new Image();
+            portraitImageCache.set(url, preloader);
+            preloader.onload = () => cachePortraitUrl(cacheKey, url);
+            preloader.onerror = () => {};
+            preloader.decoding = 'async';
+            preloader.referrerPolicy = 'no-referrer';
+            preloader.src = url;
+        }
+
+        function preloadPortraitAssets() {
+            Object.keys(portraitMap).forEach(key => {
+                const info = portraitMap[key];
+                buildPortraitUrls(info.files).forEach(url => preloadPortraitUrl(url, key));
+            });
         }
 
         function getPortraitInfo(step) {
@@ -2575,6 +2603,7 @@
             }
 
             const portraitKey = getPortraitKey(step, info);
+            const mapKey = step.type === 'talk' ? `${step.who}|${step.emotion}` : '遊戲指導|關卡';
             const effectClass = portraitEmotionClasses[step.emotion] || (step.type === 'visual' ? 'effect-portrait-narrator' : 'effect-portrait-narrator');
             const sideClass = info.side === 'left' ? 'portrait-left' : 'portrait-right';
             const isGameplayGuide = isGameplayStageStep(step) || (step.type === 'visual' && step.label && step.label.includes('CLEAR CONDITION'));
@@ -2588,7 +2617,7 @@
             name.innerText = `${info.label || step.who || step.main || '角色'} // ${step.emotion || (step.type === 'visual' ? 'Guide' : 'Normal')}`;
             img.alt = info.label || step.who || step.main || '';
 
-            if (activePortraitKey === portraitKey && img.getAttribute('src')) {
+            if (activePortraitKey === portraitKey && img.getAttribute('src') && img.getAttribute('src') !== TRANSPARENT_PIXEL) {
                 wrap.classList.remove('portrait-missing');
                 wrap.classList.add('active');
                 return;
@@ -2598,23 +2627,45 @@
             const urls = buildPortraitUrls(info.files);
             const token = ++portraitLoadToken;
             let idx = 0;
-            wrap.classList.remove('active');
             wrap.classList.remove('portrait-missing');
+            wrap.classList.add('active');
 
-            img.onload = () => {
+            const cachedUrl = portraitUrlCache.get(mapKey) || urls.find(url => {
+                const cached = portraitImageCache.get(url);
+                return cached && cached.complete && cached.naturalWidth > 0;
+            });
+
+            function useUrl(url) {
                 if (token !== portraitLoadToken) return;
-                wrap.classList.add('active');
-            };
-            img.onerror = () => {
+                img.onload = () => {
+                    if (token !== portraitLoadToken) return;
+                    cachePortraitUrl(mapKey, url);
+                    wrap.classList.remove('portrait-missing');
+                    wrap.classList.add('active');
+                };
+                img.onerror = tryNext;
+                img.src = url;
+            }
+
+            function tryNext() {
                 if (token !== portraitLoadToken) return;
                 if (idx < urls.length) {
-                    img.src = urls[idx++];
+                    useUrl(urls[idx++]);
                 } else {
+                    img.src = TRANSPARENT_PIXEL;
                     wrap.classList.add('portrait-missing');
                     wrap.classList.remove('active');
                 }
-            };
-            img.src = urls[idx++];
+            }
+
+            if (cachedUrl) {
+                useUrl(cachedUrl);
+                return;
+            }
+
+            // 先清空舊圖，避免上一位角色圖像在新角色圖片載入前殘留。
+            img.src = TRANSPARENT_PIXEL;
+            tryNext();
         }
 
         const PORTRAIT_LEAD_SECONDS = 0.3;
@@ -2625,12 +2676,26 @@
             let chosen = null;
             for (let i = 0; i < script.length; i++) {
                 const step = script[i];
-                if (!getPortraitInfo(step)) continue;
-                if (elapsed >= step.t - PORTRAIT_LEAD_SECONDS) chosen = step;
-                else break;
+                const info = getPortraitInfo(step);
+                if (!info) continue;
+                const startAt = step.t - PORTRAIT_LEAD_SECONDS;
+                let endAt = TRAILER_DURATION;
+                for (let j = i + 1; j < script.length; j++) {
+                    if (getPortraitInfo(script[j])) {
+                        endAt = script[j].t - PORTRAIT_LEAD_SECONDS;
+                        break;
+                    }
+                    if (script[j].type === 'blank' || script[j].type === 'final' || script[j].type === 'team' || script[j].type === 'video') {
+                        endAt = script[j].t;
+                        break;
+                    }
+                }
+                if (elapsed >= startAt && elapsed < endAt) chosen = step;
+                if (elapsed < startAt) break;
             }
             return chosen;
         }
+
 
         function updateCharacterPortraitByTime(elapsed) {
             const step = getPortraitStepForElapsed(elapsed);
@@ -2725,7 +2790,6 @@
             const openingVisual = document.getElementById('opening-visual');
             const openingVideo = document.getElementById('opening-video');
             const textContent = document.getElementById('text-content');
-            hideCharacterPortrait();
 
             bigTitle.classList.remove('team-title', 'final-tagline', 'gameplay-main', 'title-pop', 'gameplay-compact');
             subTitle.classList.remove('gameplay-subtitle', 'subtitle-pop', 'gameplay-compact');
@@ -2910,6 +2974,24 @@
             setTimeout(resetToBootScreen, 4300);
         }
 
+        function getOpeningSyncedElapsed(rawElapsed) {
+            if (!openingGateActive || playbackStartOffset >= OPENING_TIMELINE_END) return null;
+            const openingVideo = document.getElementById('opening-video');
+            const waitedMs = Date.now() - openingGateFallbackStart;
+            if (openingVideo && !openingVideo.error) {
+                const videoTime = Number.isFinite(openingVideo.currentTime) ? openingVideo.currentTime : 0;
+                if (!openingVideo.ended && videoTime < OPENING_TIMELINE_END - 0.05) {
+                    if (waitedMs < 14000 || openingVideo.readyState > 0 || videoTime > 0.05) {
+                        return Math.max(0, Math.min(OPENING_TIMELINE_END - 0.01, videoTime));
+                    }
+                }
+            }
+            openingGateActive = false;
+            playbackStartOffset = OPENING_TIMELINE_END;
+            trailerStartTime = Date.now();
+            return OPENING_TIMELINE_END;
+        }
+
         function getSyncedElapsed(rawElapsed) {
             // 以使用者指定的字幕時間軸為主，避免配音檔長度或瀏覽器播放延遲造成字幕漂移。
             return rawElapsed;
@@ -2952,6 +3034,8 @@
             const clamped = Math.max(0, Math.min(TRAILER_DURATION, Number(targetTime) || 0));
             playbackStartOffset = clamped;
             trailerStartTime = Date.now();
+            openingGateActive = autoplayMedia && clamped < OPENING_TIMELINE_END;
+            openingGateFallbackStart = Date.now();
             endingStarted = false;
             document.getElementById('final-fade').classList.remove('active');
             currentIdx = -1;
@@ -3001,6 +3085,8 @@
             isPaused = false;
             endingStarted = false;
             trailerStartTime = Date.now();
+            openingGateActive = playbackStartOffset < OPENING_TIMELINE_END;
+            openingGateFallbackStart = Date.now();
             document.getElementById('final-fade').classList.remove('active');
             renderAtTime(playbackStartOffset, true);
             handleAudioSchedule(playbackStartOffset);
@@ -3019,6 +3105,8 @@
         function startTrailer() {
             trailerStartTime = Date.now();
             playbackStartOffset = 0;
+            openingGateActive = true;
+            openingGateFallbackStart = Date.now();
             isPaused = false;
             updatePlayPauseButton();
             initSea();
@@ -3036,9 +3124,9 @@
                     updateTimelineControls(playbackStartOffset);
                     return;
                 }
-                const rawElapsed = playbackStartOffset + ((Date.now() - trailerStartTime) / 1000);
-
-                const elapsed = getSyncedElapsed(rawElapsed);
+                let rawElapsed = playbackStartOffset + ((Date.now() - trailerStartTime) / 1000);
+                const openingSyncedElapsed = getOpeningSyncedElapsed(rawElapsed);
+                const elapsed = openingSyncedElapsed !== null ? openingSyncedElapsed : getSyncedElapsed(rawElapsed);
                 updateTimelineControls(elapsed);
                 handleAudioSchedule(elapsed);
                 handleVoiceoverSchedule(elapsed);
@@ -3145,6 +3233,7 @@
 
             boostOpeningVideoAudio();
             prepareGameplayVideo();
+            preloadPortraitAssets();
             isStarted = true;
             isPaused = false;
             updatePlayPauseButton();
@@ -3156,6 +3245,9 @@
                 startTrailer();
             }, 1500);
         });
+
+        if ('requestIdleCallback' in window) requestIdleCallback(preloadPortraitAssets);
+        else setTimeout(preloadPortraitAssets, 600);
 
         window.addEventListener('resize', () => {
             setAppHeight();
